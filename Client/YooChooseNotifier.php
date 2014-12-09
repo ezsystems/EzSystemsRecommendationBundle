@@ -26,21 +26,38 @@ class YooChooseNotifier implements RecommendationClient
     /**
      * Constructs a YooChooseNotifier Recommendation Client.
      *
+     * @param \GuzzleHttp\ClientInterface $guzzle
      * @param array $options
      *        Keys (all required):
      *        - customer-id: the yoochoose customer ID, e.g. 12345
      *        - license-key: yoochoose license key, e.g. 1234-5678-9012-3456-7890
      *        - api-endpoint: yoochoose http api endpoint
-     *        - base-uri: the site's REST API base URI (without the prefix)
-     * @param \GuzzleHttp\ClientInterface $guzzle
+     *        - server-uri: the site's REST API base URI (without the prefix), e.g. http://api.example.com
      */
-    public function __construct( array $options, GuzzleClient $guzzle )
+    public function __construct( GuzzleClient $guzzle, array $options )
     {
         $resolver = new OptionsResolver();
         $this->configureOptions( $resolver );
 
         $this->options = $resolver->resolve( $options );
         $this->guzzle = $guzzle;
+    }
+
+    public function setCustomerId( $value )
+    {
+        $this->options['customer-id'] = $value;
+        $this->guzzle->setDefaultOption( 'auth', $this->options['customer-id'], $this->options['license-key'] );
+    }
+
+    public function setLicenseKey( $value )
+    {
+        $this->options['license-key'] = $value;
+        $this->guzzle->setDefaultOption( 'auth', $this->options['customer-id'], $this->options['license-key'] );
+    }
+
+    public function setServerUri( $value )
+    {
+        $this->options['server-uri'] = $value;
     }
 
     public function updateContent($contentId)
@@ -64,7 +81,8 @@ class YooChooseNotifier implements RecommendationClient
     {
         return sprintf(
             '%s/api/ezp/v2/content/objects/%s',
-            $this->options['base-uri'],
+            // @todo normalize in configuration
+            $this->options['server-uri'],
             $contentId
         );
     }
@@ -106,9 +124,12 @@ class YooChooseNotifier implements RecommendationClient
      */
     protected function configureOptions( OptionsResolver $resolver )
     {
-        $options = array( 'customer-id', 'license-key', 'api-endpoint', 'base-uri' );
+        $options = array( 'customer-id', 'license-key', 'api-endpoint', 'server-uri' );
         $resolver->setDefined( $options );
-        $resolver->setRequired( $options );
+        $resolver->setDefault( 'customer-id', null );
+        $resolver->setDefault( 'license-key', null );
+        $resolver->setDefault( 'server-uri', null );
+        $resolver->setDefault( 'api-endpoint', null );
     }
 
     /**
@@ -120,7 +141,7 @@ class YooChooseNotifier implements RecommendationClient
     {
         return sprintf(
             '%s/api/v1/publisher/ez/%s/notifications',
-            $this->options['api-endpoint'],
+            rtrim( $this->options['api-endpoint'], '/' ),
             $this->options['customer-id']
         );
     }

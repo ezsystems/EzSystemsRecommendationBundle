@@ -1,4 +1,20 @@
 parameters:
+    ez_recommendation.client.yoochoose_notifier.class: EzSystems\RecommendationBundle\Client\YooChooseNotifier
 
 services:
+    ez_recommendation.client.yoochoose_notifier:
+        class: %ez_recommendation.client.yoochoose_notifier.class%
+        arguments:
+            -
+                customer-id: %ez_recommendation.customer_id%
+                license-key: %ez_recommendation.license_key%
+                api-endpoint: %ez_recommendation.api_endpoint%
+                base-uri: http://php55-vm.ezpublish5
+            - @ez_recommendation.client.yoochoose_notifier.guzzle_client
 
+    ez_recommendation.client.yoochoose_notifier.guzzle_client:
+        class: GuzzleHttp\Client
+        arguments:
+            -
+                base_url: %ez_recommendation.api_endpoint%
+                defaults: {"auth": [%ez_recommendation.customer_id%, %ez_recommendation.license_key%]}

@@ -12,12 +12,10 @@ class EzSystemsRecommendationBundle extends Bundle
 
     public function getContainerExtension()
     {
-        if ( !isset( $this->extension ) )
-        {
+        if (!isset($this->extension)) {
             $this->extension = new EzSystemsRecommendationExtension();
         }
 
         return $this->extension;
     }
-
 }

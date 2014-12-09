@@ -1,0 +1,6 @@
+parameters:
+    ez_recommendation.default.yoochoose.customer_id: ~
+    ez_recommendation.default.yoochoose.license_key: ~
+    ez_recommendation.default.server_uri: ~
+
+    ez_recommendation.api_endpoint: 'https://admin.yoochoose.net'

@@ -34,40 +34,40 @@ class YooChooseNotifier implements RecommendationClient
      *        - api-endpoint: yoochoose http api endpoint
      *        - server-uri: the site's REST API base URI (without the prefix), e.g. http://api.example.com
      */
-    public function __construct( GuzzleClient $guzzle, array $options )
+    public function __construct(GuzzleClient $guzzle, array $options)
     {
         $resolver = new OptionsResolver();
-        $this->configureOptions( $resolver );
+        $this->configureOptions($resolver);
 
-        $this->options = $resolver->resolve( $options );
+        $this->options = $resolver->resolve($options);
         $this->guzzle = $guzzle;
     }
 
-    public function setCustomerId( $value )
+    public function setCustomerId($value)
     {
         $this->options['customer-id'] = $value;
-        $this->guzzle->setDefaultOption( 'auth', $this->options['customer-id'], $this->options['license-key'] );
+        $this->guzzle->setDefaultOption('auth', $this->options['customer-id'], $this->options['license-key']);
     }
 
-    public function setLicenseKey( $value )
+    public function setLicenseKey($value)
     {
         $this->options['license-key'] = $value;
-        $this->guzzle->setDefaultOption( 'auth', $this->options['customer-id'], $this->options['license-key'] );
+        $this->guzzle->setDefaultOption('auth', $this->options['customer-id'], $this->options['license-key']);
     }
 
-    public function setServerUri( $value )
+    public function setServerUri($value)
     {
         $this->options['server-uri'] = $value;
     }
 
     public function updateContent($contentId)
     {
-        $this->notify( array( array( 'action' => 'update', 'uri' => $this->getContentUri( $contentId ) ) ) );
+        $this->notify(array( array( 'action' => 'update', 'uri' => $this->getContentUri($contentId) ) ));
     }
 
     public function deleteContent($contentId)
     {
-        $this->notify( array( array( 'action' => 'delete', 'uri' => $this->getContentUri( $contentId ) ) ) );
+        $this->notify(array( array( 'action' => 'delete', 'uri' => $this->getContentUri($contentId) ) ));
     }
 
     /**
@@ -77,7 +77,7 @@ class YooChooseNotifier implements RecommendationClient
      *
      * @return string
      */
-    protected function getContentUri( $contentId )
+    protected function getContentUri($contentId)
     {
         return sprintf(
             '%s/api/ezp/v2/content/objects/%s',
@@ -98,13 +98,11 @@ class YooChooseNotifier implements RecommendationClient
      *
      * @throws \RuntimeException if the API request doesn't return the expected HTTP status code (202)
      */
-    protected function notify( array $events )
+    protected function notify(array $events)
     {
-        foreach ( $events as $event )
-        {
-            if ( array_keys( $event ) != array( 'action', 'uri' ) )
-            {
-                throw new InvalidArgumentException( 'Invalid action keys' );
+        foreach ($events as $event) {
+            if (array_keys($event) != array( 'action', 'uri' )) {
+                throw new InvalidArgumentException('Invalid action keys');
             }
         }
 
@@ -113,23 +111,22 @@ class YooChooseNotifier implements RecommendationClient
             array( 'json' => array( 'transaction' => null, 'events' => $events ) )
         );
 
-        if ( $response->getStatusCode() != 202 )
-        {
-            throw new RuntimeException( 'Unexpected status code ' . $response->getStatusCode() );
+        if ($response->getStatusCode() != 202) {
+            throw new RuntimeException('Unexpected status code '.$response->getStatusCode());
         }
     }
 
     /**
      * @param OptionsResolver $resolver
      */
-    protected function configureOptions( OptionsResolver $resolver )
+    protected function configureOptions(OptionsResolver $resolver)
     {
         $options = array( 'customer-id', 'license-key', 'api-endpoint', 'server-uri' );
-        $resolver->setDefined( $options );
-        $resolver->setDefault( 'customer-id', null );
-        $resolver->setDefault( 'license-key', null );
-        $resolver->setDefault( 'server-uri', null );
-        $resolver->setDefault( 'api-endpoint', null );
+        $resolver->setDefined($options);
+        $resolver->setDefault('customer-id', null);
+        $resolver->setDefault('license-key', null);
+        $resolver->setDefault('server-uri', null);
+        $resolver->setDefault('api-endpoint', null);
     }
 
     /**
@@ -141,7 +138,7 @@ class YooChooseNotifier implements RecommendationClient
     {
         return sprintf(
             '%s/api/v1/publisher/ez/%s/notifications',
-            rtrim( $this->options['api-endpoint'], '/' ),
+            rtrim($this->options['api-endpoint'], '/'),
             $this->options['customer-id']
         );
     }

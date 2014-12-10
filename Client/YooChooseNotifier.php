@@ -8,7 +8,9 @@
 namespace EzSystems\RecommendationBundle\Client;
 
 use GuzzleHttp\ClientInterface as GuzzleClient;
+use GuzzleHttp\Exception\RequestException;
 use InvalidArgumentException;
+use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -23,6 +25,9 @@ class YooChooseNotifier implements RecommendationClient
     /** @var \GuzzleHttp\ClientInterface */
     private $guzzle;
 
+    /** @var \Psr\Log\LoggerInterface|null */
+    private $logger;
+
     /**
      * Constructs a YooChooseNotifier Recommendation Client.
      *
@@ -33,14 +38,16 @@ class YooChooseNotifier implements RecommendationClient
      *        - license-key: yoochoose license key, e.g. 1234-5678-9012-3456-7890
      *        - api-endpoint: yoochoose http api endpoint
      *        - server-uri: the site's REST API base URI (without the prefix), e.g. http://api.example.com
+     * @param \Psr\Log\LoggerInterface|null $logger
      */
-    public function __construct(GuzzleClient $guzzle, array $options)
+    public function __construct(GuzzleClient $guzzle, array $options, LoggerInterface $logger = null)
     {
         $resolver = new OptionsResolver();
         $this->configureOptions($resolver);
 
         $this->options = $resolver->resolve($options);
         $this->guzzle = $guzzle;
+        $this->logger = $logger;
     }
 
     public function setCustomerId($value)
@@ -106,13 +113,20 @@ class YooChooseNotifier implements RecommendationClient
             }
         }
 
-        $response = $this->guzzle->post(
-            $this->getNotificationEndpoint(),
-            array( 'json' => array( 'transaction' => null, 'events' => $events ) )
-        );
+        try {
+            $response = $this->guzzle->post(
+                $this->getNotificationEndpoint(),
+                array( 'json' => array( 'transaction' => null, 'events' => $events ) )
+            );
+        } catch (RequestException $e) {
+            if (isset($this->logger)) {
+                $this->logger->error($e->getMessage()." from ".$this->getNotificationEndpoint());
+            }
+            return;
+        }
 
-        if ($response->getStatusCode() != 202) {
-            throw new RuntimeException('Unexpected status code '.$response->getStatusCode());
+        if (isset($this->logger)) {
+            $this->logger->info($response->getStatusCode()." from ".$response->getEffectiveUrl());
         }
     }
 
@@ -137,7 +151,7 @@ class YooChooseNotifier implements RecommendationClient
     private function getNotificationEndpoint()
     {
         return sprintf(
-            '%s/api/v1/publisher/ez/%s/notifications',
+            '%s/api/v4/publisher/ez/%s/notifications',
             rtrim($this->options['api-endpoint'], '/'),
             $this->options['customer-id']
         );

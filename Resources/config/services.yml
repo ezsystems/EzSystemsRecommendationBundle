@@ -7,10 +7,13 @@ services:
         arguments:
             - @ez_recommendation.client.yoochoose_notifier.guzzle_client
             - {api-endpoint: %ez_recommendation.api_endpoint%}
+            - @?logger
         calls:
             - [setCustomerId, [$yoochoose.customer_id;ez_recommendation$]]
             - [setLicenseKey, [$yoochoose.license_key;ez_recommendation$]]
             - [setServerUri, [$server_uri;ez_recommendation$]]
+        tags:
+            - { name: monolog.logger, channel: ez_recommendation }
 
     ez_recommendation.client.yoochoose_notifier.guzzle_client:
         class: GuzzleHttp\Client

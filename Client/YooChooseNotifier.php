@@ -11,7 +11,6 @@ use GuzzleHttp\ClientInterface as GuzzleClient;
 use GuzzleHttp\Exception\RequestException;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
-use RuntimeException;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
@@ -33,11 +32,11 @@ class YooChooseNotifier implements RecommendationClient
      *
      * @param \GuzzleHttp\ClientInterface $guzzle
      * @param array $options
-     *        Keys (all required):
-     *        - customer-id: the yoochoose customer ID, e.g. 12345
-     *        - license-key: yoochoose license key, e.g. 1234-5678-9012-3456-7890
-     *        - api-endpoint: yoochoose http api endpoint
-     *        - server-uri: the site's REST API base URI (without the prefix), e.g. http://api.example.com
+     *     Keys (all required):
+     *     - customer-id: the yoochoose customer ID, e.g. 12345
+     *     - license-key: yoochoose license key, e.g. 1234-5678-9012-3456-7890
+     *     - api-endpoint: yoochoose http api endpoint
+     *     - server-uri: the site's REST API base URI (without the prefix), e.g. http://api.example.com
      * @param \Psr\Log\LoggerInterface|null $logger
      */
     public function __construct(GuzzleClient $guzzle, array $options, LoggerInterface $logger = null)
@@ -73,8 +72,8 @@ class YooChooseNotifier implements RecommendationClient
             $this->logger->info("Notifying YooChoose: updateContent($contentId)");
         }
         try {
-            $this->notify( array( array( 'action' => 'update', 'uri' => $this->getContentUri( $contentId ) ) ) );
-        } catch ( RequestException $e ) {
+            $this->notify(array( array( 'action' => 'update', 'uri' => $this->getContentUri($contentId) ) ));
+        } catch (RequestException $e) {
             if (isset($this->logger)) {
                 $this->logger->error("YooChoose Post notification error: ".$e->getMessage());
             }
@@ -88,7 +87,7 @@ class YooChooseNotifier implements RecommendationClient
         }
         try {
             $this->notify(array( array( 'action' => 'delete', 'uri' => $this->getContentUri($contentId) ) ));
-        } catch ( RequestException $e ) {
+        } catch (RequestException $e) {
             if (isset($this->logger)) {
                 $this->logger->error("YooChoose Post notification error: ".$e->getMessage());
             }
@@ -132,7 +131,7 @@ class YooChooseNotifier implements RecommendationClient
         }
 
         if (isset($this->logger)) {
-            $this->logger->debug("POST notification to YooChoose:" . json_encode( $events, true ) );
+            $this->logger->debug("POST notification to YooChoose:".json_encode($events, true));
         }
 
         $response = $this->guzzle->post(

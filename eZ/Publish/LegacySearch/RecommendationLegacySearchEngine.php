@@ -24,7 +24,7 @@ class RecommendationLegacySearchEngine implements ezpSearchEngine
     /** @var \EzSystems\RecommendationBundle\Client\RecommendationClient */
     protected $recommendationClient;
 
-    public function __construct( RecommendationClient $recommendationClient, ezpSearchEngine $legacySearchEngine )
+    public function __construct(RecommendationClient $recommendationClient, ezpSearchEngine $legacySearchEngine)
     {
         $this->recommendationClient = $recommendationClient;
         $this->legacySearchEngine = $legacySearchEngine;
@@ -40,27 +40,30 @@ class RecommendationLegacySearchEngine implements ezpSearchEngine
         return $this->legacySearchEngine->needRemoveWithUpdate();
     }
 
-    public function addObject( $contentObject, $commit = true )
+    public function addObject($contentObject, $commit = true)
     {
-        $this->recommendationClient->updateContent( $contentObject->attribute( 'id' ) );
-        return $this->legacySearchEngine->addObject( $contentObject, $commit );
+        $this->recommendationClient->updateContent($contentObject->attribute('id'));
+
+        return $this->legacySearchEngine->addObject($contentObject, $commit);
     }
 
-    public function removeObject( $contentObject, $commit = null )
+    public function removeObject($contentObject, $commit = null)
     {
-        $this->recommendationClient->deleteContent( $contentObject->attribute( 'id' ) );
-        return $this->legacySearchEngine->removeObject( $contentObject, $commit );
+        $this->recommendationClient->deleteContent($contentObject->attribute('id'));
+
+        return $this->legacySearchEngine->removeObject($contentObject, $commit);
     }
 
-    public function removeObjectById( $contentObjectId, $commit = null )
+    public function removeObjectById($contentObjectId, $commit = null)
     {
-        $this->recommendationClient->deleteContent( $contentObjectId );
-        return $this->legacySearchEngine->removeObjectById( $contentObjectId, $commit );
+        $this->recommendationClient->deleteContent($contentObjectId);
+
+        return $this->legacySearchEngine->removeObjectById($contentObjectId, $commit);
     }
 
-    public function search( $searchText, $params = array(), $searchTypes = array() )
+    public function search($searchText, $params = array(), $searchTypes = array())
     {
-        return $this->legacySearchEngine->search( $searchText, $params, $searchTypes );
+        return $this->legacySearchEngine->search($searchText, $params, $searchTypes);
     }
 
     public function supportedSearchTypes()
@@ -73,11 +76,10 @@ class RecommendationLegacySearchEngine implements ezpSearchEngine
         $this->legacySearchEngine->commit();
     }
 
-    public static function buildLegacySearchEngine( $legacyKernelClosure )
+    public static function buildLegacySearchEngine($legacyKernelClosure)
     {
         return $legacyKernelClosure()->runCallback(
-            function ()
-            {
+            function () {
                 return \eZSearch::getEngine();
             }
         );

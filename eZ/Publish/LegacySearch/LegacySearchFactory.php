@@ -13,11 +13,10 @@ namespace EzSystems\RecommendationBundle\eZ\Publish\LegacySearch;
  */
 class LegacySearchFactory
 {
-    public static function build( \Closure $legacyKernelClosure )
+    public static function build(\Closure $legacyKernelClosure)
     {
         return $legacyKernelClosure()->runCallback(
-            function ()
-            {
+            function () {
                 return \eZSearch::getEngine();
             }
         );

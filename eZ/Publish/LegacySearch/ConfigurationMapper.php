@@ -17,7 +17,7 @@ class ConfigurationMapper implements EventSubscriberInterface
     /** @var \ezpSearchEngine */
     private $recommendationLegacySearch;
 
-    public function __construct( ezpSearchEngine $recommendationLegacySearch )
+    public function __construct(ezpSearchEngine $recommendationLegacySearch)
     {
         $this->recommendationLegacySearch = $recommendationLegacySearch;
     }
@@ -25,11 +25,11 @@ class ConfigurationMapper implements EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return array(
-            LegacyEvents::POST_BUILD_LEGACY_KERNEL => array( "onBuildKernel", 0 )
+            LegacyEvents::POST_BUILD_LEGACY_KERNEL => array( "onBuildKernel", 0 ),
         );
     }
 
-    public function onBuildKernel( PostBuildKernelEvent $event )
+    public function onBuildKernel(PostBuildKernelEvent $event)
     {
         $siteaccess = 'ezdemo_site_admin';
         $GLOBALS["eZSearchPlugin_$siteaccess"] = $this->recommendationLegacySearch;

@@ -69,12 +69,30 @@ class YooChooseNotifier implements RecommendationClient
 
     public function updateContent($contentId)
     {
-        $this->notify(array( array( 'action' => 'update', 'uri' => $this->getContentUri($contentId) ) ));
+        if (isset($this->logger)) {
+            $this->logger->info("Notifying YooChoose: updateContent($contentId)");
+        }
+        try {
+            $this->notify( array( array( 'action' => 'update', 'uri' => $this->getContentUri( $contentId ) ) ) );
+        } catch ( RequestException $e ) {
+            if (isset($this->logger)) {
+                $this->logger->error("YooChoose Post notification error: ".$e->getMessage());
+            }
+        }
     }
 
     public function deleteContent($contentId)
     {
-        $this->notify(array( array( 'action' => 'delete', 'uri' => $this->getContentUri($contentId) ) ));
+        if (isset($this->logger)) {
+            $this->logger->info("Notifying YooChoose: delete($contentId)");
+        }
+        try {
+            $this->notify(array( array( 'action' => 'delete', 'uri' => $this->getContentUri($contentId) ) ));
+        } catch ( RequestException $e ) {
+            if (isset($this->logger)) {
+                $this->logger->error("YooChoose Post notification error: ".$e->getMessage());
+            }
+        }
     }
 
     /**
@@ -103,7 +121,7 @@ class YooChooseNotifier implements RecommendationClient
      *
      * @param array $events
      *
-     * @throws \RuntimeException if the API request doesn't return the expected HTTP status code (202)
+     * @throws \GuzzleHttp\Exception\RequestException if a request error occurs
      */
     protected function notify(array $events)
     {
@@ -113,20 +131,17 @@ class YooChooseNotifier implements RecommendationClient
             }
         }
 
-        try {
-            $response = $this->guzzle->post(
-                $this->getNotificationEndpoint(),
-                array( 'json' => array( 'transaction' => null, 'events' => $events ) )
-            );
-        } catch (RequestException $e) {
-            if (isset($this->logger)) {
-                $this->logger->error($e->getMessage()." from ".$this->getNotificationEndpoint());
-            }
-            return;
+        if (isset($this->logger)) {
+            $this->logger->debug("POST notification to YooChoose:" . json_encode( $events, true ) );
         }
 
+        $response = $this->guzzle->post(
+            $this->getNotificationEndpoint(),
+            array( 'json' => array( 'transaction' => null, 'events' => $events ) )
+        );
+
         if (isset($this->logger)) {
-            $this->logger->info($response->getStatusCode()." from ".$response->getEffectiveUrl());
+            $this->logger->debug("Got ".$response->getStatusCode()." from YooChoose notification POST");
         }
     }
 

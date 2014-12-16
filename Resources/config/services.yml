@@ -19,3 +19,14 @@ services:
         class: GuzzleHttp\Client
         arguments:
             - { base_url: %ez_recommendation.api_endpoint% }
+
+    ez_recommendation.twig.tracker_extension:
+        alias: ez_recommendation.twig.tracker_extension.yoochose
+
+    ez_recommendation.twig.tracker_extension.yoochose:
+        class: EzSystems\RecommendationBundle\Twig\YooChooseTrackerExtension
+        arguments: [%ez_recommendation.yoochoose_tracker_template%]
+        calls:
+            - [setCustomerId, [$yoochoose.customer_id;ez_recommendation$]]
+        tags:
+            - { name: twig.extension }

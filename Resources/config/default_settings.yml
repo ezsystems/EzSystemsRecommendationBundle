@@ -4,3 +4,5 @@ parameters:
     ez_recommendation.default.server_uri: ~
 
     ez_recommendation.api_endpoint: 'https://admin.yoochoose.net'
+
+    ez_recommendation.yoochoose_tracker_template: 'EzSystemsRecommendationBundle::tracker_yoochoose_js.html.twig'

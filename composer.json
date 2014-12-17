@@ -1,0 +1,12 @@
+{
+    "name": "ezsystems/recommendation-bundle",
+    "authors": [
+        {
+            "name": "eZ Systems",
+            "email": "dev-team@ez.no"
+        }
+    ],
+    "require": {
+        "guzzlehttp/guzzle": "~5.0"
+    }
+}

@@ -10,15 +10,15 @@
 namespace EzSystems\RecommendationBundle\eZ\Publish\Slot;
 
 use eZ\Publish\Core\SignalSlot\Signal;
-use EzSystems\RecommendationBundle\eZ\Publish\Slot;
 
 
 class Trash extends Base
 {
-    public function receive( Signal $signal )
+    public function receive(Signal $signal)
     {
-        if ( !$signal instanceof Signal\TrashService\TrashSignal )
+        if (!$signal instanceof Signal\TrashService\TrashSignal) {
             return;
+        }
 
         $this->client->deleteContent($signal->contentId);
     }

@@ -19,3 +19,23 @@ services:
         class: GuzzleHttp\Client
         arguments:
             - { base_url: %ez_recommendation.api_endpoint% }
+
+    # The configured eZ Publish legacy search engine
+    ez_recommendation.legacy.search_engine:
+        class: ezpSearchEngine
+        factory_class: EzSystems\RecommendationBundle\eZ\Publish\LegacySearch\LegacySearchFactory
+        factory_method: build
+        arguments: [@ezpublish_legacy.kernel]
+
+    ez_recommendation.legacy.recommendation_search_engine:
+        class: EzSystems\RecommendationBundle\eZ\Publish\LegacySearch\RecommendationLegacySearchEngine
+        arguments:
+            - @ez_recommendation.client.yoochoose_notifier
+            - @ez_recommendation.legacy.search_engine
+
+    ez_recommendation.legacy.search_configuration_mapper:
+        class: EzSystems\RecommendationBundle\eZ\Publish\LegacySearch\ConfigurationMapper
+        arguments:
+            - @ez_recommendation.legacy.recommendation_search_engine
+        tags:
+            - { name: kernel.event_subscriber }

@@ -21,7 +21,7 @@ class CreateLocation extends Base
      *
      * @param \eZ\Publish\Core\SignalSlot\Signal $signal
      */
-    public function receive( Signal $signal )
+    public function receive(Signal $signal)
     {
         if (!$signal instanceof Signal\LocationService\CreateLocationSignal) {
             return;

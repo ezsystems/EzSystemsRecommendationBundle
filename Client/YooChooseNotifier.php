@@ -152,10 +152,14 @@ class YooChooseNotifier implements RecommendationClient
         $options = array( 'customer-id', 'license-key', 'api-endpoint', 'server-uri' );
         // Could use setDefined() with symfony ~2.6
         $resolver->setOptional($options);
-        $resolver->setDefault('customer-id', null);
-        $resolver->setDefault('license-key', null);
-        $resolver->setDefault('server-uri', null);
-        $resolver->setDefault('api-endpoint', null);
+        $resolver->setDefaults(
+            array(
+                'customer-id' => null,
+                'license-key' => null,
+                'server-uri' => null,
+                'api-endpoint' => null
+            )
+        );
     }
 
     /**

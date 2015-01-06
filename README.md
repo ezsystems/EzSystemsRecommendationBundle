@@ -16,7 +16,7 @@ Enable the bundle in `ezpublish/EzPublishKernel.php`:
 ```
 $bundles = array(
     // existing bundles
-    new EzSystems\RecommendationBundle()
+    new EzSystems\RecommendationBundle\EzSystemsRecommendationBundle()
 );
 ```
 

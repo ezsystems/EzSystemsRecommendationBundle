@@ -3,10 +3,27 @@ This bundle integrates Recommendation services into eZ Platform. It supports the
 
 ## Requirements
 
-- PHP 5.4.?
-- eZ Publish 5.4 or above
+- PHP 5.4.4
+- eZ Publish 5.4/2014.11 or above
 
 ## Installation
+As this repository is private, packagist can't be used to ease installation.
+
+First, edit `composer.json`, and add the following:
+```json
+    "require": {
+        "ezsystems/recommendation-bundle": "0.1.*@rc",
+    }
+    "repositories": [
+        {
+            "type": "vcs",
+            "url":  "git@github.com:ezsystems/EzSystemsRecommendationBundle.git"
+        }
+    ]
+```
+If you already have a `"repositories"` entry, you may add it to the existing array,
+but it will work in either case.
+
 Run the following from your eZ Publish installation root to get the latest stable version:
 ```
 php composer.phar require ezsystems/recommendation-bundle

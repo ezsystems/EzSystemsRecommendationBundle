@@ -4,7 +4,10 @@ This bundle integrates Recommendation services into eZ Platform. It supports the
 ## Requirements
 
 - PHP 5.4.4
-- eZ Publish 5.4/2014.11 or above
+- eZ Publish 5.4/2014.11 or above, with the REST API configured to use sessions and publicly open to the YooChoose servers.
+- A YooChoose license
+
+This bundle is independent from legacy's ezrecommendation extension, and doesn't require it.
 
 ## Installation
 As this repository is private, packagist can't be used to ease installation.
@@ -37,12 +40,20 @@ $bundles = array(
 );
 ```
 
-Configure the bundle by setting your own values in `parameters.yml`:
+## Configuration
+The bundle's configuration is siteaccess aware. This is an example of settings:
 ```
 parameters:
     ez_recommendation.default.yoochoose.customer_id: "12345"
     ez_recommendation.default.yoochoose.license_key: "1234-5678-9012-3456-7890"
+    ez_recommendation.default.server_uri: "http://example.com"
 ```
+
+### `yoochoose.customer_id` and `yoochoose.license_key`
+These are your YooChoose customer ID and license keys.
+
+### `server_uri`
+The URI your site's REST API can be accessed from.
 
 ## Usage
 
@@ -50,7 +61,7 @@ parameters:
 Your content structure must be mapped to the YooChoose domain model. This must be done in collaboration with YooChoose.
 
 ### Indexing
-Content is automatically indexed. When necessary, eZ Publish will notify YooChoose of changes to content. Initial import is to be managed with your YooChoose sales representative. Note that your server's REST API will need to be open to the YooChoose servers for indexing to be possible.
+**Public** content is automatically indexed. When necessary, eZ Publish will notify YooChoose of changes to content. Initial import is to be managed with your YooChoose sales representative. Note that your server's REST API will need to be open to the YooChoose servers for indexing to be possible.
 
 ### Tracking
 Events from the site needs to be sent to YooChoose so that recommendations can be adapted to visitors. Tracking can be setup in multiple ways, depending on anyone's constraints.
@@ -70,7 +81,7 @@ monolog:
             type:   stream
             path:   "%kernel.logs_dir%/%kernel.environment%.recommendation.log"
             channels: [ez_recommendation]
-            level: debug
+            level: info
 ```
 
-You can replace `debug` by `info` to get less verbosity.
+You can replace `info` by `debug` for more verbosity.

@@ -43,10 +43,13 @@ $bundles = array(
 ## Configuration
 The bundle's configuration is siteaccess aware. This is an example of settings:
 ```
-parameters:
-    ez_recommendation.default.yoochoose.customer_id: "12345"
-    ez_recommendation.default.yoochoose.license_key: "1234-5678-9012-3456-7890"
-    ez_recommendation.default.server_uri: "http://example.com"
+ez_recommendation:
+    system:
+        default:
+            yoochoose:
+                customer_id: "12345"
+                license_key: "1234-5678-9012-3456-7890"
+            server_uri: "http://example.com"
 ```
 
 ### `yoochoose.customer_id` and `yoochoose.license_key`
@@ -54,6 +57,10 @@ These are your YooChoose customer ID and license keys.
 
 ### `server_uri`
 The URI your site's REST API can be accessed from.
+
+### [advanced] `ez_recommendation.api_endpoint`
+This will set the URI used for the YooChoose backend. Changing it without a valid reason will break all calls to yoochoose.
+It can be useful to test the API by mocking the service.
 
 ## Usage
 

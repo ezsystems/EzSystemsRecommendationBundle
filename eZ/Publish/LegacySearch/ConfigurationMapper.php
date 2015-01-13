@@ -9,6 +9,7 @@ namespace EzSystems\RecommendationBundle\eZ\Publish\LegacySearch;
 
 use eZ\Publish\Core\MVC\Legacy\Event\PostBuildKernelEvent;
 use eZ\Publish\Core\MVC\Legacy\LegacyEvents;
+use eZ\Publish\Core\MVC\Symfony\SiteAccess;
 use ezpSearchEngine;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -17,9 +18,13 @@ class ConfigurationMapper implements EventSubscriberInterface
     /** @var \ezpSearchEngine */
     private $recommendationLegacySearch;
 
-    public function __construct(ezpSearchEngine $recommendationLegacySearch)
+    /** @var \eZ\Publish\Core\MVC\Symfony\SiteAccess */
+    private $siteaccess;
+
+    public function __construct(ezpSearchEngine $recommendationLegacySearch, Siteaccess $siteaccess)
     {
         $this->recommendationLegacySearch = $recommendationLegacySearch;
+        $this->siteaccess = $siteaccess;
     }
 
     public static function getSubscribedEvents()
@@ -31,7 +36,6 @@ class ConfigurationMapper implements EventSubscriberInterface
 
     public function onBuildKernel(PostBuildKernelEvent $event)
     {
-        $siteaccess = 'ezdemo_site_admin';
-        $GLOBALS["eZSearchPlugin_$siteaccess"] = $this->recommendationLegacySearch;
+        $GLOBALS["eZSearchPlugin_" . $this->siteaccess->name] = $this->recommendationLegacySearch;
     }
 }

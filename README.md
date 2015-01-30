@@ -1,6 +1,8 @@
 # Recommendation Bundle
 This bundle integrates Recommendation services into eZ Platform. It supports the YooChoose recommender at this moment.
 
+**Work in progress** This Bundle is work in porgress and support is restricted to pull request (contribution) direclty on this repostiory until it reaches v1.0. After that it will be offically be supported by eZ for users with eZ and Yoochoose subscription.
+
 ## Requirements
 
 - PHP 5.4.4
@@ -10,26 +12,11 @@ This bundle integrates Recommendation services into eZ Platform. It supports the
 This bundle is independent from legacy's ezrecommendation extension, and doesn't require it.
 
 ## Installation
-As this repository is private, packagist can't be used to ease installation.
+This package is available via composer, so the instructions below are similar to how you install any other open source Symfony Bundle.
 
-First, edit `composer.json`, and add the following:
-```json
-    "require": {
-        "ezsystems/recommendation-bundle": "0.1.*@rc",
-    }
-    "repositories": [
-        {
-            "type": "vcs",
-            "url":  "git@github.com:ezsystems/EzSystemsRecommendationBundle.git"
-        }
-    ]
+Run the following from your eZ Publish installation root (pick most recent release, example here is last one as of this writing):
 ```
-If you already have a `"repositories"` entry, you may add it to the existing array,
-but it will work in either case.
-
-Run the following from your eZ Publish installation root to get the latest stable version:
-```
-php composer.phar require ezsystems/recommendation-bundle
+php composer.phar require ezsystems/recommendation-bundle:0.1.*@rc
 ```
 
 Enable the bundle in `ezpublish/EzPublishKernel.php`:

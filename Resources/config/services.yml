@@ -2,11 +2,24 @@ parameters:
     ez_recommendation.client.yoochoose_notifier.class: EzSystems\RecommendationBundle\Client\YooChooseNotifier
 
 services:
+    ez_recommendation.twig.extension:
+        class: EzSystems\RecommendationBundle\Twig\Recommendation_Twig_Extension
+        public: true
+        arguments:
+            - @templating
+            - @ezpublish.api.repository
+            - userId: %ez_recommendation.default.yoochoose.customer_id%
+              scenarioId: %ez_recommendation.recommendations.default.scenario%
+              limit: %ez_recommendation.recommendations.default.limit%
+              template: %ez_recommendation.recommendations.default.template%
+        tags:
+            - { name: twig.extension }
+
     ez_recommendation.client.yoochoose_notifier:
         class: %ez_recommendation.client.yoochoose_notifier.class%
         arguments:
             - @ez_recommendation.client.yoochoose_notifier.guzzle_client
-            - {api-endpoint: %ez_recommendation.api_endpoint%}
+            - {api-endpoint: %ez_recommendation.api_endpoint%, reco-api-endpoint: %ez_recommendation.recommendations.api_endpoint%}
             - @?logger
         calls:
             - [setCustomerId, [$yoochoose.customer_id;ez_recommendation$]]
@@ -40,3 +53,4 @@ services:
             - @ezpublish.siteaccess
         tags:
             - { name: kernel.event_subscriber }
+

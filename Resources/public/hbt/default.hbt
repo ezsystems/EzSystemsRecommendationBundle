@@ -1,0 +1,29 @@
+<div class="content-view-line">
+    {{#each recommendations}}
+    <article class="class-article">
+        {{#if image}}
+        <div class="col-md-2">
+            <div class="attribute-image">
+                <a href="{{url}}"><img src="{{image}}" alt="{{name}}" title="{{name}}" height="62" width="170" /></a>
+            </div>
+        </div>
+        {{/if}}
+
+        <div class="col-md-6">
+            <div class="attribute-header">
+                <h2>
+                    <a href="{{url}}" class="teaser-link">{{name}}</a>
+                </h2>
+            </div>
+
+            <div class="attribute-byline">
+                <span class="date">{{formatDate timestamp}} {{formatTime timestamp}}</span> - <span class="author">{{author}}</span>
+            </div>
+
+            <div class="attribute-short">
+                <p>{{intro}}</p>
+            </div>
+        </div>
+    </article>
+    {{/each}}
+</div>

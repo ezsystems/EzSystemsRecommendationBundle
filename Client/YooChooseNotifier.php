@@ -203,10 +203,10 @@ class YooChooseNotifier implements RecommendationClient
      */
     public function getRecommendations( $userId, $scenarioId, $locationId, $limit )
     {
-        $extension = "json";
+        $format = "json";
 
         $uri = $this->getRecommendationEndpoint();
-        $uri .= "/$userId/$scenarioId.$extension?numrecs=$limit";
+        $uri .= "/$userId/$scenarioId.$format?numrecs=$limit";
 
         if ( isset( $this->logger ) ) {
             $this->logger->info( sprintf( 'Requesting YooChoose: fetching recommendations content (API call: %s)', $uri ) );

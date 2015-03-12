@@ -10,13 +10,14 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     Handlebars.registerHelper('formatDate', function(timestamp) {
-        var fix = (timestamp + '000') * 1;
-        var t = new Date(fix);
+        var fixedTimestamp = (timestamp + '000') * 1;
+        var t = new Date(fixedTimestamp);
         return t.toLocaleDateString();
     });
 
     Handlebars.registerHelper('formatTime', function(timestamp) {
-        var t = new Date(timestamp);
+        var fixedTimestamp = (timestamp + '000') * 1;
+        var t = new Date(fixedTimestamp);
         return t.toLocaleTimeString();
     });
 });
@@ -29,17 +30,17 @@ var EzRecoRestClient = function (config) {
 
 EzRecoRestClient.prototype.fetchRecommendations = function (responseCallback, targetId, templateId) {
     var xmlhttp = new XMLHttpRequest();
+    var jsonResponse;
 
     xmlhttp.onreadystatechange = function () {
-        if (xmlhttp.readyState == XMLHttpRequest.DONE) {
+        if (xmlhttp.readyState === XMLHttpRequest.DONE) {
             if (xmlhttp.status == 200) {
-                var jsonResponse = JSON.parse(xmlhttp.response);
-                responseCallback(jsonResponse, targetId, templateId);
+                jsonResponse = JSON.parse(xmlhttp.response);
             } else {
-                var jsonResponse = new Array();
+                jsonResponse = new Array();
                 jsonResponse['status'] = 'fail';
-                responseCallback(jsonResponse, targetId, templateId);
             }
+            responseCallback(jsonResponse, targetId, templateId);
         }
     };
 
@@ -57,11 +58,10 @@ EzRecoTemplateRenderer = function (config) {
 EzRecoTemplateRenderer.prototype.display = function (response, targetId, templateId) {
     var targetElement = document.getElementById(targetId);
 
-    if (response.status == 'success') {
+    if (response.status === 'success') {
 
         var template = document.getElementById(templateId);
-        var templateHTML = template.innerHTML;
-        var compiledTemplate = Handlebars.compile(templateHTML);
+        var compiledTemplate = Handlebars.compile(template.innerHTML);
 
         var recommendationData = {
             recommendations: response.content
@@ -69,7 +69,7 @@ EzRecoTemplateRenderer.prototype.display = function (response, targetId, templat
 
         targetElement.innerHTML = compiledTemplate(recommendationData);
 
-    } else if (response.status == 'empty') {
+    } else if (response.status === 'empty') {
         targetElement.innerHTML = this.config['msgEmpty'];
     } else {
         targetElement.innerHTML = this.config['msgError'];

@@ -24,10 +24,10 @@ interface RecommendationClient
     public function deleteContent($contentId);
 
     /**
-     * @param int $userId
-     * @param int $scenarioId
-     * @param int $locationId
-     * @param int $limit
+     * @param int $userId YooChoose user ID
+     * @param int $scenarioId YooChoose scenario ID
+     * @param int $locationId location ID
+     * @param int $limit maximum limit of fetched recommendations
      * @return json|null
      */
     public function getRecommendations( $userId, $scenarioId, $locationId, $limit );

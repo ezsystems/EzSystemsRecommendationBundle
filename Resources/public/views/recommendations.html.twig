@@ -1,31 +1,31 @@
-<div id="recommendation_{{ recommendationId }}" class="ezrecommendation">
+<div id="recommendation-{{ recommendationId }}" class="ez-recommendation">
     {{ 'Loading recommended items...'|trans }}
 </div>
 
-<script id="recommendation_template_{{ recommendationId }}" type="text/x-handlebars-template">
+<script id="recommendation-template-{{ recommendationId }}" type="text/x-handlebars-template">
     {{ template|raw }}
 </script>
 
 <script>
     (function() {
-        var recoClient_{{ recommendationId }} = new EzRecoRestClient({
+        var recoClient{{ recommendationId }} = new EzRecoRestClient({
             scenarioId: '{{ scenarioId }}',
             locationId: '{{ locationId }}',
             limit: '{{ limit }}',
             restUrl: '/recommendations/fetch' // TODO: dynamically replace with path from routing.yml
         });
 
-        var recoTemplateRenderer_{{ recommendationId }} = new EzRecoTemplateRenderer({
+        var recoTemplateRenderer{{ recommendationId }} = new EzRecoTemplateRenderer({
             msgError: '{{ 'An error occurred while loading the recommendations'|trans }}',
             msgEmpty: '{{ 'No recommendations found'|trans }}'
         });
 
-        recoClient_{{ recommendationId }}.fetchRecommendations(
-            recoTemplateRenderer_{{ recommendationId }}.display.bind(
-                recoTemplateRenderer_{{ recommendationId }}
+        recoClient{{ recommendationId }}.fetchRecommendations(
+            recoTemplateRenderer{{ recommendationId }}.display.bind(
+                recoTemplateRenderer{{ recommendationId }}
             ),
-            'recommendation_{{ recommendationId }}',
-            'recommendation_template_{{ recommendationId }}'
+            'recommendation-{{ recommendationId }}',
+            'recommendation-template-{{ recommendationId }}'
         );
     }) ();
 </script>

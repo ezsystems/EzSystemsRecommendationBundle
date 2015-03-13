@@ -20,9 +20,41 @@ use eZ\Publish\API\Repository\Values\Content\Query\SortClause;
 
 class RecommendationController extends Controller
 {
+    private function mapLocationToArray( $location, $language)
+    {
+        $contentData = $this->getRepository()->getContentService()->loadContentByContentInfo( $location->valueObject->contentInfo );
+
+        return array(
+            'name' => $location->valueObject->contentInfo->name,
+            'url' => $this->generateUrl( $location->valueObject ),
+            'image' => $contentData->getFieldValue( 'image', $language )->uri,
+            'intro' => $contentData->getFieldValue( 'intro', $language )->xml->textContent,
+            'timestamp' => $contentData->getVersionInfo()->creationDate->getTimestamp(),
+            'author' => (string) $contentData->getFieldValue( 'author', $language )
+        );
+    }
+
+    private function createQueryCriteria( $contentIds )
+    {
+        $criterion = new Criterion\LogicalAnd( array(
+            new Criterion\Visibility( Criterion\Visibility::VISIBLE ),
+            new Criterion\ContentId( $contentIds ),
+            new Criterion\ContentTypeIdentifier( array( 'article', 'blog_post' ) )
+        ));
+
+        $contentQuery = new LocationQuery();
+        $contentQuery->criterion = $criterion;
+        $contentQuery->sortClauses = array(
+            new SortClause\ContentName()
+        );
+
+        return $contentQuery;
+    }
+
     public function recommendationsAction( Request $request )
     {
-        if ( !$request->isXmlHttpRequest() ) {
+        if ( !$request->isXmlHttpRequest() )
+        {
             throw new BadRequestHttpException();
         }
 
@@ -38,7 +70,8 @@ class RecommendationController extends Controller
         );
 
         $recommendedContentIds = array_map(
-            function( $item ) {
+            function( $item )
+            {
                 return $item[ 'itemId' ];
             },
             $responseRecommendations[ 'recommendationResponseList' ]
@@ -46,36 +79,17 @@ class RecommendationController extends Controller
 
         $content = array();
 
-        if ( count( $recommendedContentIds ) > 0 ) {
-
-            $criterion = new Criterion\LogicalAnd( array(
-                new Criterion\Visibility( Criterion\Visibility::VISIBLE ),
-                new Criterion\ContentId( $recommendedContentIds ),
-                new Criterion\ContentTypeIdentifier( array( 'article', 'blog_post' ) )
-            ));
-
-            $contentQuery = new LocationQuery();
-            $contentQuery->criterion = $criterion;
-            $contentQuery->sortClauses = array(
-                new SortClause\ContentName()
-            );
-
+        if ( count( $recommendedContentIds ) > 0 )
+        {
+            $contentQuery = $this->createQueryCriteria( $recommendedContentIds );
             $searchService = $this->getRepository()->getSearchService();
             $searchResults = $searchService->findLocations( $contentQuery );
 
             $language = $this->getRepository()->getContentLanguageService()->getDefaultLanguageCode();
 
-            foreach ($searchResults->searchHits as $result) {
-                $contentData = $this->getRepository()->getContentService()->loadContentByContentInfo( $result->valueObject->contentInfo );
-
-                $content[] = array(
-                    'name' => $result->valueObject->contentInfo->name,
-                    'url' => $this->generateUrl( $result->valueObject ),
-                    'image' => $contentData->getFieldValue( 'image', $language )->uri,
-                    'intro' => $contentData->getFieldValue( 'intro', $language )->xml->textContent,
-                    'timestamp' => $contentData->getVersionInfo()->creationDate->getTimestamp(),
-                    'author' => (string) $contentData->getFieldValue( 'author', $language )
-                );
+            foreach ($searchResults->searchHits as $result)
+            {
+                $content[] = $this->mapLocationToArray( $result, $language );
             }
         }
 

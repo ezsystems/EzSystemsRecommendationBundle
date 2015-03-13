@@ -67,31 +67,13 @@ class RecommendationController extends Controller
             foreach ($searchResults->searchHits as $result) {
                 $contentData = $this->getRepository()->getContentService()->loadContentByContentInfo( $result->valueObject->contentInfo );
 
-                // get content name
-                $name = $result->valueObject->contentInfo->name;
-
-                // get content shortened body
-                $intro = $contentData->getFieldValue( 'intro', $language )->xml->textContent;
-
-                // get creation date
-                $timestamp = $contentData->getVersionInfo()->creationDate->getTimestamp();
-
-                // get url
-                $url = $this->generateUrl( $result->valueObject );
-
-                // get authors
-                $author = (string) $contentData->getFieldValue( 'author', $language );
-
-                // get content image
-                $image = $contentData->getFieldValue( 'image', $language )->uri;
-
                 $content[] = array(
-                    'name' => $name,
-                    'url' => $url,
-                    'image' => $image,
-                    'intro' => $intro,
-                    'timestamp' => $timestamp,
-                    'author' => $author
+                    'name' => $result->valueObject->contentInfo->name,
+                    'url' => $this->generateUrl( $result->valueObject ),
+                    'image' => $contentData->getFieldValue( 'image', $language )->uri,
+                    'intro' => $contentData->getFieldValue( 'intro', $language )->xml->textContent,
+                    'timestamp' => $contentData->getVersionInfo()->creationDate->getTimestamp(),
+                    'author' => (string) $contentData->getFieldValue( 'author', $language )
                 );
             }
         }

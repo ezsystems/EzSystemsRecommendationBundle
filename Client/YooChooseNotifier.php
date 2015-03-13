@@ -195,11 +195,11 @@ class YooChooseNotifier implements RecommendationClient
     /**
      * Fetch recommendations from YooChoose
      *
-     * @param $userId
-     * @param $scenarioId
-     * @param $locationId
-     * @param $limit
-     * @return json|null
+     * @param int $userId
+     * @param string $scenarioId
+     * @param int $locationId
+     * @param int $limit
+     * @return string|null JSON response
      */
     public function getRecommendations( $userId, $scenarioId, $locationId, $limit )
     {

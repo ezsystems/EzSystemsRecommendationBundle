@@ -12,7 +12,7 @@ use eZ\Publish\API\Repository\Repository;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\Templating\DelegatingEngine;
 
-class Recommendation_Twig_Extension extends \Twig_Extension
+class RecommendationTwigExtension extends \Twig_Extension
 {
     protected $template, $repository, $options;
 

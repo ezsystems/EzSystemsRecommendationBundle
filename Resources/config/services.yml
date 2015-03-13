@@ -3,7 +3,7 @@ parameters:
 
 services:
     ez_recommendation.twig.extension:
-        class: EzSystems\RecommendationBundle\Twig\Recommendation_Twig_Extension
+        class: EzSystems\RecommendationBundle\Twig\RecommendationTwigExtension
         public: true
         arguments:
             - @templating

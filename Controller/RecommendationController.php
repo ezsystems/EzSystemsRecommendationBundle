@@ -20,6 +20,13 @@ use eZ\Publish\API\Repository\Values\Content\Query\SortClause;
 
 class RecommendationController extends Controller
 {
+    /**
+     * Transform location object into array
+     *
+     * @param int $location
+     * @param string $language
+     * @return array
+     */
     private function mapLocationToArray( $location, $language)
     {
         $contentData = $this->getRepository()->getContentService()->loadContentByContentInfo( $location->valueObject->contentInfo );
@@ -34,6 +41,12 @@ class RecommendationController extends Controller
         );
     }
 
+    /**
+     * Prepare query criteria
+     *
+     * @param array $contentIds collection of content ID's to be selected
+     * @return LocationQuery
+     */
     private function createQueryCriteria( $contentIds )
     {
         $criterion = new Criterion\LogicalAnd( array(

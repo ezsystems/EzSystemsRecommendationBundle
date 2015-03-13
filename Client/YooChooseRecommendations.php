@@ -92,7 +92,7 @@ class YooChooseRecommendations implements RecommendationRequestClient
     }
 
     /**
-     * Fetch recommendations from YooChoose
+     * Returns $limit recommendations for a $locationId and a $userId based on a $scenarioId
      *
      * @param int $userId
      * @param string $scenarioId

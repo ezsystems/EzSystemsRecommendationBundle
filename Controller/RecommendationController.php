@@ -37,11 +37,12 @@ class RecommendationController extends Controller
             $userId, $scenarioId, $locationId, $limit
         );
 
-        $recommendedContentIds = array();
-
-        foreach ( $responseRecommendations[ 'recommendationResponseList' ] as $recommendation ) {
-            $recommendedContentIds[] = $recommendation[ 'itemId' ];
-        }
+        $recommendedContentIds = array_map(
+            function( $item ) {
+                return $item[ 'itemId' ];
+            },
+            $responseRecommendations[ 'recommendationResponseList' ]
+        );
 
         $content = array();
 

@@ -31,9 +31,9 @@ class RecommendationController extends Controller
         $limit = $request->query->get( 'limit' );
         $scenarioId = $request->query->get( 'scenarioId' );
 
-        $notifier = $this->get( 'ez_recommendation.client.yoochoose_notifier' );
+        $recommender = $this->get( 'ez_recommendation.client.yoochoose_recommendations' );
 
-        $responseRecommendations = $notifier->getRecommendations(
+        $responseRecommendations = $recommender->getRecommendations(
             $userId, $scenarioId, $locationId, $limit
         );
 

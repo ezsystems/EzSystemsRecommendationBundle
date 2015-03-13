@@ -1,5 +1,6 @@
 parameters:
     ez_recommendation.client.yoochoose_notifier.class: EzSystems\RecommendationBundle\Client\YooChooseNotifier
+    ez_recommendation.client.yoochoose_recommendations.class: EzSystems\RecommendationBundle\Client\YooChooseRecommendations
 
 services:
     ez_recommendation.twig.extension:
@@ -19,7 +20,7 @@ services:
         class: %ez_recommendation.client.yoochoose_notifier.class%
         arguments:
             - @ez_recommendation.client.yoochoose_notifier.guzzle_client
-            - {api-endpoint: %ez_recommendation.api_endpoint%, reco-api-endpoint: %ez_recommendation.recommendations.api_endpoint%}
+            - {api-endpoint: %ez_recommendation.api_endpoint%}
             - @?logger
         calls:
             - [setCustomerId, [$yoochoose.customer_id;ez_recommendation$]]
@@ -54,3 +55,14 @@ services:
         tags:
             - { name: kernel.event_subscriber }
 
+    ez_recommendation.client.yoochoose_recommendations:
+        class: %ez_recommendation.client.yoochoose_recommendations.class%
+        arguments:
+            - @ez_recommendation.client.yoochoose_notifier.guzzle_client
+            - { api-endpoint: %ez_recommendation.recommendations.api_endpoint% }
+            - @?logger
+        calls:
+            - [setCustomerId, [$yoochoose.customer_id;ez_recommendation$]]
+            - [setLicenseKey, [$yoochoose.license_key;ez_recommendation$]]
+        tags:
+            - { name: monolog.logger, channel: ez_recommendation }

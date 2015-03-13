@@ -22,13 +22,4 @@ interface RecommendationClient
      * @return void
      */
     public function deleteContent($contentId);
-
-    /**
-     * @param int $userId
-     * @param int $scenarioId
-     * @param int $locationId
-     * @param int $limit
-     * @return string|null JSON response
-     */
-    public function getRecommendations( $userId, $scenarioId, $locationId, $limit );
 }

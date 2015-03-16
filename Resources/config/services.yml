@@ -74,6 +74,13 @@ services:
             - @ezpublish.api.repository
             - @router
             - @ez_recommendation.helper.criteria
+            - @ez_recommendation.helper.location
 
     ez_recommendation.helper.criteria:
         class: EzSystems\RecommendationBundle\Helper\CriteriaHelper
+
+    ez_recommendation.helper.location:
+        class: EzSystems\RecommendationBundle\Helper\LocationHelper
+        arguments:
+            - @ezpublish.api.repository
+            - @router

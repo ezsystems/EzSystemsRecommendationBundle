@@ -41,7 +41,6 @@ class RecommendationController
     {
         $contentData = $this->repository->getContentService()->loadContentByContentInfo( $location->valueObject->contentInfo );
 
-
         return array(
             'name' => $location->valueObject->contentInfo->name,
             'url' => $this->router->generate( $location->valueObject, array(), UrlGeneratorInterface::ABSOLUTE_PATH ),

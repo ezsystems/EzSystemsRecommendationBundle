@@ -1,31 +1,24 @@
-<div id="recommendation-{{ recommendationId }}" class="ez-recommendation">
-    {{ 'Loading recommended items...'|trans }}
-</div>
-
 <script id="recommendation-template-{{ recommendationId }}" type="text/x-handlebars-template">
     {{ template|raw }}
 </script>
 
+<div id="recommendation-{{ recommendationId }}" class="ez-recommendation">
+    {{ 'Loading recommended items...'|trans }}
+</div>
+
 <script>
     (function() {
-        var recoClient{{ recommendationId }} = new eZ.RecoRestClient({
-            scenarioId: '{{ scenarioId }}',
-            locationId: '{{ locationId }}',
-            limit: '{{ limit }}',
-            restUrl: '/recommendations/fetch'
+        var recommendationSupport = new eZ.RecommendationSupport();
+        recommendationSupport.setOptions({
+            limit: {{ limit }},
+            msgEmpty: '{{ 'No recommendations found'|trans }}',
+            msgError: '{{ 'An error occurred while loading the recommendations'|trans }}'
         });
-
-        var recoTemplateRenderer{{ recommendationId }} = new eZ.RecoTemplateRenderer({
-            msgError: '{{ 'An error occurred while loading the recommendations'|trans }}',
-            msgEmpty: '{{ 'No recommendations found'|trans }}'
-        });
-
-        recoClient{{ recommendationId }}.fetchRecommendations(
+        recommendationSupport.get(
             'recommendation-{{ recommendationId }}',
             'recommendation-template-{{ recommendationId }}',
-            recoTemplateRenderer{{ recommendationId }}.display.bind(
-                recoTemplateRenderer{{ recommendationId }}
-            )
+            '{{ scenarioId }}',
+            '{{ locationId }}'
         );
     }) ();
 </script>

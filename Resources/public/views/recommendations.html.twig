@@ -12,7 +12,8 @@
         recommendationSupport.setOptions({
             limit: {{ limit }},
             msgEmpty: '{{ 'No recommendations found'|trans }}',
-            msgError: '{{ 'An error occurred while loading the recommendations'|trans }}'
+            msgError: '{{ 'An error occurred while loading the recommendations'|trans }}',
+            msgNotSupported: '{{ 'Cannot display recommendations, this browser is not supported'|trans }}'
         });
         recommendationSupport.get(
             'recommendation-{{ recommendationId }}',

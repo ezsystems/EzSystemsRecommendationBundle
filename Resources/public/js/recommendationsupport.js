@@ -8,6 +8,7 @@
     eZ.RecommendationSupport.prototype.config = {
         msgEmpty: 'No recommendations found',
         msgError: 'An error occurred while loading the recommendations',
+        msgNotSupported: 'Cannot display recommendations, this browser is not supported',
         restUrl: 'recommendations/fetch',
         limit: 5
     };
@@ -17,8 +18,38 @@
             this.config[setting] = config[setting];
     };
 
+    eZ.RecommendationSupport.prototype.getXMLHttpRequest = function () {
+        var xmlHttp;
+
+        if (window.XMLHttpRequest)
+            xmlHttp = new XMLHttpRequest();
+        else {
+            try {
+                xmlHttp = new ActiveXObject('Msxml2.XMLHTTP');
+            } catch(e) {
+                try {
+                    xmlHttp = new ActiveXObject('Microsoft.XMLHTTP');
+                } catch(e) {
+                    xmlHttp = null;
+                }
+            }
+        }
+
+        return xmlHttp;
+    };
+
+    eZ.RecommendationSupport.prototype.showXMLHttpRequestError = function (targetId) {
+        var targetElement = document.getElementById(targetId);
+        targetElement.innerHTML = this.config['msgNotSupported'];
+    };
+
     eZ.RecommendationSupport.prototype.fetch = function (targetId, templateId, scenarioId, locationId, responseCallback) {
-        var xmlhttp = new XMLHttpRequest();
+        var xmlhttp = this.getXMLHttpRequest();
+
+        if (xmlhttp === null) {
+            this.showXMLHttpRequestError(targetId);
+            return;
+        }
 
         xmlhttp.onreadystatechange = function () {
             var jsonResponse;

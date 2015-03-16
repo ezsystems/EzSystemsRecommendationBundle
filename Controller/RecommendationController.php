@@ -25,7 +25,7 @@ class RecommendationController
         $this->locationHelper = $locationHelper;
     }
 
-    public function recommendationsAction( Request $request )
+    public function recommendationsAction( Request $request, $scenarioId, $locationId, $limit )
     {
         if ( !$request->isXmlHttpRequest() )
         {
@@ -33,9 +33,6 @@ class RecommendationController
         }
 
         $userId = $this->repository->getCurrentUser()->id;
-        $locationId = $request->query->get( 'locationId' );
-        $limit = $request->query->get( 'limit' );
-        $scenarioId = $request->query->get( 'scenarioId' );
 
         $responseRecommendations = $this->recommender->getRecommendations(
             $userId, $scenarioId, $locationId, $limit

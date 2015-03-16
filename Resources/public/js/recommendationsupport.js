@@ -33,7 +33,7 @@
             }
         };
 
-        xmlhttp.open('GET', this.config['restUrl'] + '?locationId=' + locationId + '&scenarioId=' + scenarioId + '&limit=' + this.config['limit'], true);
+        xmlhttp.open('GET', this.config['restUrl'] + '/' + locationId + '/' + scenarioId + '/' + this.config['limit'], true);
         xmlhttp.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
         xmlhttp.send();
     };

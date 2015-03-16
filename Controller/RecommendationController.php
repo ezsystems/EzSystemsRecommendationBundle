@@ -12,22 +12,19 @@ namespace EzSystems\RecommendationBundle\Controller;
 use eZ\Bundle\EzPublishCoreBundle\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use eZ\Publish\API\Repository\Values\Content\Query\Criterion;
-use eZ\Publish\API\Repository\Values\Content\LocationQuery;
-use eZ\Publish\API\Repository\Values\Content\Query;
-use eZ\Publish\API\Repository\Values\Content\Query\SortClause;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 
 class RecommendationController
 {
-    protected $recommender, $repository, $router;
+    protected $recommender, $repository, $router, $criteriaHelper;
 
-    public function __construct( $recommender, $repository, $router )
+    public function __construct( $recommender, $repository, $router, $criteriaHelper )
     {
         $this->recommender = $recommender;
         $this->repository = $repository;
         $this->router = $router;
+        $this->criteriaHelper = $criteriaHelper;
     }
 
     /**
@@ -49,29 +46,6 @@ class RecommendationController
             'timestamp' => $contentData->getVersionInfo()->creationDate->getTimestamp(),
             'author' => (string) $contentData->getFieldValue( 'author', $language )
         );
-    }
-
-    /**
-     * Prepare query criteria
-     *
-     * @param array $contentIds collection of content ID's to be selected
-     * @return LocationQuery
-     */
-    private function createQueryCriteria( $contentIds )
-    {
-        $criterion = new Criterion\LogicalAnd( array(
-            new Criterion\Visibility( Criterion\Visibility::VISIBLE ),
-            new Criterion\ContentId( $contentIds ),
-            new Criterion\ContentTypeIdentifier( array( 'article', 'blog_post' ) )
-        ));
-
-        $contentQuery = new LocationQuery();
-        $contentQuery->criterion = $criterion;
-        $contentQuery->sortClauses = array(
-            new SortClause\ContentName()
-        );
-
-        return $contentQuery;
     }
 
     public function recommendationsAction( Request $request )
@@ -102,7 +76,7 @@ class RecommendationController
 
         if ( count( $recommendedContentIds ) > 0 )
         {
-            $contentQuery = $this->createQueryCriteria( $recommendedContentIds );
+            $contentQuery = $this->criteriaHelper->generateContentTypeCriterion( $recommendedContentIds );
             $searchService = $this->repository->getSearchService();
             $searchResults = $searchService->findLocations( $contentQuery );
 

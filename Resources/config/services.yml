@@ -73,3 +73,7 @@ services:
             - @ez_recommendation.client.yoochoose_recommendations
             - @ezpublish.api.repository
             - @router
+            - @ez_recommendation.helper.criteria
+
+    ez_recommendation.helper.criteria:
+        class: EzSystems\RecommendationBundle\Helper\CriteriaHelper

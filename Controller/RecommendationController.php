@@ -12,28 +12,39 @@ namespace EzSystems\RecommendationBundle\Controller;
 use eZ\Bundle\EzPublishCoreBundle\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use EzSystems\RecommendationBundle\Client\YooChooseNotifier;
 use eZ\Publish\API\Repository\Values\Content\Query\Criterion;
 use eZ\Publish\API\Repository\Values\Content\LocationQuery;
 use eZ\Publish\API\Repository\Values\Content\Query;
 use eZ\Publish\API\Repository\Values\Content\Query\SortClause;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
-class RecommendationController extends Controller
+
+class RecommendationController
 {
+    protected $recommender, $repository, $router;
+
+    public function __construct( $recommender, $repository, $router )
+    {
+        $this->recommender = $recommender;
+        $this->repository = $repository;
+        $this->router = $router;
+    }
+
     /**
      * Transform location object into array
      *
-     * @param int $location
+     * @param \eZ\Publish\API\Repository\Values\Content\Location $location
      * @param string $language
      * @return array
      */
-    private function mapLocationToArray( $location, $language)
+    private function mapLocationToArray( $location, $language )
     {
-        $contentData = $this->getRepository()->getContentService()->loadContentByContentInfo( $location->valueObject->contentInfo );
+        $contentData = $this->repository->getContentService()->loadContentByContentInfo( $location->valueObject->contentInfo );
+
 
         return array(
             'name' => $location->valueObject->contentInfo->name,
-            'url' => $this->generateUrl( $location->valueObject ),
+            'url' => $this->router->generate( $location->valueObject, array(), UrlGeneratorInterface::ABSOLUTE_PATH ),
             'image' => $contentData->getFieldValue( 'image', $language )->uri,
             'intro' => $contentData->getFieldValue( 'intro', $language )->xml->textContent,
             'timestamp' => $contentData->getVersionInfo()->creationDate->getTimestamp(),
@@ -71,14 +82,12 @@ class RecommendationController extends Controller
             throw new BadRequestHttpException();
         }
 
-        $userId = $this->getRepository()->getCurrentUser()->id;
+        $userId = $this->repository->getCurrentUser()->id;
         $locationId = $request->query->get( 'locationId' );
         $limit = $request->query->get( 'limit' );
         $scenarioId = $request->query->get( 'scenarioId' );
 
-        $recommender = $this->get( 'ez_recommendation.client.yoochoose_recommendations' );
-
-        $responseRecommendations = $recommender->getRecommendations(
+        $responseRecommendations = $this->recommender->getRecommendations(
             $userId, $scenarioId, $locationId, $limit
         );
 
@@ -95,10 +104,10 @@ class RecommendationController extends Controller
         if ( count( $recommendedContentIds ) > 0 )
         {
             $contentQuery = $this->createQueryCriteria( $recommendedContentIds );
-            $searchService = $this->getRepository()->getSearchService();
+            $searchService = $this->repository->getSearchService();
             $searchResults = $searchService->findLocations( $contentQuery );
 
-            $language = $this->getRepository()->getContentLanguageService()->getDefaultLanguageCode();
+            $language = $this->repository->getContentLanguageService()->getDefaultLanguageCode();
 
             foreach ($searchResults->searchHits as $result)
             {

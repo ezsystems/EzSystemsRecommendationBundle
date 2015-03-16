@@ -8,24 +8,24 @@
 
 <script>
     (function() {
-        var recoClient{{ recommendationId }} = new EzRecoRestClient({
+        var recoClient{{ recommendationId }} = new eZ.RecoRestClient({
             scenarioId: '{{ scenarioId }}',
             locationId: '{{ locationId }}',
             limit: '{{ limit }}',
             restUrl: '/recommendations/fetch'
         });
 
-        var recoTemplateRenderer{{ recommendationId }} = new EzRecoTemplateRenderer({
+        var recoTemplateRenderer{{ recommendationId }} = new eZ.RecoTemplateRenderer({
             msgError: '{{ 'An error occurred while loading the recommendations'|trans }}',
             msgEmpty: '{{ 'No recommendations found'|trans }}'
         });
 
         recoClient{{ recommendationId }}.fetchRecommendations(
+            'recommendation-{{ recommendationId }}',
+            'recommendation-template-{{ recommendationId }}',
             recoTemplateRenderer{{ recommendationId }}.display.bind(
                 recoTemplateRenderer{{ recommendationId }}
-            ),
-            'recommendation-{{ recommendationId }}',
-            'recommendation-template-{{ recommendationId }}'
+            )
         );
     }) ();
 </script>

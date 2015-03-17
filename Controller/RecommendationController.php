@@ -14,9 +14,26 @@ use Symfony\Component\HttpFoundation\Request;
 
 class RecommendationController
 {
-    protected $recommender, $repository, $router, $criteriaHelper, $locationHelper;
+    /** @var \eZ\Publish\API\Repository\Repository */
+    protected $repository;
 
-    public function __construct( $recommender, $repository, $router, $criteriaHelper, $locationHelper )
+    /** @var \EzSystems\RecommendationBundle\Client\RecommendationRequestClient */
+    protected $recommender;
+
+    /** @var \eZ\Publish\Core\MVC\Symfony\Routing\ChainRouter */
+    protected $router;
+
+    /** @var \EzSystems\RecommendationBundle\Helper\CriteriaHelper */
+    protected $criteriaHelper;
+
+    /** @var \EzSystems\RecommendationBundle\Helper\LocationHelper */
+    protected $locationHelper;
+
+    public function __construct( \EzSystems\RecommendationBundle\Client\RecommendationRequestClient $recommender,
+                                 \eZ\Publish\API\Repository\Repository $repository,
+                                 \eZ\Publish\Core\MVC\Symfony\Routing\ChainRouter $router,
+                                 \EzSystems\RecommendationBundle\Helper\CriteriaHelper $criteriaHelper,
+                                 \EzSystems\RecommendationBundle\Helper\LocationHelper $locationHelper )
     {
         $this->recommender = $recommender;
         $this->repository = $repository;

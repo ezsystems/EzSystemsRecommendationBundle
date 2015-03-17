@@ -3,8 +3,10 @@
  * This file is part of the EzSystemsRecommendationBundle package
  *
  * @copyright Copyright (C) eZ Systems AS. All rights reserved.
- * @license For full copyright and license information view LICENSE file distributd with this source code.
+ * @license For full copyright and license information view LICENSE file distributed with this source code.
+ * @version //autogentag//
  */
+
 namespace EzSystems\RecommendationBundle\Client;
 
 use GuzzleHttp\ClientInterface as GuzzleClient;

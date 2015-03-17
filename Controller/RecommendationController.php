@@ -51,23 +51,15 @@ class RecommendationController
 
         $userId = $this->repository->getCurrentUser()->id;
 
-        $responseRecommendations = $this->recommender->getRecommendations(
+        $recommendationsCollection = $this->recommender->getRecommendations(
             $userId, $scenarioId, $locationId, $limit
-        );
-
-        $recommendedContentIds = array_map(
-            function( $item )
-            {
-                return $item[ 'itemId' ];
-            },
-            $responseRecommendations[ 'recommendationResponseList' ]
         );
 
         $content = array();
 
-        if ( count( $recommendedContentIds ) > 0 )
+        if ( !$recommendationsCollection->isEmpty() )
         {
-            $contentQuery = $this->criteriaHelper->generateContentTypeCriterion( $recommendedContentIds );
+            $contentQuery = $this->criteriaHelper->generateContentTypeCriterion( $recommendationsCollection->getKeys() );
             $searchService = $this->repository->getSearchService();
             $searchResults = $searchService->findLocations( $contentQuery );
 

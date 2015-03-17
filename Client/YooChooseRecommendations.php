@@ -3,13 +3,13 @@
  * This file is part of the EzSystemsRecommendationBundle package
  *
  * @copyright Copyright (C) eZ Systems AS. All rights reserved.
- * @license For full copyright and license information view LICENSE file distributd with this source code.
+ * @license For full copyright and license information view LICENSE file distributed with this source code.
+ * @version //autogentag//
  */
+
 namespace EzSystems\RecommendationBundle\Client;
 
 use GuzzleHttp\ClientInterface as GuzzleClient;
-use GuzzleHttp\Exception\RequestException;
-use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -98,7 +98,7 @@ class YooChooseRecommendations implements RecommendationRequestClient
      * @param string $scenarioId
      * @param int $locationId
      * @param int $limit
-     * @return string|null JSON response
+     * @return \EzSystems\RecommendationBundle\Values\YooChooseRecommendationsCollection
      */
     public function getRecommendations( $userId, $scenarioId, $locationId, $limit )
     {
@@ -111,6 +111,8 @@ class YooChooseRecommendations implements RecommendationRequestClient
             $this->logger->info( sprintf( 'Requesting YooChoose: fetching recommendations content (API call: %s)', $uri ) );
         }
 
+        $recommendationsCollection = new \EzSystems\RecommendationBundle\Values\RecommendationsCollection();
+
         try
         {
             $response = $this->guzzle->get( $uri );
@@ -120,7 +122,15 @@ class YooChooseRecommendations implements RecommendationRequestClient
                 $this->logger->info( sprintf( 'YooChoose response: fetched %d recommendations (API call: %s)', count( $jsonResponse[ 'recommendationResponseList' ] ), $uri ) );
             }
 
-            return $jsonResponse;
+            foreach ( $jsonResponse[ 'recommendationResponseList' ] as $jsonData )
+            {
+                $recommendationsCollection->add( new \EzSystems\RecommendationBundle\Values\Recommendation(
+                    $jsonData[ 'itemId' ],
+                    $jsonData[ 'itemType' ],
+                    $jsonData[ 'relevance' ],
+                    $jsonData[ 'reason' ]
+                ) );
+            }
 
         } catch ( \Guzzle\Http\Exception\RequestException $e ) {
             if ( isset( $this->logger ) ) {
@@ -132,6 +142,6 @@ class YooChooseRecommendations implements RecommendationRequestClient
             }
         }
 
-        return null;
+        return $recommendationsCollection;
     }
 }

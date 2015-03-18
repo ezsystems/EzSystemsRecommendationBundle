@@ -8,6 +8,8 @@
 
 namespace EzSystems\RecommendationBundle\Values;
 
+use \EzSystems\RecommendationBundle\Values;
+
 /**
 * Interface allows to store YooChoose recommendations as a collection
 *
@@ -20,7 +22,7 @@ interface YooChooseRecommendationsCollection
      *
      * @param YooChooseRecommendation $recommendation
      */
-    public function add(\EzSystems\RecommendationBundle\Values\YooChooseRecommendation $recommendation);
+    public function add(YooChooseRecommendation $recommendation);
 
     /**
      * Get YooChoose recommendation by ID

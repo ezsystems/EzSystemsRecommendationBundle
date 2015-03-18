@@ -19,7 +19,7 @@ class RecommendationsCollection implements YooChooseRecommendationsCollection
      *
      * @param YooChooseRecommendation $recommendation
      */
-    public function add(\EzSystems\RecommendationBundle\Values\YooChooseRecommendation $recommendation)
+    public function add(YooChooseRecommendation $recommendation)
     {
         $this->collection[ $recommendation->getItemId() ] = $recommendation;
     }

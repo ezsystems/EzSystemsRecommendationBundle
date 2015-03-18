@@ -11,6 +11,10 @@ namespace EzSystems\RecommendationBundle\Client;
 use GuzzleHttp\ClientInterface as GuzzleClient;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use EzSystems\RecommendationBundle\Values\RecommendationsCollection;
+use EzSystems\RecommendationBundle\Values\Recommendation;
+use Guzzle\Http\Exception\RequestException;
+use GuzzleHttp\Exception\ClientException;
 
 /**
  * A recommendation client that fetches recommendations from YooChoose server.
@@ -110,7 +114,7 @@ class YooChooseRecommendations implements RecommendationRequestClient
             $this->logger->info(sprintf('Requesting YooChoose: fetching recommendations content (API call: %s)', $uri));
         }
 
-        $recommendationsCollection = new \EzSystems\RecommendationBundle\Values\RecommendationsCollection();
+        $recommendationsCollection = new RecommendationsCollection();
 
         try {
             $response = $this->guzzle->get($uri);
@@ -121,18 +125,18 @@ class YooChooseRecommendations implements RecommendationRequestClient
             }
 
             foreach ($jsonResponse[ 'recommendationResponseList' ] as $jsonData) {
-                $recommendationsCollection->add(new \EzSystems\RecommendationBundle\Values\Recommendation(
+                $recommendationsCollection->add(new Recommendation(
                     $jsonData[ 'itemId' ],
                     $jsonData[ 'itemType' ],
                     $jsonData[ 'relevance' ],
                     $jsonData[ 'reason' ]
                 ));
             }
-        } catch (\Guzzle\Http\Exception\RequestException $e) {
+        } catch (RequestException $e) {
             if (isset($this->logger)) {
                 $this->logger->error(sprintf('YooChoose request error: %s (API call: %s)', $e->getMessage(), $uri));
             }
-        } catch (\GuzzleHttp\Exception\ClientException $e) {
+        } catch (ClientException $e) {
             if (isset($this->logger)) {
                 $this->logger->error(sprintf('YooChoose client response error: %s (API call: %s)', $e->getMessage(), $uri));
             }

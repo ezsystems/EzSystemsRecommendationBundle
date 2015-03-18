@@ -10,6 +10,11 @@ namespace EzSystems\RecommendationBundle\Controller;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use \EzSystems\RecommendationBundle\Client\RecommendationRequestClient;
+use \eZ\Publish\API\Repository\Repository;
+use \eZ\Publish\Core\MVC\Symfony\Routing\ChainRouter;
+use \EzSystems\RecommendationBundle\Helper\CriteriaHelper;
+use \EzSystems\RecommendationBundle\Helper\LocationHelper;
 
 class RecommendationController
 {
@@ -28,11 +33,7 @@ class RecommendationController
     /** @var \EzSystems\RecommendationBundle\Helper\LocationHelper */
     protected $locationHelper;
 
-    public function __construct(\EzSystems\RecommendationBundle\Client\RecommendationRequestClient $recommender,
-                                 \eZ\Publish\API\Repository\Repository $repository,
-                                 \eZ\Publish\Core\MVC\Symfony\Routing\ChainRouter $router,
-                                 \EzSystems\RecommendationBundle\Helper\CriteriaHelper $criteriaHelper,
-                                 \EzSystems\RecommendationBundle\Helper\LocationHelper $locationHelper)
+    public function __construct(RecommendationRequestClient $recommender, Repository $repository, ChainRouter $router, CriteriaHelper $criteriaHelper, LocationHelper $locationHelper)
     {
         $this->recommender = $recommender;
         $this->repository = $repository;

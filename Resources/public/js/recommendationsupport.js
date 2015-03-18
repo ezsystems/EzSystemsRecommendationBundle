@@ -1,10 +1,23 @@
-// RecommendationSupport class
+/*
+ * Copyright (C) eZ Systems AS. All rights reserved.
+ * For full copyright and license information view LICENSE file distributed with this source code.
+ */
 
 (function (global, doc) {
     var eZ = global.eZ = global.eZ || {};
 
+    /**
+     * Contains logic needed to fetch and display YooChoose recommendations
+     *
+     * @class
+     */
     eZ.RecommendationSupport = function () {};
 
+    /**
+     * Default settings
+     *
+     * @type {Array}
+     */
     eZ.RecommendationSupport.prototype.config = {
         msgEmpty: 'No recommendations found',
         msgError: 'An error occurred while loading the recommendations',
@@ -13,11 +26,23 @@
         limit: 5
     };
 
+    /**
+     * Overwrite default settings
+     *
+     * @method setOptions
+     * @param config {Array} user settings
+     */
     eZ.RecommendationSupport.prototype.setOptions = function (config) {
         for (var setting in config)
             this.config[setting] = config[setting];
     };
 
+    /**
+     * Return available XMLHttpRequest object (depending on browser)
+     *
+     * @method getXMLHttpRequest
+     * @returns {Object} XMLHttpRequest
+     */
     eZ.RecommendationSupport.prototype.getXMLHttpRequest = function () {
         var xmlHttp;
 
@@ -38,11 +63,27 @@
         return xmlHttp;
     };
 
+    /**
+     * Display `browser not supported` message instead of recommendations
+     *
+     * @method showXMLHttpRequestError
+     * @param {String} targetId target element ID
+     */
     eZ.RecommendationSupport.prototype.showXMLHttpRequestError = function (targetId) {
         var targetElement = document.getElementById(targetId);
         targetElement.innerHTML = this.config['msgNotSupported'];
     };
 
+    /**
+     * Fetch recommendations data using AJAX call
+     *
+     * @method fetch
+     * @param {String} targetId target element ID
+     * @param {String} templateId template ID
+     * @param {String} scenarioId scenario name
+     * @param {Int} locationId location ID
+     * @param {RecommendationSupport~onSuccess} responseCallback called on success
+     */
     eZ.RecommendationSupport.prototype.fetch = function (targetId, templateId, scenarioId, locationId, responseCallback) {
         var xmlhttp = this.getXMLHttpRequest();
 
@@ -69,7 +110,15 @@
         xmlhttp.send();
     };
 
-    eZ.RecommendationSupport.prototype.display = function (response, targetId, templateId, msgError, msgEmpty) {
+    /**
+     * Callback used for fetch
+     *
+     * @callback RecommendationSupport~onSuccess
+     * @param response recommendations stored in JSON format
+     * @param targetId target element ID
+     * @param templateId template ID
+     */
+    eZ.RecommendationSupport.prototype.display = function (response, targetId, templateId ) {
         var targetElement = document.getElementById(targetId);
 
         if (response.status === 'success') {
@@ -86,6 +135,15 @@
         }
     };
 
+    /**
+     * Fetch and display recommendations using build in methods
+     *
+     * @method get
+     * @param {String} targetId target element ID
+     * @param {String} templateId template ID
+     * @param {String} scenarioId scenario name
+     * @param {Int} locationId location ID
+     */
     eZ.RecommendationSupport.prototype.get = function (targetId, templateId, scenarioId, locationId) {
         this.fetch(
             targetId,

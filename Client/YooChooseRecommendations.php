@@ -95,6 +95,20 @@ class YooChooseRecommendations implements RecommendationRequestClient
     }
 
     /**
+     * Returns the YooChoose recommendation endpoint for specified $userId and $scenarioId
+     *
+     * @param int $userId
+     * @param string $scenarioId
+     * @param int $limit
+     * @param string $format
+     * @return string
+     */
+    private function getRecommendationUserEndpoint($userId, $scenarioId, $limit, $format = 'json')
+    {
+        return $this->getRecommendationEndpoint().sprintf('/%s/%s.%s?numrecs=%d', $userId, $scenarioId, $format, $limit);
+    }
+
+    /**
      * Returns $limit recommendations for a $locationId and a $userId based on a $scenarioId
      *
      * @param int $userId
@@ -105,10 +119,7 @@ class YooChooseRecommendations implements RecommendationRequestClient
      */
     public function getRecommendations($userId, $scenarioId, $locationId, $limit)
     {
-        $format = "json";
-
-        $uri = $this->getRecommendationEndpoint();
-        $uri .= "/$userId/$scenarioId.$format?numrecs=$limit";
+        $uri = $this->getRecommendationUserEndpoint($userId, $scenarioId, $limit);
 
         if (isset($this->logger)) {
             $this->logger->info(sprintf('Requesting YooChoose: fetching recommendations content (API call: %s)', $uri));

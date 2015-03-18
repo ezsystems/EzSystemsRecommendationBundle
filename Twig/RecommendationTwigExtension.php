@@ -75,7 +75,11 @@ class RecommendationTwigExtension extends \Twig_Extension
             $options = $this->options['template'];
         }
 
-        $template = file_get_contents(__DIR__ . '/../Resources/public/hbt/' . $options[ 'template' ]);
+        $templatePath = __DIR__ . '/../Resources/public/hbt/' . $options[ 'template' ];
+        if (file_exists($templatePath))
+            $template = file_get_contents($templatePath);
+        else
+            throw new Exception(sprintf('Handlebars template `%s` not found', $templatePath));
 
         return $this->template->render(
             '@EzSystemsRecommendationBundle/Resources/public/views/recommendations.html.twig',

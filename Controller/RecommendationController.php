@@ -14,7 +14,7 @@ use \EzSystems\RecommendationBundle\Client\RecommendationRequestClient;
 use \eZ\Publish\API\Repository\Repository;
 use \eZ\Publish\Core\MVC\Symfony\Routing\ChainRouter;
 use \EzSystems\RecommendationBundle\Helper\CriteriaHelper;
-use \EzSystems\RecommendationBundle\Helper\LocationHelper;
+use \EzSystems\RecommendationBundle\Converter\LocationConverter;
 
 class RecommendationController
 {
@@ -30,16 +30,16 @@ class RecommendationController
     /** @var \EzSystems\RecommendationBundle\Helper\CriteriaHelper */
     protected $criteriaHelper;
 
-    /** @var \EzSystems\RecommendationBundle\Helper\LocationHelper */
-    protected $locationHelper;
+    /** @var \EzSystems\RecommendationBundle\Converter\LocationConverter */
+    protected $locationConverter;
 
-    public function __construct(RecommendationRequestClient $recommender, Repository $repository, ChainRouter $router, CriteriaHelper $criteriaHelper, LocationHelper $locationHelper)
+    public function __construct(RecommendationRequestClient $recommender, Repository $repository, ChainRouter $router, CriteriaHelper $criteriaHelper, LocationConverter $locationConverter)
     {
         $this->recommender = $recommender;
         $this->repository = $repository;
         $this->router = $router;
         $this->criteriaHelper = $criteriaHelper;
-        $this->locationHelper = $locationHelper;
+        $this->locationConverter = $locationConverter;
     }
 
     public function recommendationsAction(Request $request, $scenarioId, $locationId, $limit)
@@ -64,7 +64,7 @@ class RecommendationController
             $language = $this->repository->getContentLanguageService()->getDefaultLanguageCode();
 
             foreach ($searchResults->searchHits as $result) {
-                $content[] = $this->locationHelper->mapLocationToArray($result, $language);
+                $content[] = $this->locationConverter->toArray($result, $language);
             }
         }
 

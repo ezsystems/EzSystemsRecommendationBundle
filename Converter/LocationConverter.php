@@ -6,14 +6,14 @@
  * @license For full copyright and license information view LICENSE file distributed with this source code.
  */
 
-namespace EzSystems\RecommendationBundle\Helper;
+namespace EzSystems\RecommendationBundle\Converter;
 
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 /**
  * Helper class for building criteria easily.
  */
-class LocationHelper
+class LocationConverter
 {
     protected $repository, $router;
 
@@ -30,7 +30,7 @@ class LocationHelper
      * @param string $language
      * @return array
      */
-    public function mapLocationToArray($location, $language)
+    public function toArray($location, $language)
     {
         $contentData = $this->repository->getContentService()->loadContentByContentInfo($location->valueObject->contentInfo);
 

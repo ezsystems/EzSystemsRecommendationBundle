@@ -32,12 +32,12 @@ class CriteriaHelper
             new Criterion\ContentTypeIdentifier(array( 'article', 'blog_post' ))
         ));
 
-        $contentQuery = new LocationQuery();
-        $contentQuery->criterion = $criterion;
-        $contentQuery->sortClauses = array(
+        $locationQuery = new LocationQuery();
+        $locationQuery->criterion = $criterion;
+        $locationQuery->sortClauses = array(
             new SortClause\ContentName()
         );
 
-        return $contentQuery;
+        return $locationQuery;
     }
 }

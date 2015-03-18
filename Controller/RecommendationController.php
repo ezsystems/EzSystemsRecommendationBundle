@@ -57,9 +57,9 @@ class RecommendationController
         $content = array();
 
         if (!$recommendationsCollection->isEmpty()) {
-            $contentQuery = $this->criteriaHelper->generateContentTypeCriterion($recommendationsCollection->getKeys());
+            $locationQuery = $this->criteriaHelper->generateContentTypeCriterion($recommendationsCollection->getKeys());
             $searchService = $this->repository->getSearchService();
-            $searchResults = $searchService->findLocations($contentQuery);
+            $searchResults = $searchService->findLocations($locationQuery);
 
             $language = $this->repository->getContentLanguageService()->getDefaultLanguageCode();
 

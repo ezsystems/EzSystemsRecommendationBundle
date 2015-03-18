@@ -24,12 +24,12 @@ class CriteriaHelper
      * @param array $contentIds collection of content ID's to be included
      * @return LocationQuery
      */
-    public function generateContentTypeCriterion( $contentIds )
+    public function generateContentTypeCriterion($contentIds)
     {
-        $criterion = new Criterion\LogicalAnd( array(
-            new Criterion\Visibility( Criterion\Visibility::VISIBLE ),
-            new Criterion\ContentId( $contentIds ),
-            new Criterion\ContentTypeIdentifier( array( 'article', 'blog_post' ) )
+        $criterion = new Criterion\LogicalAnd(array(
+            new Criterion\Visibility(Criterion\Visibility::VISIBLE),
+            new Criterion\ContentId($contentIds),
+            new Criterion\ContentTypeIdentifier(array( 'article', 'blog_post' ))
         ));
 
         $contentQuery = new LocationQuery();
@@ -40,5 +40,4 @@ class CriteriaHelper
 
         return $contentQuery;
     }
-
 }

@@ -20,7 +20,7 @@ class Recommendation implements YooChooseRecommendation
 
     protected $itemId;
 
-    public function __construct( $itemId, $itemType, $relevance, $reason )
+    public function __construct($itemId, $itemType, $relevance, $reason)
     {
         $this->reason = $reason;
         $this->relevance = $relevance;
@@ -35,7 +35,7 @@ class Recommendation implements YooChooseRecommendation
      */
     public function __toString()
     {
-        return strval( $this->itemId );
+        return strval($this->itemId);
     }
 
     /**

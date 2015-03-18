@@ -17,7 +17,7 @@ class LocationHelper
 {
     protected $repository, $router;
 
-    public function __construct( $repository, $router )
+    public function __construct($repository, $router)
     {
         $this->repository = $repository;
         $this->router = $router;
@@ -30,17 +30,17 @@ class LocationHelper
      * @param string $language
      * @return array
      */
-    public function mapLocationToArray( $location, $language )
+    public function mapLocationToArray($location, $language)
     {
-        $contentData = $this->repository->getContentService()->loadContentByContentInfo( $location->valueObject->contentInfo );
+        $contentData = $this->repository->getContentService()->loadContentByContentInfo($location->valueObject->contentInfo);
 
         return array(
             'name' => $location->valueObject->contentInfo->name,
-            'url' => $this->router->generate( $location->valueObject, array(), UrlGeneratorInterface::ABSOLUTE_PATH ),
-            'image' => $contentData->getFieldValue( 'image', $language )->uri,
-            'intro' => $contentData->getFieldValue( 'intro', $language )->xml->textContent,
+            'url' => $this->router->generate($location->valueObject, array(), UrlGeneratorInterface::ABSOLUTE_PATH),
+            'image' => $contentData->getFieldValue('image', $language)->uri,
+            'intro' => $contentData->getFieldValue('intro', $language)->xml->textContent,
             'timestamp' => $contentData->getVersionInfo()->creationDate->getTimestamp(),
-            'author' => (string) $contentData->getFieldValue( 'author', $language )
+            'author' => (string) $contentData->getFieldValue('author', $language)
         );
     }
 }

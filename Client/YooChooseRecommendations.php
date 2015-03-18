@@ -37,7 +37,7 @@ class YooChooseRecommendations implements RecommendationRequestClient
      *     - api-endpoint: YooChoose request http api endpoint
      * @param \Psr\Log\LoggerInterface|null $logger
      */
-    public function __construct( GuzzleClient $guzzle, array $options, LoggerInterface $logger = null )
+    public function __construct(GuzzleClient $guzzle, array $options, LoggerInterface $logger = null)
     {
         $resolver = new OptionsResolver();
         $this->configureOptions($resolver);
@@ -85,7 +85,7 @@ class YooChooseRecommendations implements RecommendationRequestClient
     {
         return sprintf(
             '%s/api/%s',
-            rtrim( $this->options['api-endpoint'], '/' ),
+            rtrim($this->options['api-endpoint'], '/'),
             $this->options['customer-id']
         );
     }
@@ -99,45 +99,42 @@ class YooChooseRecommendations implements RecommendationRequestClient
      * @param int $limit
      * @return \EzSystems\RecommendationBundle\Values\YooChooseRecommendationsCollection
      */
-    public function getRecommendations( $userId, $scenarioId, $locationId, $limit )
+    public function getRecommendations($userId, $scenarioId, $locationId, $limit)
     {
         $format = "json";
 
         $uri = $this->getRecommendationEndpoint();
         $uri .= "/$userId/$scenarioId.$format?numrecs=$limit";
 
-        if ( isset( $this->logger ) ) {
-            $this->logger->info( sprintf( 'Requesting YooChoose: fetching recommendations content (API call: %s)', $uri ) );
+        if (isset($this->logger)) {
+            $this->logger->info(sprintf('Requesting YooChoose: fetching recommendations content (API call: %s)', $uri));
         }
 
         $recommendationsCollection = new \EzSystems\RecommendationBundle\Values\RecommendationsCollection();
 
-        try
-        {
-            $response = $this->guzzle->get( $uri );
+        try {
+            $response = $this->guzzle->get($uri);
             $jsonResponse = $response->json();
 
-            if ( isset( $this->logger ) ) {
-                $this->logger->info( sprintf( 'YooChoose response: fetched %d recommendations (API call: %s)', count( $jsonResponse[ 'recommendationResponseList' ] ), $uri ) );
+            if (isset($this->logger)) {
+                $this->logger->info(sprintf('YooChoose response: fetched %d recommendations (API call: %s)', count($jsonResponse[ 'recommendationResponseList' ]), $uri));
             }
 
-            foreach ( $jsonResponse[ 'recommendationResponseList' ] as $jsonData )
-            {
-                $recommendationsCollection->add( new \EzSystems\RecommendationBundle\Values\Recommendation(
+            foreach ($jsonResponse[ 'recommendationResponseList' ] as $jsonData) {
+                $recommendationsCollection->add(new \EzSystems\RecommendationBundle\Values\Recommendation(
                     $jsonData[ 'itemId' ],
                     $jsonData[ 'itemType' ],
                     $jsonData[ 'relevance' ],
                     $jsonData[ 'reason' ]
-                ) );
+                ));
             }
-
-        } catch ( \Guzzle\Http\Exception\RequestException $e ) {
-            if ( isset( $this->logger ) ) {
-                $this->logger->error( sprintf( 'YooChoose request error: %s (API call: %s)', $e->getMessage(), $uri ) );
+        } catch (\Guzzle\Http\Exception\RequestException $e) {
+            if (isset($this->logger)) {
+                $this->logger->error(sprintf('YooChoose request error: %s (API call: %s)', $e->getMessage(), $uri));
             }
-        } catch ( \GuzzleHttp\Exception\ClientException $e ) {
-            if ( isset( $this->logger ) ) {
-                $this->logger->error( sprintf( 'YooChoose client response error: %s (API call: %s)', $e->getMessage(), $uri ) );
+        } catch (\GuzzleHttp\Exception\ClientException $e) {
+            if (isset($this->logger)) {
+                $this->logger->error(sprintf('YooChoose client response error: %s (API call: %s)', $e->getMessage(), $uri));
             }
         }
 

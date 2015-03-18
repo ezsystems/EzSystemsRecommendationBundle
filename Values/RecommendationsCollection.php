@@ -19,7 +19,7 @@ class RecommendationsCollection implements YooChooseRecommendationsCollection
      *
      * @param YooChooseRecommendation $recommendation
      */
-    public function add( \EzSystems\RecommendationBundle\Values\YooChooseRecommendation $recommendation )
+    public function add(\EzSystems\RecommendationBundle\Values\YooChooseRecommendation $recommendation)
     {
         $this->collection[ $recommendation->getItemId() ] = $recommendation;
     }
@@ -31,12 +31,13 @@ class RecommendationsCollection implements YooChooseRecommendationsCollection
      * @throws OutOfRangeException if recommendation ID is out of index
      * @return \EzSystems\RecommendationBundle\Values\YooChooseRecommendation
      */
-    public function get( $itemId )
+    public function get($itemId)
     {
-        if ( array_key_exists( $itemId, $this->collection ) )
+        if (array_key_exists($itemId, $this->collection)) {
             return $this->collection[ $itemId ];
-        else
+        } else {
             throw new OutOfRangeException();
+        }
     }
 
     /**
@@ -47,8 +48,7 @@ class RecommendationsCollection implements YooChooseRecommendationsCollection
     public function getKeys()
     {
         return array_map(
-            function( $item )
-            {
+            function ($item) {
                 return $item->getItemId();
             },
             $this->collection
@@ -62,7 +62,7 @@ class RecommendationsCollection implements YooChooseRecommendationsCollection
      */
     public function count()
     {
-        return count( $this->collection );
+        return count($this->collection);
     }
 
     /**
@@ -72,6 +72,6 @@ class RecommendationsCollection implements YooChooseRecommendationsCollection
      */
     public function isEmpty()
     {
-        return count( $this->collection ) > 0 ? false : true;
+        return count($this->collection) > 0 ? false : true;
     }
 }

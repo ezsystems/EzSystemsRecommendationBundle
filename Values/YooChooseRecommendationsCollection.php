@@ -20,7 +20,7 @@ interface YooChooseRecommendationsCollection
      *
      * @param YooChooseRecommendation $recommendation
      */
-    public function add( \EzSystems\RecommendationBundle\Values\YooChooseRecommendation $recommendation );
+    public function add(\EzSystems\RecommendationBundle\Values\YooChooseRecommendation $recommendation);
 
     /**
      * Get YooChoose recommendation by ID
@@ -28,7 +28,7 @@ interface YooChooseRecommendationsCollection
      * @param int $itemId
      * @return \EzSystems\RecommendationBundle\Values\YooChooseRecommendation
      */
-    public function get( $itemId );
+    public function get($itemId);
 
     /**
      * Get array of YooChoose recommendation ID's

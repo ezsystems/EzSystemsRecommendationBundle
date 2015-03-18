@@ -28,11 +28,11 @@ class RecommendationController
     /** @var \EzSystems\RecommendationBundle\Helper\LocationHelper */
     protected $locationHelper;
 
-    public function __construct( \EzSystems\RecommendationBundle\Client\RecommendationRequestClient $recommender,
+    public function __construct(\EzSystems\RecommendationBundle\Client\RecommendationRequestClient $recommender,
                                  \eZ\Publish\API\Repository\Repository $repository,
                                  \eZ\Publish\Core\MVC\Symfony\Routing\ChainRouter $router,
                                  \EzSystems\RecommendationBundle\Helper\CriteriaHelper $criteriaHelper,
-                                 \EzSystems\RecommendationBundle\Helper\LocationHelper $locationHelper )
+                                 \EzSystems\RecommendationBundle\Helper\LocationHelper $locationHelper)
     {
         $this->recommender = $recommender;
         $this->repository = $repository;
@@ -41,10 +41,9 @@ class RecommendationController
         $this->locationHelper = $locationHelper;
     }
 
-    public function recommendationsAction( Request $request, $scenarioId, $locationId, $limit )
+    public function recommendationsAction(Request $request, $scenarioId, $locationId, $limit)
     {
-        if ( !$request->isXmlHttpRequest() )
-        {
+        if (!$request->isXmlHttpRequest()) {
             throw new BadRequestHttpException();
         }
 
@@ -56,25 +55,23 @@ class RecommendationController
 
         $content = array();
 
-        if ( !$recommendationsCollection->isEmpty() )
-        {
-            $contentQuery = $this->criteriaHelper->generateContentTypeCriterion( $recommendationsCollection->getKeys() );
+        if (!$recommendationsCollection->isEmpty()) {
+            $contentQuery = $this->criteriaHelper->generateContentTypeCriterion($recommendationsCollection->getKeys());
             $searchService = $this->repository->getSearchService();
-            $searchResults = $searchService->findLocations( $contentQuery );
+            $searchResults = $searchService->findLocations($contentQuery);
 
             $language = $this->repository->getContentLanguageService()->getDefaultLanguageCode();
 
-            foreach ($searchResults->searchHits as $result)
-            {
-                $content[] = $this->locationHelper->mapLocationToArray( $result, $language );
+            foreach ($searchResults->searchHits as $result) {
+                $content[] = $this->locationHelper->mapLocationToArray($result, $language);
             }
         }
 
-        $status = count( $content ) > 0 ? 'success' : 'empty';
+        $status = count($content) > 0 ? 'success' : 'empty';
 
-        return new JsonResponse( array(
+        return new JsonResponse(array(
             'status' => $status,
             'content' => $content
-        ) );
+        ));
     }
 }

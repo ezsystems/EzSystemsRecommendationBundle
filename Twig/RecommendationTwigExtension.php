@@ -16,7 +16,7 @@ class RecommendationTwigExtension extends \Twig_Extension
 {
     protected $template, $repository, $options;
 
-    public function __construct( DelegatingEngine $template, Repository $repository, array $options )
+    public function __construct(DelegatingEngine $template, Repository $repository, array $options)
     {
         $this->template = $template;
         $this->repository = $repository;
@@ -31,17 +31,17 @@ class RecommendationTwigExtension extends \Twig_Extension
     public function getFunctions()
     {
         return array(
-            'yc_show_recommendations' => new \Twig_Function_Method( $this, 'yc_show_recommendations', array(
+            'yc_show_recommendations' => new \Twig_Function_Method($this, 'yc_show_recommendations', array(
                 'is_safe' => array( 'html' )
-            ) ),
+            )),
 
-            'yc_track_user' => new \Twig_Function_Method( $this, 'yc_track_user', array(
+            'yc_track_user' => new \Twig_Function_Method($this, 'yc_track_user', array(
                 'is_safe' => array( 'html' )
-            ) )
+            ))
         );
     }
 
-    public function yc_track_user( $locationId )
+    public function yc_track_user($locationId)
     {
         $response = new Response();
 
@@ -59,26 +59,23 @@ class RecommendationTwigExtension extends \Twig_Extension
         );
     }
 
-    public function yc_show_recommendations( $locationId, $options = null )
+    public function yc_show_recommendations($locationId, $options = null)
     {
         $response = new Response();
 
-        if ( empty( $options[ 'scenario' ] ) )
-        {
+        if (empty($options[ 'scenario' ])) {
             $options[ 'scenario' ] = $this->options[ 'scenarioId' ];
         }
 
-        if ( empty( $options[ 'limit' ] ) )
-        {
+        if (empty($options[ 'limit' ])) {
             $options[ 'limit' ] = $this->options[ 'limit' ];
         }
 
-        if ( empty( $options[ 'template' ] ) )
-        {
+        if (empty($options[ 'template' ])) {
             $options = $this->options['template'];
         }
 
-        $template = file_get_contents( __DIR__ . '/../Resources/public/hbt/' . $options[ 'template' ] );
+        $template = file_get_contents(__DIR__ . '/../Resources/public/hbt/' . $options[ 'template' ]);
 
         return $this->template->render(
             '@EzSystemsRecommendationBundle/Resources/public/views/recommendations.html.twig',
@@ -92,5 +89,4 @@ class RecommendationTwigExtension extends \Twig_Extension
             $response
         );
     }
-
 }

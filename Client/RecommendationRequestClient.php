@@ -24,5 +24,5 @@ interface RecommendationRequestClient
      * @param int $limit
      * @return \EzSystems\RecommendationBundle\Values\RecommendationsCollection
      */
-    public function getRecommendations( $userId, $scenarioId, $locationId, $limit );
+    public function getRecommendations($userId, $scenarioId, $locationId, $limit);
 }

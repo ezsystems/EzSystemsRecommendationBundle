@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use \EzSystems\RecommendationBundle\Client\RecommendationRequestClient;
 use \eZ\Publish\API\Repository\Repository;
 use \eZ\Publish\Core\MVC\Symfony\Routing\ChainRouter;
-use \EzSystems\RecommendationBundle\Helper\CriteriaHelper;
+use \EzSystems\RecommendationBundle\Criteria\ContentType;
 use \EzSystems\RecommendationBundle\Converter\LocationConverter;
 
 class RecommendationController
@@ -27,19 +27,19 @@ class RecommendationController
     /** @var \eZ\Publish\Core\MVC\Symfony\Routing\ChainRouter */
     protected $router;
 
-    /** @var \EzSystems\RecommendationBundle\Helper\CriteriaHelper */
-    protected $criteriaHelper;
+    /** @var \EzSystems\RecommendationBundle\Criteria\ContentType */
+    protected $contentTypeCriteria;
 
     /** @var \EzSystems\RecommendationBundle\Converter\LocationConverter */
     protected $locationConverter;
 
-    public function __construct(RecommendationRequestClient $recommender, Repository $repository, ChainRouter $router, CriteriaHelper $criteriaHelper, LocationConverter $locationConverter)
+    public function __construct(RecommendationRequestClient $recommender, Repository $repository, ChainRouter $router, ContentType $contentTypeCriteria, LocationConverter $locationConverter)
     {
         $this->recommender = $recommender;
         $this->repository = $repository;
         $this->router = $router;
-        $this->criteriaHelper = $criteriaHelper;
         $this->locationConverter = $locationConverter;
+        $this->contentTypeCriteria = $contentTypeCriteria;
     }
 
     public function recommendationsAction(Request $request, $scenarioId, $locationId, $limit)
@@ -57,7 +57,7 @@ class RecommendationController
         $content = array();
 
         if (!$recommendationsCollection->isEmpty()) {
-            $locationQuery = $this->criteriaHelper->generateContentTypeCriterion($recommendationsCollection->getKeys());
+            $locationQuery = $this->contentTypeCriteria->generate($recommendationsCollection->getKeys());
             $searchService = $this->repository->getSearchService();
             $searchResults = $searchService->findLocations($locationQuery);
 

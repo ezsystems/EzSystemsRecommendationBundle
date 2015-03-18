@@ -6,7 +6,7 @@
  * @license For full copyright and license information view LICENSE file distributed with this source code.
  */
 
-namespace EzSystems\RecommendationBundle\Helper;
+namespace EzSystems\RecommendationBundle\Criteria;
 
 use eZ\Publish\API\Repository\Values\Content\Query\Criterion;
 use eZ\Publish\API\Repository\Values\Content\LocationQuery;
@@ -14,9 +14,9 @@ use eZ\Publish\API\Repository\Values\Content\Query;
 use eZ\Publish\API\Repository\Values\Content\Query\SortClause;
 
 /**
- * Helper class for building criteria easily.
+ * Content type criteria generator.
  */
-class CriteriaHelper
+class ContentType
 {
     /**
      * Generates an criterion based on contentType identifiers.
@@ -24,7 +24,7 @@ class CriteriaHelper
      * @param array $contentIds collection of content ID's to be included
      * @return LocationQuery
      */
-    public function generateContentTypeCriterion($contentIds)
+    public function generate($contentIds)
     {
         $criterion = new Criterion\LogicalAnd(array(
             new Criterion\Visibility(Criterion\Visibility::VISIBLE),

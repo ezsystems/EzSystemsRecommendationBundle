@@ -73,11 +73,11 @@ services:
             - @ez_recommendation.client.yoochoose_recommendations
             - @ezpublish.api.repository
             - @router
-            - @ez_recommendation.helper.criteria
+            - @ez_recommendation.criteria.content_type
             - @ez_recommendation.converter.location
 
-    ez_recommendation.helper.criteria:
-        class: EzSystems\RecommendationBundle\Helper\CriteriaHelper
+    ez_recommendation.criteria.content_type:
+        class: EzSystems\RecommendationBundle\Criteria\ContentType
 
     ez_recommendation.converter.location:
         class: EzSystems\RecommendationBundle\Converter\LocationConverter

@@ -11,7 +11,7 @@ namespace EzSystems\RecommendationBundle\Converter;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 /**
- * Helper class for building criteria easily.
+ * Location converter.
  */
 class LocationConverter
 {

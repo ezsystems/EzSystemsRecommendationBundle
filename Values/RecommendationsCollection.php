@@ -31,7 +31,7 @@ class RecommendationsCollection implements YooChooseRecommendationsCollection
      * @throws OutOfRangeException if recommendation ID is out of index
      * @return \EzSystems\RecommendationBundle\Values\YooChooseRecommendation
      */
-    public function get($itemId)
+    public function getById($itemId)
     {
         if (array_key_exists($itemId, $this->collection)) {
             return $this->collection[ $itemId ];

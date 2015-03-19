@@ -30,7 +30,7 @@ interface YooChooseRecommendationsCollection
      * @param int $itemId
      * @return \EzSystems\RecommendationBundle\Values\YooChooseRecommendation
      */
-    public function get($itemId);
+    public function getById($itemId);
 
     /**
      * Get array of YooChoose recommendation ID's

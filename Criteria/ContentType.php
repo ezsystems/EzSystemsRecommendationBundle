@@ -28,8 +28,7 @@ class ContentType
     {
         $criterion = new Criterion\LogicalAnd(array(
             new Criterion\Visibility(Criterion\Visibility::VISIBLE),
-            new Criterion\ContentId($contentIds),
-            new Criterion\ContentTypeIdentifier(array( 'article', 'blog_post' ))
+            new Criterion\ContentId($contentIds)
         ));
 
         $locationQuery = new LocationQuery();

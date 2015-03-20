@@ -54,13 +54,19 @@ class YooChooseRecommendations implements RecommendationRequestClient
     public function setCustomerId($value)
     {
         $this->options['customer-id'] = $value;
-        $this->guzzle->setDefaultOption('auth', $this->options['customer-id'], $this->options['license-key']);
+        $this->guzzle->setDefaultOption('auth', array(
+            $this->options['customer-id'],
+            $this->options['license-key']
+        ));
     }
 
     public function setLicenseKey($value)
     {
         $this->options['license-key'] = $value;
-        $this->guzzle->setDefaultOption('auth', $this->options['customer-id'], $this->options['license-key']);
+        $this->guzzle->setDefaultOption('auth', array(
+            $this->options['customer-id'],
+            $this->options['license-key']
+        ));
     }
 
     /**

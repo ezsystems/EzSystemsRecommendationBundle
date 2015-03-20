@@ -9,9 +9,11 @@
 namespace EzSystems\RecommendationBundle\Twig;
 
 use eZ\Publish\API\Repository\Repository;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\Templating\DelegatingEngine;
 
+/**
+ * Recommendation Twig helper which renders necessary snippet codes.
+ */
 class RecommendationTwigExtension extends \Twig_Extension
 {
     protected $template, $repository, $options;
@@ -31,38 +33,47 @@ class RecommendationTwigExtension extends \Twig_Extension
     public function getFunctions()
     {
         return array(
-            'yc_show_recommendations' => new \Twig_Function_Method($this, 'yc_show_recommendations', array(
+            'yc_show_recommendations' => new \Twig_Function_Method($this, 'showRecommendations', array(
                 'is_safe' => array( 'html' )
             )),
 
-            'yc_track_user' => new \Twig_Function_Method($this, 'yc_track_user', array(
+            'yc_track_user' => new \Twig_Function_Method($this, 'trackUser', array(
                 'is_safe' => array( 'html' )
             ))
         );
     }
 
-    public function yc_track_user($locationId)
+    /**
+     * Render user tracking snippet code
+     *
+     * @param int $contentId
+     * @return string
+     */
+    public function trackUser($contentId)
     {
-        $response = new Response();
-
         $userId = $this->options[ 'userId' ];
         $customerId = $this->repository->getCurrentUser()->id;
 
         return $this->template->render(
             '@EzSystemsRecommendationBundle/Resources/public/views/track_user.html.twig',
             array(
-                'locationId' => $locationId,
+                'contentId' => $contentId,
                 'userId' => $userId,
                 'customerId' => $customerId
-            ),
-            $response
+            )
         );
     }
 
-    public function yc_show_recommendations($locationId, $options = null)
+    /**
+     * Render recommendations snippet code
+     *
+     * @param int $contentId
+     * @param array $options
+     * @return string
+     * @throws \Exception if HandleBars template was not found
+     */
+    public function showRecommendations($contentId, $options = null)
     {
-        $response = new Response();
-
         if (empty($options[ 'scenario' ])) {
             $options[ 'scenario' ] = $this->options[ 'scenarioId' ];
         }
@@ -79,18 +90,17 @@ class RecommendationTwigExtension extends \Twig_Extension
         if (file_exists($templatePath))
             $template = file_get_contents($templatePath);
         else
-            throw new Exception(sprintf('Handlebars template `%s` not found', $templatePath));
+            throw new \Exception(sprintf('Handlebars template `%s` not found', $templatePath));
 
         return $this->template->render(
             '@EzSystemsRecommendationBundle/Resources/public/views/recommendations.html.twig',
             array(
                 'recommendationId' => uniqid(),
-                'locationId' => $locationId,
+                'contentId' => $contentId,
                 'scenarioId' => $options[ 'scenario' ],
                 'limit' => $options[ 'limit' ],
                 'template' => $template
-            ),
-            $response
+            )
         );
     }
 }

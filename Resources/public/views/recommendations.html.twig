@@ -7,19 +7,21 @@
 </div>
 
 <script>
-    (function() {
-        var recommendationSupport = new eZ.RecommendationSupport();
-        recommendationSupport.setOptions({
-            limit: {{ limit }},
-            msgEmpty: '{{ 'No recommendations found'|trans }}',
-            msgError: '{{ 'An error occurred while loading the recommendations'|trans }}',
-            msgNotSupported: '{{ 'Cannot display recommendations, this browser is not supported'|trans }}'
-        });
-        recommendationSupport.get(
-            'recommendation-{{ recommendationId }}',
-            'recommendation-template-{{ recommendationId }}',
-            '{{ scenarioId }}',
-            '{{ locationId }}'
-        );
-    }) ();
+    {% autoescape 'js' %}
+        (function() {
+            var recommendationSupport = new eZ.RecommendationSupport({
+                limit: {{ limit }},
+                msgEmpty: '{{ 'No recommendations found'|trans }}',
+                msgError: '{{ 'An error occurred while loading the recommendations'|trans }}',
+                msgNotSupported: '{{ 'Cannot display recommendations, this browser is not supported'|trans }}'
+
+            });
+            recommendationSupport.get(
+                'recommendation-{{ recommendationId }}',
+                'recommendation-template-{{ recommendationId }}',
+                '{{ scenarioId }}',
+                '{{ contentId }}'
+            );
+        }) ();
+    {% endautoescape %}
 </script>

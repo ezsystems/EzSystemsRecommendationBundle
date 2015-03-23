@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use \EzSystems\RecommendationBundle\Client\RecommendationRequestClient;
 use \eZ\Publish\API\Repository\Repository;
 use \eZ\Publish\Core\MVC\Symfony\Routing\ChainRouter;
-use \EzSystems\RecommendationBundle\Criteria\ContentType;
+use \EzSystems\RecommendationBundle\Criteria\Content;
 use \EzSystems\RecommendationBundle\Converter\LocationConverter;
 
 class RecommendationController
@@ -27,22 +27,22 @@ class RecommendationController
     /** @var \eZ\Publish\Core\MVC\Symfony\Routing\ChainRouter */
     protected $router;
 
-    /** @var \EzSystems\RecommendationBundle\Criteria\ContentType */
-    protected $contentTypeCriteria;
+    /** @var \EzSystems\RecommendationBundle\Criteria\Content */
+    protected $contentCriteria;
 
     /** @var \EzSystems\RecommendationBundle\Converter\LocationConverter */
     protected $locationConverter;
 
-    public function __construct(RecommendationRequestClient $recommender, Repository $repository, ChainRouter $router, ContentType $contentTypeCriteria, LocationConverter $locationConverter)
+    public function __construct(RecommendationRequestClient $recommender, Repository $repository, ChainRouter $router, Content $contentCriteria, LocationConverter $locationConverter)
     {
         $this->recommender = $recommender;
         $this->repository = $repository;
         $this->router = $router;
         $this->locationConverter = $locationConverter;
-        $this->contentTypeCriteria = $contentTypeCriteria;
+        $this->contentCriteria = $contentCriteria;
     }
 
-    public function recommendationsAction(Request $request, $scenarioId, $locationId, $limit)
+    public function recommendationsAction(Request $request, $scenarioId, $contentId, $limit)
     {
         if (!$request->isXmlHttpRequest()) {
             throw new BadRequestHttpException();
@@ -51,13 +51,13 @@ class RecommendationController
         $userId = $this->repository->getCurrentUser()->id;
 
         $recommendationsCollection = $this->recommender->getRecommendations(
-            $userId, $scenarioId, $locationId, $limit
+            $userId, $scenarioId, $contentId, $limit
         );
 
         $content = array();
 
         if (!$recommendationsCollection->isEmpty()) {
-            $locationQuery = $this->contentTypeCriteria->generate($recommendationsCollection->getKeys());
+            $locationQuery = $this->contentCriteria->generate($recommendationsCollection->getKeys());
             $searchService = $this->repository->getSearchService();
             $searchResults = $searchService->findLocations($locationQuery);
 

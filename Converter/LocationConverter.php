@@ -40,7 +40,8 @@ class LocationConverter
             'image' => $contentData->getFieldValue('image', $language)->uri,
             'intro' => $contentData->getFieldValue('intro', $language)->xml->textContent,
             'timestamp' => $contentData->getVersionInfo()->creationDate->getTimestamp(),
-            'author' => (string) $contentData->getFieldValue('author', $language)
+            'author' => $this->repository->getUserService()->loadUser($location->valueObject->contentInfo->ownerId)
+                ->getFieldValue('first_name', $language)->text
         );
     }
 }

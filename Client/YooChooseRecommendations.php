@@ -106,26 +106,27 @@ class YooChooseRecommendations implements RecommendationRequestClient
      * @param int $userId
      * @param string $scenarioId
      * @param int $limit
+     * @param int $contentId
      * @param string $format
      * @return string
      */
-    private function getRecommendationUserEndpoint($userId, $scenarioId, $limit, $format = 'json')
+    private function getRecommendationUserEndpoint($userId, $scenarioId, $limit, $contentId, $format = 'json')
     {
-        return $this->getRecommendationEndpoint().sprintf('/%s/%s.%s?numrecs=%d', $userId, $scenarioId, $format, $limit);
+        return $this->getRecommendationEndpoint().sprintf('/%s/%s.%s?numrecs=%d&contextitems=%d', $userId, $scenarioId, $format, $limit, $contentId);
     }
 
     /**
-     * Returns $limit recommendations for a $locationId and a $userId based on a $scenarioId
+     * Returns $limit recommendations for a $contentId and a $userId based on a $scenarioId
      *
      * @param int $userId
      * @param string $scenarioId
-     * @param int $locationId
+     * @param int $contentId
      * @param int $limit
      * @return \EzSystems\RecommendationBundle\Values\YooChooseRecommendationsCollection
      */
-    public function getRecommendations($userId, $scenarioId, $locationId, $limit)
+    public function getRecommendations($userId, $scenarioId, $contentId, $limit)
     {
-        $uri = $this->getRecommendationUserEndpoint($userId, $scenarioId, $limit);
+        $uri = $this->getRecommendationUserEndpoint($userId, $scenarioId, $limit, $contentId);
 
         if (isset($this->logger)) {
             $this->logger->info(sprintf('Requesting YooChoose: fetching recommendations content (API call: %s)', $uri));

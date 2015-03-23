@@ -14,12 +14,12 @@ use eZ\Publish\API\Repository\Values\Content\Query;
 use eZ\Publish\API\Repository\Values\Content\Query\SortClause;
 
 /**
- * Content type criteria generator.
+ * Content criteria generator.
  */
-class ContentType
+class Content
 {
     /**
-     * Generates an criterion based on contentType identifiers.
+     * Generates an criterion based on identifiers.
      *
      * @param array $contentIds collection of content ID's to be included
      * @return LocationQuery

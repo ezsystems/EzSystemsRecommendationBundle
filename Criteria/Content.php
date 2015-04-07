@@ -18,6 +18,14 @@ use eZ\Publish\API\Repository\Values\Content\Query\SortClause;
  */
 class Content
 {
+    /** @var array */
+    protected $contentTypeIdentifiers;
+
+    public function __construct($contentTypeIdentifiers)
+    {
+        $this->contentTypeIdentifiers = $contentTypeIdentifiers;
+    }
+
     /**
      * Generates an criterion based on identifiers.
      *
@@ -28,7 +36,8 @@ class Content
     {
         $criterion = new Criterion\LogicalAnd(array(
             new Criterion\Visibility(Criterion\Visibility::VISIBLE),
-            new Criterion\ContentId($contentIds)
+            new Criterion\ContentId($contentIds),
+            new Criterion\ContentTypeIdentifier($this->contentTypeIdentifiers)
         ));
 
         $locationQuery = new LocationQuery();

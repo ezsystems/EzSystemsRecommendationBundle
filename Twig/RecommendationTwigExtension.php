@@ -10,11 +10,14 @@ namespace EzSystems\RecommendationBundle\Twig;
 
 use eZ\Publish\API\Repository\Repository;
 use Symfony\Bundle\FrameworkBundle\Templating\DelegatingEngine;
+use Twig_Extension;
+use Twig_SimpleFunction;
+use Exception;
 
 /**
  * Recommendation Twig helper which renders necessary snippet codes.
  */
-class RecommendationTwigExtension extends \Twig_Extension
+class RecommendationTwigExtension extends Twig_Extension
 {
     protected $template, $repository, $options;
 
@@ -27,45 +30,68 @@ class RecommendationTwigExtension extends \Twig_Extension
 
     public function getName()
     {
-        return 'recommendation_extension';
+        return 'ez_recommendation_extension';
     }
 
     public function getFunctions()
     {
-        return array(
-            'yc_show_recommendations' => new \Twig_Function_Method($this, 'showRecommendations', array(
-                'is_safe' => array( 'html' )
-            )),
+        return [
+            new Twig_SimpleFunction('yc_show_recommendations', [ $this, 'showRecommendations' ], [
+                'is_safe' => [ 'html' ]
+            ]),
 
-            'yc_track_user' => new \Twig_Function_Method($this, 'trackUser', array(
-                'is_safe' => array( 'html' )
-            ))
-        );
+            new Twig_SimpleFunction('yc_track_user', [ $this, 'trackUser' ], [
+                'is_safe' => [ 'html' ]
+            ])
+        ];
     }
 
     /**
-     * Render user tracking snippet code
+     * Return content type identifier based on $contentId
+     *
+     * @param $contentId int
+     * @return string content identifier
+     */
+    public function getContentIdentifier($contentId)
+    {
+        $contentTypeService = $this->repository->getContentTypeService();
+        $contentType = $contentTypeService->loadContentType($this->repository->getContentService()
+            ->loadContent($contentId)->contentInfo->contentTypeId);
+        return $contentType->identifier;
+    }
+
+    /**
+     * Render user tracking snippet code.
      *
      * @param int $contentId
      * @return string
      */
     public function trackUser($contentId)
     {
+        // display only for specified content type's
+        if (!in_array($this->getContentIdentifier($contentId), $this->options[ 'includedContentTypes' ]))
+        {
+            return '';
+        }
+
+        echo $contentId;
+
+
         $userId = $this->options[ 'userId' ];
         $customerId = $this->repository->getCurrentUser()->id;
 
         return $this->template->render(
             '@EzSystemsRecommendationBundle/Resources/public/views/track_user.html.twig',
-            array(
+            [
                 'contentId' => $contentId,
                 'userId' => $userId,
                 'customerId' => $customerId
-            )
+            ]
         );
     }
 
     /**
-     * Render recommendations snippet code
+     * Render recommendations snippet code.
      *
      * @param int $contentId
      * @param array $options
@@ -88,19 +114,23 @@ class RecommendationTwigExtension extends \Twig_Extension
 
         $templatePath = __DIR__ . '/../Resources/public/hbt/' . $options[ 'template' ];
         if (file_exists($templatePath))
+        {
             $template = file_get_contents($templatePath);
+        }
         else
-            throw new \Exception(sprintf('Handlebars template `%s` not found', $templatePath));
+        {
+            throw new Exception(sprintf('Handlebars template `%s` not found', $templatePath));
+        }
 
         return $this->template->render(
             '@EzSystemsRecommendationBundle/Resources/public/views/recommendations.html.twig',
-            array(
+            [
                 'recommendationId' => uniqid(),
                 'contentId' => $contentId,
                 'scenarioId' => $options[ 'scenario' ],
                 'limit' => $options[ 'limit' ],
                 'template' => $template
-            )
+            ]
         );
     }
 }

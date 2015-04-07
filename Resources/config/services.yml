@@ -13,6 +13,7 @@ services:
               scenarioId: %ez_recommendation.recommendations.default.scenario%
               limit: %ez_recommendation.recommendations.default.limit%
               template: %ez_recommendation.recommendations.default.template%
+              includedContentTypes: %ez_recommendation.recommendations.included_content_types%
         tags:
             - { name: twig.extension }
 
@@ -78,6 +79,8 @@ services:
 
     ez_recommendation.criteria.content:
         class: EzSystems\RecommendationBundle\Criteria\Content
+        arguments:
+            - %ez_recommendation.recommendations.included_content_types%
 
     ez_recommendation.converter.location:
         class: EzSystems\RecommendationBundle\Converter\LocationConverter

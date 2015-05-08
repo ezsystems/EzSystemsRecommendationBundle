@@ -7,7 +7,6 @@ services:
         class: EzSystems\RecommendationBundle\Twig\RecommendationTwigExtension
         public: true
         arguments:
-            - @templating
             - @ezpublish.api.repository
             - userId: %ez_recommendation.default.yoochoose.customer_id%
               scenarioId: %ez_recommendation.recommendations.default.scenario%

@@ -3,4 +3,19 @@ parameters:
     ez_recommendation.default.yoochoose.license_key: ~
     ez_recommendation.default.server_uri: ~
 
-    ez_recommendation.api_endpoint: 'https://admin.yoochoose.net'
+    ez_recommendation.api_endpoint: "https://admin.yoochoose.net"
+
+    # YooChoose recommendations API endpoint
+    ez_recommendation.recommendations.api_endpoint: "http://reco.yoochoose.net"
+
+    # default YooChoose scenario for recommendations
+    ez_recommendation.recommendations.default.scenario: "popular"
+
+    # default limit of recommendations fetched from YooChoose
+    ez_recommendation.recommendations.default.limit: 5
+
+    # default HandleBars template
+    ez_recommendation.recommendations.default.template: "default.hbt"
+
+    # content types included for indexing
+    ez_recommendation.recommendations.included_content_types: [article, blog_post, place, product]

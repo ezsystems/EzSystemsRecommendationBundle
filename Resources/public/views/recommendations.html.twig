@@ -1,0 +1,27 @@
+<script id="recommendation-template-{{ recommendationId }}" type="text/x-handlebars-template">
+    {{ template|raw }}
+</script>
+
+<div id="recommendation-{{ recommendationId }}" class="ez-recommendation">
+    {{ 'Loading recommended items...'|trans }}
+</div>
+
+<script>
+    {% autoescape 'js' %}
+        (function() {
+            var recommendationSupport = new eZ.RecommendationSupport({
+                limit: {{ limit }},
+                msgEmpty: '{{ 'No recommendations found'|trans }}',
+                msgError: '{{ 'An error occurred while loading the recommendations'|trans }}',
+                msgNotSupported: '{{ 'Cannot display recommendations, this browser is not supported'|trans }}'
+
+            });
+            recommendationSupport.get(
+                'recommendation-{{ recommendationId }}',
+                'recommendation-template-{{ recommendationId }}',
+                '{{ scenarioId }}',
+                '{{ contentId }}'
+            );
+        }) ();
+    {% endautoescape %}
+</script>

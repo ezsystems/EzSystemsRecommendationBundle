@@ -27,6 +27,10 @@ class ConfigurationMapper implements HookableConfigurationMapperInterface
         if (isset($scopeSettings['yoochoose']['license_key'])) {
             $contextualizer->setContextualParameter('yoochoose.license_key', $currentScope, $scopeSettings['yoochoose']['license_key']);
         }
+
+        if (isset($scopeSettings['recommender']['included_content_types'])) {
+            $contextualizer->setContextualParameter('recommender.included_content_types', $currentScope, $scopeSettings['recommender']['included_content_types']);
+        }
     }
 
     public function preMap(array $config, ContextualizerInterface $contextualizer)

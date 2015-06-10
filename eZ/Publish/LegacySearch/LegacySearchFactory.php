@@ -8,17 +8,22 @@
 
 namespace EzSystems\RecommendationBundle\eZ\Publish\LegacySearch;
 
-/**
- * @TODO fixme
- */
+use EzSystems\RecommendationBundle\eZ\Publish\LegacySearch;
+
 class LegacySearchFactory
 {
     public static function build(\Closure $legacyKernelClosure)
     {
-        return $legacyKernelClosure()->runCallback(
-            function () {
-                return \eZSearch::getEngine();
-            }
-        );
+        try {
+            $searchEngine = $legacyKernelClosure()->runCallback(
+                function () {
+                    return \eZSearch::getEngine();
+                }
+            );
+        } catch (\Exception $e) {
+            $searchEngine = new NullSearchEngine();
+        }
+
+        return $searchEngine;
     }
 }

@@ -84,13 +84,4 @@ class RecommendationLegacySearchEngine implements ezpSearchEngine
             $this->legacySearchEngine->addNodeAssignment( $mainNodeID, $objectID, $nodeAssignmentIDList, $isMoved );
         }
     }
-
-    public static function buildLegacySearchEngine($legacyKernelClosure)
-    {
-        return $legacyKernelClosure()->runCallback(
-            function () {
-                return \eZSearch::getEngine();
-            }
-        );
-    }
 }

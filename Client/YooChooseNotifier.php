@@ -12,6 +12,7 @@ use GuzzleHttp\Exception\RequestException;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use eZ\Publish\API\Repository\ContentService;
 
 /**
  * A recommendation client that sends notifications to a YooChoose server.
@@ -27,10 +28,14 @@ class YooChooseNotifier implements RecommendationClient
     /** @var \Psr\Log\LoggerInterface|null */
     private $logger;
 
+    /** @var \eZ\Publish\API\Repository\ContentService */
+    private $contentService;
+
     /**
      * Constructs a YooChooseNotifier Recommendation Client.
      *
      * @param \GuzzleHttp\ClientInterface $guzzle
+     * @param \eZ\Publish\API\Repository\ContentService $contentService
      * @param array $options
      *     Keys (all required):
      *     - customer-id: the yoochoose customer ID, e.g. 12345
@@ -39,13 +44,14 @@ class YooChooseNotifier implements RecommendationClient
      *     - server-uri: the site's REST API base URI (without the prefix), e.g. http://api.example.com
      * @param \Psr\Log\LoggerInterface|null $logger
      */
-    public function __construct(GuzzleClient $guzzle, array $options, LoggerInterface $logger = null)
+    public function __construct(GuzzleClient $guzzle, ContentService $contentService, array $options, LoggerInterface $logger = null)
     {
         $resolver = new OptionsResolver();
         $this->configureOptions($resolver);
 
         $this->options = $resolver->resolve($options);
         $this->guzzle = $guzzle;
+        $this->contentService = $contentService;
         $this->logger = $logger;
     }
 
@@ -72,7 +78,11 @@ class YooChooseNotifier implements RecommendationClient
             $this->logger->info("Notifying YooChoose: updateContent($contentId)");
         }
         try {
-            $this->notify(array( array( 'action' => 'update', 'uri' => $this->getContentUri($contentId) ) ));
+            $this->notify(array(array(
+                'action' => 'update',
+                'uri' => $this->getContentUri($contentId),
+                'contentTypeId' => $this->getContentTypeId($contentId)
+            )));
         } catch (RequestException $e) {
             if (isset($this->logger)) {
                 $this->logger->error("YooChoose Post notification error: ".$e->getMessage());
@@ -86,12 +96,35 @@ class YooChooseNotifier implements RecommendationClient
             $this->logger->info("Notifying YooChoose: delete($contentId)");
         }
         try {
-            $this->notify(array( array( 'action' => 'delete', 'uri' => $this->getContentUri($contentId) ) ));
+            $this->notify(array(array(
+                'action' => 'delete',
+                'uri' => $this->getContentUri($contentId),
+                'contentTypeId' => $this->getContentTypeId($contentId)
+            )));
         } catch (RequestException $e) {
             if (isset($this->logger)) {
                 $this->logger->error("YooChoose Post notification error: ".$e->getMessage());
             }
         }
+    }
+
+    /**
+     * Gets ContentType ID based on $contentId
+     *
+     * @param mixed $contentId
+     *
+     * @return int|null
+     */
+    protected function getContentTypeId($contentId)
+    {
+        $contentTypeId = null;
+
+        try {
+            $contentTypeId = $this->contentService->loadContentInfo($contentId)->contentTypeId;
+        } catch (\Exception $e) {
+        }
+
+        return $contentTypeId;
     }
 
     /**
@@ -114,9 +147,10 @@ class YooChooseNotifier implements RecommendationClient
     /**
      * Notifies the YooChoose API of one or more repository events.
      *
-     * A repository event is defined as an array with two keys:
+     * A repository event is defined as an array with three keys:
      * - action: the event name (update, delete)
-     * - uri: the event's target, as an absolute HTTP URI to the REST resource.
+     * - uri: the event's target, as an absolute HTTP URI to the REST resource
+     * - contentTypeId: currently processed ContentType ID
      *
      * @param array $events
      *
@@ -125,7 +159,7 @@ class YooChooseNotifier implements RecommendationClient
     protected function notify(array $events)
     {
         foreach ($events as $event) {
-            if (array_keys($event) != array( 'action', 'uri' )) {
+            if (array_keys($event) != array( 'action', 'uri', 'contentTypeId' )) {
                 throw new InvalidArgumentException('Invalid action keys');
             }
         }

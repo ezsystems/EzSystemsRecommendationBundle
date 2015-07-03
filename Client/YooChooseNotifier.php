@@ -58,13 +58,11 @@ class YooChooseNotifier implements RecommendationClient
     public function setCustomerId($value)
     {
         $this->options['customer-id'] = $value;
-        $this->guzzle->setDefaultOption('auth', $this->options['customer-id'], $this->options['license-key']);
     }
 
     public function setLicenseKey($value)
     {
         $this->options['license-key'] = $value;
-        $this->guzzle->setDefaultOption('auth', $this->options['customer-id'], $this->options['license-key']);
     }
 
     public function setServerUri($value)
@@ -170,7 +168,16 @@ class YooChooseNotifier implements RecommendationClient
 
         $response = $this->guzzle->post(
             $this->getNotificationEndpoint(),
-            array( 'json' => array( 'transaction' => null, 'events' => $events ) )
+            array(
+                'json' => array(
+                    'transaction' => null,
+                    'events' => $events
+                ),
+                'auth' => array(
+                    $this->options['customer-id'],
+                    $this->options['license-key']
+                )
+            )
         );
 
         if (isset($this->logger)) {

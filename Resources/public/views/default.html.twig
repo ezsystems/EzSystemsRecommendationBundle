@@ -1,0 +1,48 @@
+{#  Here you can customise recommendation list template. Please, follow this link:
+    https://doc.ez.no/display/DOCTEST/Customer+Attribute+Mappings to see the list of default field names. #}
+
+<script id="recommendations-template-{{ templateId }}" type="text/x-handlebars-template">
+    {% raw %}
+        <div class="content-view-line">
+            {{#each this}}
+                <article class="class-article">
+                    <div class="col-md-2">
+                        <div class="attribute-image">
+                            <a href="{{attr.ez_url}}" onclick="return eZ.RecommendationRestClient.ping('{{clickRecommended}}')">
+                                <img src="{{attr.image}}" alt="{{attr.title}}" title="{{attr.title}}" height="62" width="170" />
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="col-md-8">
+                        <div class="attribute-header">
+                            <h2>
+                                <a href="{{attr.ez_url}}" class="teaser-link" onclick="return eZ.RecommendationRestClient.ping('{{clickRecommended}}')">{{attr.title}}</a>
+                            </h2>
+                        </div>
+
+                        <div class="attribute-byline">
+                            <span class="date">{{toLocaleString attr.ez_publishedDate}}</span> - <span class="author">{{attr.author}}</span>
+                        </div>
+
+                        <div class="attribute-short">
+                            <p>{{{attr.intro}}}</p>
+                        </div>
+                    </div>
+                </article>
+            {{else}}
+                <div class="content-view-line">{% endraw %}{{ 'No recommendations found'|trans }}{% raw %}</div>
+            {{/each}}
+        </div>
+    {% endraw %}
+</script>
+
+<div id="recommendations-target-{{ templateId }}"></div>
+
+{% include '@EzSystemsRecommendationBundle/Resources/public/views/show_recommendations.html.twig' with {
+    'templateId': templateId,
+    'scenario': scenario,
+    'limit': limit,
+    'contentType': contentType,
+    'contentId': contentId
+} %}

@@ -1,0 +1,16 @@
+<script>
+    {% autoescape 'js' %}
+
+        var _ycq = _ycq || [];
+        _ycq.push(['_setAccount', '{{ customerId }}']);
+        _ycq.push(['_trackEvent', '{{ contentTypeId }}', 'click', '{{ contentId }}', '{{ userId }}', '?lang={{ language }}']);
+        _ycq.push(['_trackTimedEvent', '{{ contentTypeId }}', 'consume', '{{ contentId }}', '{{ consumeTimeout }}', '{{ userId }}', '?lang={{ language }}']);
+
+        (function() {
+            var yc = document.createElement('script'); yc.type = 'text/javascript'; yc.async = true;
+            yc.src = ('https:' === document.location.protocol ? 'https://' : 'http://') + '{{ trackingScriptUrl }}';
+            var ycs = document.getElementsByTagName('script')[0]; ycs.parentNode.insertBefore(yc, ycs);
+        })();
+
+    {% endautoescape %}
+</script>

@@ -2,5 +2,10 @@ parameters:
     ez_recommendation.default.yoochoose.customer_id: ~
     ez_recommendation.default.yoochoose.license_key: ~
     ez_recommendation.default.server_uri: ~
+    ez_recommendation.default.recommender.included_content_types: [article, blog_post, place, product]
 
     ez_recommendation.api_endpoint: 'https://admin.yoochoose.net'
+    ez_recommendation.recommender.api_endpoint: 'http://event.yoochoose.net'
+    ez_recommendation.recommender.consume_timeout: 20
+    ez_recommendation.tracking.api_endpoint: 'http://event.yoochoose.net'
+    ez_recommendation.tracking.script_url: 'cdn.yoochoose.net/yct.js'

@@ -1,0 +1,33 @@
+<script>
+    {% autoescape 'js' %}
+        (function() {
+
+            var recommendationTemplateRenderer = new eZ.RecommendationTemplateRenderer({
+                templateId: '{{ templateId }}',
+                feedbackUrl: '{{ feedbackUrl }}'
+            });
+
+            var recommendationRestClient = new eZ.RecommendationRestClient({
+                scenario: '{{ scenario }}',
+                limit: '{{ limit }}',
+                endpointUrl: '{{ endpointUrl }}',
+                feedbackUrl: '{{ feedbackUrl }}',
+                language: '{{ language }}',
+                contentType: '{{ contentType }}',
+                outputType: '{{ outputType }}',
+                contextItems: '{{ contentId }}',
+                categoryPath: '{{ categoryPath }}',
+                attributes: [{% for entry in attributes %}'{{ entry }}', {% endfor %}],
+                errorMessageCaption: '{{ 'Error occurred while loading recommendations'|trans }}',
+                notSupportedMessageCaption: '{{ 'Cannot display recommendations, this browser is not supported'|trans }}'
+            });
+
+            recommendationTemplateRenderer.displayMessage('{{ 'Loading recommended items...'|trans }}');
+            recommendationRestClient.fetchRecommendations(
+                recommendationTemplateRenderer.displayRecommendations.bind(recommendationTemplateRenderer),
+                recommendationTemplateRenderer.displayMessage.bind(recommendationTemplateRenderer)
+            );
+
+        }) ();
+    {% endautoescape %}
+</script>

@@ -9,7 +9,8 @@
     ],
     "require": {
         "guzzlehttp/guzzle": "~5.0",
-        "components/handlebars.js": "~3.0.0"
+        "components/handlebars.js": "~3.0.0",
+        "symfony/symfony": "~2.6"
     },
     "autoload": {
         "psr-4": {

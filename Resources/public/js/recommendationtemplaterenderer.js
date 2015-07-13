@@ -9,7 +9,7 @@
     /**
      * HandleBars template renderer helper.
      *
-     * @class
+     * @class RecommendationTemplateRenderer
      * @param {Object} config user settings
      */
     eZ.RecommendationTemplateRenderer = function (config) {

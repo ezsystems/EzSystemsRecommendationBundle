@@ -9,12 +9,11 @@
     /**
      * YooChoose recommender REST client.
      *
-     * @class
+     * @class RecommendationRestClient
      * @param {Object} config user settings
      */
     eZ.RecommendationRestClient = function (config) {
         this.endpointUrl = config.endpointUrl || '';
-        this.feedbackUrl = config.feedbackUrl || '';
         this.attributes = config.attributes || [];
         this.scenario = config.scenario || '';
         this.limit = config.limit || 0;
@@ -36,7 +35,9 @@
      * @param {RecommendationRestClient~onFailure} errorCallback
      */
     eZ.RecommendationRestClient.prototype.fetchRecommendations = function (responseCallback, errorCallback) {
-        var xmlhttp = eZ.RecommendationRestClient.getXMLHttpRequest();
+        var xmlhttp = eZ.RecommendationRestClient.getXMLHttpRequest(),
+            attributes = '',
+            requestQueryString;
 
         if (xmlhttp === null) {
             errorCallback(this.notSupportedMessage);
@@ -59,12 +60,23 @@
             }
         };
 
-        var attributes = '';
         for (var i = 0; i < this.attributes.length; i++) {
             attributes = attributes + '&attribute=' + this.attributes[i];
         }
 
-        xmlhttp.open('GET', this.endpointUrl + this.scenario + '.json' + '?numrecs=' + this.limit + '&' + 'contextitems=' + this.contextItems + attributes + '&contenttype=' + this.contentType + '&outputtype=' + this.outputType + '&categorypath=' + encodeURIComponent(this.categoryPath) + '&lang=' + this.language, true);
+        requestQueryString = [
+            this.endpointUrl,
+            this.scenario,
+            '.json?numrecs=', this.limit,
+            '&contextitems=', this.contextItems,
+            '&contenttype=', this.contentType,
+            '&outputtype=', this.outputType,
+            '&categorypath=', encodeURIComponent(this.categoryPath),
+            '&lang=', this.language,
+            attributes
+        ];
+
+        xmlhttp.open('GET', requestQueryString.join(''), true);
         xmlhttp.send();
     };
 
@@ -78,7 +90,7 @@
     eZ.RecommendationRestClient.ping = function (url) {
         var xmlhttp = eZ.RecommendationRestClient.getXMLHttpRequest();
 
-        if (xmlhttp === null) {
+        if (!xmlhttp) {
             return true;
         }
 

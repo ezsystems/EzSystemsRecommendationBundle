@@ -5,6 +5,8 @@
 
 /**
  * Converts ISO-8601 string to locale time/date format.
+ *
+ * input mask: [YYYY]-[MM]-[DD]T[hh]:[mm]:[ss].[sss]Z
  */
 Handlebars.registerHelper('toLocaleString', function (iso8601data) {
     return new Date(iso8601data).toLocaleString();

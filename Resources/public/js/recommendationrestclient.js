@@ -14,11 +14,11 @@
      */
     eZ.RecommendationRestClient = function (config) {
         this.endpointUrl = config.endpointUrl || '';
-        this.attributes = config.attributes || [];
+        this.fields = config.fields || [];
         this.scenario = config.scenario || '';
         this.limit = config.limit || 0;
         this.language = config.language || '';
-        this.attributes = config.attributes || [];
+        this.fields = config.fields || [];
         this.contentType = config.contentType || '';
         this.outputType = config.outputType || '';
         this.contextItems = config.contextItems || '';
@@ -60,8 +60,8 @@
             }
         };
 
-        for (var i = 0; i < this.attributes.length; i++) {
-            attributes = attributes + '&attribute=' + this.attributes[i];
+        for (var i = 0; i < this.fields.length; i++) {
+            attributes = attributes + '&attribute=' + this.fields[i];
         }
 
         requestQueryString = [

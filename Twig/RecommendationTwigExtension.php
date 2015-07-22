@@ -187,7 +187,7 @@ class RecommendationTwigExtension extends Twig_Extension
      * @param int $limit
      * @param string $contentType
      * @param string $template
-     * @param array $attributes
+     * @param array $fields
      * @throws \EzSystems\RecommendationBundle\Exception\InvalidArgumentException when template is not found
      * @throws \EzSystems\RecommendationBundle\Exception\InvalidArgumentException when attributes are missing
      * @return string
@@ -199,14 +199,14 @@ class RecommendationTwigExtension extends Twig_Extension
         $limit,
         $contentType,
         $template,
-        array $attributes
+        array $fields
     ) {
         if (!file_exists(sprintf('%s/../Resources/public/views/%s.html.twig', __DIR__, $template))) {
             throw new InvalidArgumentException(sprintf('Template with the name `%s.html.twig` was not found under the `EzSystemsRecommendationBundle` views location', $template));
         }
 
-        if (empty($attributes)) {
-            throw new InvalidArgumentException('Missing recommendation attributes, at least one attribute is required');
+        if (empty($fields)) {
+            throw new InvalidArgumentException('Missing recommendation fields, at least one field is required');
         }
 
         return $twigEnvironment->render(
@@ -217,7 +217,7 @@ class RecommendationTwigExtension extends Twig_Extension
                 'scenario' => $scenario,
                 'limit' => $limit,
                 'templateId' => uniqid(),
-                'attributes' => $attributes,
+                'fields' => $fields,
                 'endpointUrl' => $this->getEndPointUrl(),
                 'feedbackUrl' => $this->getFeedbackUrl($this->getContentTypeId($contentType)),
                 'contentType' => $this->getContentTypeId($this->getContentIdentifier($contentId)),

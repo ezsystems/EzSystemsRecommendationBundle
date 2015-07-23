@@ -7,6 +7,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Symfony\Component\DependencyInjection\Loader;
+use EzSystems\RecommendationBundle\DependencyInjection;
 
 /**
  * This is the class that loads and manages your bundle configuration
@@ -24,6 +25,22 @@ class EzSystemsRecommendationExtension extends Extension
         $loader->load('services.yml');
         $loader->load('slots.yml');
         $loader->load('default_settings.yml');
+
+        if (isset($config['api_endpoint'])) {
+            $container->setParameter('ez_recommendation.api_endpoint', $config['api_endpoint']);
+        }
+        if (isset($config['recommender']['api_endpoint'])) {
+            $container->setParameter('ez_recommendation.recommender.api_endpoint', $config['recommender']['api_endpoint']);
+        }
+        if (isset($config['recommender']['consume_timeout'])) {
+            $container->setParameter('ez_recommendation.recommender.consume_timeout', $config['recommender']['consume_timeout']);
+        }
+        if (isset($config['tracking']['script_url'])) {
+            $container->setParameter('ez_recommendation.tracking.script_url', $config['tracking']['script_url']);
+        }
+        if (isset($config['tracking']['api_endpoint'])) {
+            $container->setParameter('ez_recommendation.tracking.api_endpoint', $config['tracking']['api_endpoint']);
+        }
 
         $processor = new ConfigurationProcessor($container, 'ez_recommendation');
         $processor->mapConfig($config, new ConfigurationMapper());

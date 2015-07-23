@@ -6,7 +6,7 @@ This bundle integrates Recommendation services into eZ Platform. It supports the
 ## Requirements
 
 - PHP 5.4.4
-- eZ Publish 5.4/2014.11 or above, with the REST API configured to use sessions and publicly open to the YooChoose servers.
+- eZ Publish 5.4.1/2015.01 or above, with the REST API configured to use sessions and publicly open to the YooChoose servers.
 - A YooChoose license
 
 This bundle is independent from legacy's ezrecommendation extension, and doesn't require it.
@@ -28,7 +28,7 @@ $bundles = array(
 ```
 
 ## Configuration
-The bundle's configuration is siteaccess aware. This is an example of settings:
+The bundle's configuration is siteaccess aware. This is an example of settings (config.yml):
 ```yaml
 ez_recommendation:
     system:
@@ -39,7 +39,6 @@ ez_recommendation:
             server_uri: "http://example.com"
             recommender:
                 included_content_types: ["blog", "article"]
-                consume_timeout: 20
 ```
 
 ### `yoochoose.customer_id` and `yoochoose.license_key`
@@ -51,11 +50,19 @@ The URI your site's REST API can be accessed from.
 ### `recommender.included_content_types`
 This allows you to define content types on which tracking script will be shown. Go to the Tracking section to get more details.
 
-### `recommender.consume_timeout`
-This setting describe when `consume` event should be submitted after page loading (in seconds).
+### [advanced]
+```yaml
+ez_recommendation:
+    api_endpoint: 'https://admin.yoochoose.net'
+    recommender:
+        api_endpoint: 'http://event.yoochoose.net'
+        consume_timeout: 20
+    tracking:
+        api_endpoint: 'http://event.yoochoose.net'
+        script_url: 'cdn.yoochoose.net/yct.js'
+```
 
-### [advanced] `api_endpoint` / `recommender.api_endpoint` / `tracking.api_endpoint` / `tracking.script_url`
-All of those settings will set the URI's used for the YooChoose backend. Changing any of these parameters without a valid reason will break all calls to YooChoose. It can be useful to test the API by mocking the service, or if you have a hosted version of YooChoose Recommendation service.
+All of those settings will set advanced options for YooChoose backend. Changing any of these parameters without a valid reason will break all calls to YooChoose. It can be useful to test the API by mocking the service, or if you have a hosted version of YooChoose Recommendation service.
 
 ## Usage
 
@@ -101,32 +108,44 @@ Implementation is very easy and can be performed in just a few steps (assuming t
 %}
 ```
 
-* place dedicated Twig helper in place where you want to display recommendations:
+* place dedicated Twig helper in place where you want to display recommendations *(see further below for example)*:
 
 ```twig
-{{ yc_show_recommendations(content.id, 'scenario_name', limit, 'content_type', 'template',
-    ['ez_publishedDate', 'ez_url', 'title', 'image', 'author', 'intro']
+{{ yc_show_recommendations(
+    contentId = content.id,
+    scenario = '',
+    limit = '',
+    contentType = '',
+    template = '',
+    fields = []
 ) }}
 ```
 
-Parameter meanings:
+Parameter meanings (all bellow are required):
 
 Parameter       | Type   | Description
 ----------------|--------|------------
-`content.id`    | int    | this is in content based views normally the twig variable holding the content id (we want to get recommendations for)
-`scenario_name` | string | scenario used to display recommendations, you can create one at YooChoose dashboard
+`contentId`     | int    | this is in content based views normally the twig variable holding the content id (we want to get recommendations for)
+`scenario`      | string | scenario used to display recommendations, you can create one at YooChoose dashboard
 `limit`         | int    | how many recommendations will be shown?
-`content_type`  | string | content type values you are expecting in response
+`contentType`   | string | content type values you are expecting in response
 `template`      | string | HandleBars template name (your templates are stored under `EzRecommendationBundle/Resources/public/views` directory. Take a look on `default.html.twig` file which includes default template that can be used to prepare customised version)
-`[fields]`      | array  | here you can define which fields are required and will be requested from the recommender engine. These field names are also used inside HandleBars templates
+`fields`        | array  | here you can define which fields are required and will be requested from the recommender engine. These field names are also used inside HandleBars templates
 
 Sample integration should look like below:
 
 ```twig
-{{ yc_show_recommendations(content.id, 'popular', 5, 'article', 'default',
-    ['ez_publishedDate', 'ez_url', 'title', 'image', 'author', 'intro']
+{{ yc_show_recommendations(
+    contentId = content.id,
+    scenario = 'popular',
+    limit = 5,
+    contentType = 'article',
+    template = 'default',
+    fields = ['ez_publishedDate', 'ez_url', 'title', 'image', 'author', 'intro']
 ) }}
 ```
+
+You can also bypass named arguments using standard value passing as arguments.
 
 #### The item id
 The ItemId mentioned throughout this documentation is usually set to the viewed ContentId. Depending on requirements, it can be set to a different value, in collaboration with YooChoose.

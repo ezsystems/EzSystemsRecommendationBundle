@@ -20,7 +20,7 @@
         this.language = config.language || '';
         this.fields = config.fields || [];
         this.contentType = config.contentType || '';
-        this.outputTypeId = config.outputTypeId || '';
+        this.outputType = config.outputType || '';
         this.contextItems = config.contextItems || '';
         this.categoryPath = config.categoryPath || '';
         this.errorMessage = config.errorMessage || 'Error occurred while loading recommendations';
@@ -70,7 +70,7 @@
             '.json?numrecs=', this.limit,
             '&contextitems=', this.contextItems,
             '&contenttype=', this.contentType,
-            '&outputtypeid=', this.outputTypeId,
+            '&outputtype=', this.outputType,
             '&categorypath=', encodeURIComponent(this.categoryPath),
             '&lang=', this.language,
             attributes

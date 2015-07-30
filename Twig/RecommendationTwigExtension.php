@@ -221,7 +221,7 @@ class RecommendationTwigExtension extends Twig_Extension
                 'endpointUrl' => $this->getEndPointUrl(),
                 'feedbackUrl' => $this->getFeedbackUrl($this->getContentTypeId($contentType)),
                 'contentType' => $this->getContentTypeId($this->getContentIdentifier($contentId)),
-                'outputType' => $this->getContentTypeId($contentType),
+                'outputTypeId' => $this->getContentTypeId($contentType),
                 'categoryPath' => $this->getLocationPathString($contentId)
             )
         );

@@ -57,13 +57,13 @@ services:
             - @ezpublish.locale.converter
             - @security.authorization_checker
             - @session
-            - customerId: %ez_recommendation.default.yoochoose.customer_id%
-              recommenderEndPoint: %ez_recommendation.recommender.api_endpoint%
+            - recommenderEndPoint: %ez_recommendation.recommender.api_endpoint%
               consumeTimeout: %ez_recommendation.recommender.consume_timeout%
               trackingScriptUrl: %ez_recommendation.tracking.script_url%
               trackingEndPoint: %ez_recommendation.tracking.api_endpoint%
         calls:
             - [setIncludedContentTypes, [$recommender.included_content_types;ez_recommendation$]]
+            - [setCustomerId, [$yoochoose.customer_id;ez_recommendation$]]
         tags:
             - { name: twig.extension }
 

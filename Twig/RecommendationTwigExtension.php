@@ -54,6 +54,8 @@ class RecommendationTwigExtension extends Twig_Extension
     protected $options = array();
 
     /**
+     * Constructs EzSystemsRecommendationBundle Twig extension.
+     *
      * @param \Symfony\Component\HttpFoundation\RequestStack $requestStack
      * @param \eZ\Publish\Core\SignalSlot\Repository $repository
      * @param \eZ\Publish\API\Repository\ContentTypeService $contentTypeService
@@ -86,9 +88,26 @@ class RecommendationTwigExtension extends Twig_Extension
         $this->options = $options;
     }
 
+    /**
+     * Sets `includedContentTypes` option when service is created which allows to
+     * inject parameter value according to siteaccess configuration.
+     *
+     * @param array $value
+     */
     public function setIncludedContentTypes($value)
     {
         $this->options['includedContentTypes'] = $value;
+    }
+
+    /**
+     * Sets `customerId` option when service is created which allows to
+     * inject parameter value according to siteaccess configuration.
+     *
+     * @param string $value
+     */
+    public function setCustomerId($value)
+    {
+        $this->options['customerId'] = $value;
     }
 
     /**

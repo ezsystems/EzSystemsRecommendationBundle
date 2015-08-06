@@ -24,8 +24,9 @@
         this.contextItems = config.contextItems || '';
         this.categoryPath = config.categoryPath || '';
         this.errorMessage = config.errorMessage || 'Error occurred while loading recommendations';
-        this.notSupportedMessage = config.notSupportedMessage || 'Cannot display recommendations, this browser is not supported';
-        this.unauthorizedMessage = config.unauthorizedMessage || 'Unauthorized access';
+        this.notSupportedMessage = config.notSupportedMessage || 'Cannot display recommendations, your browser is not supported';
+        this.unauthorizedMessage = config.unauthorizedMessage || 'Internal error, unauthorized access to recommender engine (code: 401)';
+        this.internalServerErrorMessage = config.internalServerErrorMessage || 'Internal server error, please validate your recommendation settings (code: 500)';
     };
 
     /**
@@ -52,13 +53,15 @@
                 if (xmlhttp.status === 200) {
                     jsonResponse = JSON.parse(xmlhttp.response);
                     responseCallback(jsonResponse.recommendationResponseList, this);
-                } else if (xmlhttp.status == 401) {
+                } else if (xmlhttp.status === 401) {
                     errorCallback(this.unauthorizedMessage);
+                } else if (xmlhttp.status === 500) {
+                    errorCallback(this.internalServerErrorMessage);
                 } else {
                     errorCallback(this.errorMessage);
                 }
             }
-        };
+        }.bind(this);
 
         for (var i = 0; i < this.fields.length; i++) {
             attributes = attributes + '&attribute=' + this.fields[i];

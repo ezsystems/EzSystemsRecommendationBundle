@@ -5,7 +5,7 @@ parameters:
     ez_recommendation.default.recommender.included_content_types: ~
 
     ez_recommendation.api_endpoint: 'https://admin.yoochoose.net'
-    ez_recommendation.recommender.api_endpoint: 'http://event.yoochoose.net'
+    ez_recommendation.recommender.api_endpoint: 'http://reco.yoochoose.net'
     ez_recommendation.recommender.consume_timeout: 20
     ez_recommendation.tracking.api_endpoint: 'http://event.yoochoose.net'
     ez_recommendation.tracking.script_url: 'cdn.yoochoose.net/yct.js'

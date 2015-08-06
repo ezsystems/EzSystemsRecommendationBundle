@@ -55,7 +55,7 @@ This allows you to define content types on which tracking script will be shown. 
 ez_recommendation:
     api_endpoint: 'https://admin.yoochoose.net'
     recommender:
-        api_endpoint: 'http://event.yoochoose.net'
+        api_endpoint: 'http://reco.yoochoose.net'
         consume_timeout: 20
     tracking:
         api_endpoint: 'http://event.yoochoose.net'

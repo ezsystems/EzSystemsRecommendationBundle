@@ -13,6 +13,7 @@ use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use eZ\Publish\API\Repository\ContentService;
+use eZ\Publish\API\Repository\ContentTypeService;
 
 /**
  * A recommendation client that sends notifications to a YooChoose server.
@@ -31,11 +32,15 @@ class YooChooseNotifier implements RecommendationClient
     /** @var \eZ\Publish\API\Repository\ContentService */
     private $contentService;
 
+    /** @var \eZ\Publish\API\Repository\ContentTypeService */
+    private $contentTypeService;
+
     /**
      * Constructs a YooChooseNotifier Recommendation Client.
      *
      * @param \GuzzleHttp\ClientInterface $guzzle
      * @param \eZ\Publish\API\Repository\ContentService $contentService
+     * @param \eZ\Publish\API\Repository\ContentTypeService $contentTypeService
      * @param array $options
      *     Keys (all required):
      *     - customer-id: the yoochoose customer ID, e.g. 12345
@@ -44,14 +49,20 @@ class YooChooseNotifier implements RecommendationClient
      *     - server-uri: the site's REST API base URI (without the prefix), e.g. http://api.example.com
      * @param \Psr\Log\LoggerInterface|null $logger
      */
-    public function __construct(GuzzleClient $guzzle, ContentService $contentService, array $options, LoggerInterface $logger = null)
-    {
+    public function __construct(
+        GuzzleClient $guzzle,
+        ContentService $contentService,
+        ContentTypeService $contentTypeService,
+        array $options,
+        LoggerInterface $logger = null
+    ) {
         $resolver = new OptionsResolver();
         $this->configureOptions($resolver);
 
         $this->options = $resolver->resolve($options);
         $this->guzzle = $guzzle;
         $this->contentService = $contentService;
+        $this->contentTypeService = $contentTypeService;
         $this->logger = $logger;
     }
 
@@ -70,8 +81,23 @@ class YooChooseNotifier implements RecommendationClient
         $this->options['server-uri'] = $value;
     }
 
+    /**
+     * Sets `included-content-types` option when service is created which allows to
+     * inject parameter value according to siteaccess configuration.
+     *
+     * @param array $value
+     */
+    public function setIncludedContentTypes($value)
+    {
+        $this->options['included-content-types'] = $value;
+    }
+
     public function updateContent($contentId)
     {
+        if (!in_array($this->getContentIdentifier($contentId), $this->options['included-content-types'])) {
+            return;
+        }
+
         if (isset($this->logger)) {
             $this->logger->info("Notifying YooChoose: updateContent($contentId)");
         }
@@ -90,6 +116,10 @@ class YooChooseNotifier implements RecommendationClient
 
     public function deleteContent($contentId)
     {
+        if (!in_array($this->getContentIdentifier($contentId), $this->options['included-content-types'])) {
+            return;
+        }
+
         if (isset($this->logger)) {
             $this->logger->info("Notifying YooChoose: delete($contentId)");
         }
@@ -104,6 +134,24 @@ class YooChooseNotifier implements RecommendationClient
                 $this->logger->error("YooChoose Post notification error: ".$e->getMessage());
             }
         }
+    }
+
+    /**
+     * Returns ContentType identifier based on $contentId.
+     *
+     * @param int|mixed $contentId
+     * @return string
+     */
+    private function getContentIdentifier($contentId)
+    {
+        $contentType = $this->contentTypeService->loadContentType(
+            $this->contentService
+                ->loadContent($contentId)
+                ->contentInfo
+                ->contentTypeId
+        );
+
+        return $contentType->identifier;
     }
 
     /**

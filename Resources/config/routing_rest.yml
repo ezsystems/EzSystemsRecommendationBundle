@@ -1,0 +1,5 @@
+recommendationBundle_getContent:
+    pattern: /ez_recommendation/v1/content/{contentId}
+    defaults:
+        _controller: ez_recommendation.rest.controller.default:getContent
+    methods: [GET]

@@ -4,7 +4,8 @@ parameters:
     ez_recommendation.event_listener.login.class: EzSystems\RecommendationBundle\EventListener\Login
     ez_recommendation.event_listener.session_backup.class: EzSystems\RecommendationBundle\EventListener\SessionBackup
     ez_recommendation.value_object_visitor.content_data.class: EzSystems\RecommendationBundle\Rest\ValueObjectVisitor\ContentData
-    ez_recommendation.rest.controller.default.class: EzSystems\RecommendationBundle\Rest\Controller\DefaultController
+    ez_recommendation.rest.controller.content.class: EzSystems\RecommendationBundle\Rest\Controller\ContentController
+    ez_recommendation.rest.controller.contenttype.class: EzSystems\RecommendationBundle\Rest\Controller\ContentTypeController
 
 services:
     ez_recommendation.client.yoochoose_notifier:
@@ -12,12 +13,14 @@ services:
         arguments:
             - @ez_recommendation.client.yoochoose_notifier.guzzle_client
             - @ezpublish.api.service.content
+            - @ezpublish.api.service.content_type
             - {api-endpoint: %ez_recommendation.api_endpoint%}
             - @?logger
         calls:
             - [setCustomerId, [$yoochoose.customer_id;ez_recommendation$]]
             - [setLicenseKey, [$yoochoose.license_key;ez_recommendation$]]
             - [setServerUri, [$server_uri;ez_recommendation$]]
+            - [setIncludedContentTypes, [$recommender.included_content_types;ez_recommendation$]]
         tags:
             - { name: monolog.logger, channel: ez_recommendation }
 
@@ -96,10 +99,19 @@ services:
         tags:
             - { name: ezpublish_rest.output.value_object_visitor, type: EzSystems\RecommendationBundle\Rest\Values\ContentData }
 
-    ez_recommendation.rest.controller.default:
-        class: %ez_recommendation.rest.controller.default.class%
+    ez_recommendation.rest.controller.content:
+        class: %ez_recommendation.rest.controller.content.class%
         arguments:
             - @ezpublish.config.resolver.core
             - @ezpublish.image_alias.imagine.alias_generator
             - @ezpublish.urlalias_router
+            - @ezpublish.api.service.content
+            - @ezpublish.api.service.location
+            - @ezpublish.api.service.content_type
+            - @ezpublish.api.service.search
         parent: ezpublish_rest.controller.base
+
+    ez_recommendation.rest.controller.contenttype:
+        class: %ez_recommendation.rest.controller.contenttype.class%
+        parent: ez_recommendation.rest.controller.content
+

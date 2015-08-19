@@ -25,6 +25,14 @@ $bundles = array(
     // existing bundles
     new EzSystems\RecommendationBundle\EzSystemsRecommendationBundle()
 );
+
+```
+Import additional routing by adding following lines to your `routing.yml` file:
+
+```yaml
+recommendationBundleRestRoutes:
+    resource: "@EzSystemsRecommendationBundle/Resources/config/routing_rest.yml"
+    prefix:   %ezpublish_rest.path_prefix%
 ```
 
 ## Configuration

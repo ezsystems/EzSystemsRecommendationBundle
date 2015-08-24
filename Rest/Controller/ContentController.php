@@ -9,6 +9,7 @@
 namespace EzSystems\RecommendationBundle\Rest\Controller;
 
 use eZ\Bundle\EzPublishCoreBundle\Imagine\AliasGenerator as ImageVariationService;
+use eZ\Publish\Core\Repository\Values\Content\Content;
 use eZ\Publish\API\Repository\Values\Content\Field;
 use eZ\Publish\API\Repository\Values\ContentType\ContentType;
 use eZ\Publish\Core\MVC\ConfigResolverInterface;
@@ -117,7 +118,7 @@ class ContentController extends BaseController
                 'identifier' => $contentType->identifier,
                 'language' => $language,
                 'publishedDate' => $contentValue->contentInfo->publishedDate->format('c'),
-                'author' => $contentValue->getFieldValue('author'),
+                'author' => $this->getAuthor($contentValue, $contentType),
                 'uri' => $this->generator->generate($location, array(), false),
                 'mainLocation' => array(
                     'href' => '/api/ezp/v2/content/locations' . $location->pathString,
@@ -245,6 +246,10 @@ class ContentController extends BaseController
         $content = $this->contentService->loadContent($contentId, array($language));
         $contentType = $this->contentTypeService->loadContentType($content->contentInfo->contentTypeId);
 
+        if ($identifier = $this->getFieldIdentifier('image', $contentType)) {
+            return $identifier;
+        }
+
         foreach ($contentType->fieldDefinitions as $fieldDefinition) {
             if ($fieldDefinition->fieldTypeIdentifier == 'ezimage') {
                 return $fieldDefinition->identifier;
@@ -263,6 +268,8 @@ class ContentController extends BaseController
      *
      * @param \eZ\Publish\Core\Repository\Values\Content\Content $content
      * @param string $language
+     *
+     * @return int|null
      */
     private function getRelation($content, $language)
     {
@@ -277,5 +284,57 @@ class ContentController extends BaseController
         }
 
         return false;
+    }
+
+    /**
+     * Returns author of the content.
+     *
+     * @param Content $contentValue
+     * @param ContentType $contentType
+     *
+     * @return string
+     */
+    private function getAuthor(Content $contentValue, ContentType $contentType)
+    {
+        $author = $contentValue->getFieldValue($this->getFieldIdentifier('author', $contentType));
+
+        if (null === $author) {
+            $user = $this->contentService->loadContentInfo($contentValue->contentInfo->ownerId);
+            $author = $user->name;
+        }
+
+        return (string) $author;
+    }
+
+    /**
+     * Returns field name.
+     *
+     * To define another field name for specific value (e. g. author) add it to default_settings.yml
+     *
+     * For example:
+     *
+     *     ez_recommendation.field_identifiers:
+     *         author:
+     *             blog_post: authors
+     *         image:
+     *             blog_post: thumbnail
+     *
+     * @param string $fieldName
+     * @param ContentType $contentType
+     *
+     * @return string
+     */
+    private function getFieldIdentifier($fieldName, ContentType $contentType)
+    {
+        $contentTypeName = $contentType->identifier;
+        if ($this->container->hasParameter('ez_recommendation.field_identifiers')) {
+            $fieldDefinitions = $this->container->getParameter('ez_recommendation.field_identifiers');
+
+            if (isset($fieldDefinitions[$fieldName]) && !empty($fieldDefinitions[$fieldName][$contentTypeName])) {
+                return $fieldDefinitions[$fieldName][$contentTypeName];
+            }
+        } else {
+            return $fieldName;
+        }
     }
 }

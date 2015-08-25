@@ -9,15 +9,15 @@
 namespace EzSystems\RecommendationBundle\Rest\Controller;
 
 use eZ\Bundle\EzPublishCoreBundle\Imagine\AliasGenerator as ImageVariationService;
-use eZ\Publish\Core\Repository\Values\Content\Content;
+use eZ\Publish\API\Repository\Values\Content\Content;
 use eZ\Publish\API\Repository\Values\Content\Field;
 use eZ\Publish\API\Repository\Values\ContentType\ContentType;
 use eZ\Publish\Core\MVC\ConfigResolverInterface;
 use eZ\Publish\Core\REST\Server\Controller as BaseController;
-use eZ\Publish\Core\Repository\ContentService;
-use eZ\Publish\Core\Repository\LocationService;
-use eZ\Publish\Core\Repository\ContentTypeService;
-use eZ\Publish\Core\Repository\SearchService;
+use eZ\Publish\API\Repository\ContentService;
+use eZ\Publish\API\Repository\LocationService;
+use eZ\Publish\API\Repository\ContentTypeService;
+use eZ\Publish\API\Repository\SearchService;
 use EzSystems\RecommendationBundle\Rest\Values\ContentData as ContentDataValue;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface as UrlGenerator;
 
@@ -51,10 +51,10 @@ class ContentController extends BaseController
      * @param \eZ\Publish\Core\MVC\ConfigResolverInterface $configResolver
      * @param \eZ\Bundle\EzPublishCoreBundle\Imagine\AliasGenerator $imageVariationService
      * @param \Symfony\Component\Routing\Generator\UrlGeneratorInterface $generator
-     * @param \eZ\Publish\Core\Repository\ContentService $contentService
-     * @param \eZ\Publish\Core\Repository\LocationService $locationService
-     * @param \eZ\Publish\Core\Repository\ContentTypeService $contentTypeService
-     * @param \eZ\Publish\Core\Repository\SearchService $searchService
+     * @param \eZ\Publish\API\Repository\ContentService $contentService
+     * @param \eZ\Publish\API\Repository\LocationService $locationService
+     * @param \eZ\Publish\API\Repository\ContentTypeService $contentTypeService
+     * @param \eZ\Publish\API\Repository\SearchService $searchService
      */
     public function __construct(
         ConfigResolverInterface $configResolver,
@@ -107,7 +107,10 @@ class ContentController extends BaseController
         $content = array();
 
         foreach ($contentIds as $contentId) {
-            $contentValue = $this->contentService->loadContent($contentId, array($requestLanguage));
+            $contentValue = $this->contentService->loadContent(
+                $contentId,
+                (null === $requestLanguage) ? null : array($requestLanguage)
+            );
             $contentType = $this->contentTypeService->loadContentType($contentValue->contentInfo->contentTypeId);
             $location = $this->locationService->loadLocation($contentValue->contentInfo->mainLocationId);
             $language = (null === $requestLanguage) ? $contentType->mainLanguageCode : $requestLanguage;
@@ -137,16 +140,18 @@ class ContentController extends BaseController
                 foreach ($fields as $field) {
                     $fieldValue = $contentValue->getFieldValue($field, $language);
 
-                    if ($relatedField = $this->getRelation($contentValue, $language)) {
-                        $fieldValue = $this->getRelatedFieldValue((string) $relatedField, $language, $imageFieldIdentifier);
+                    $relatedField = $this->getRelation($contentValue, $field, $imageFieldIdentifier, $language);
+
+                    if (null === $fieldValue && !$relatedField) {
+                        continue;
+                    }
+
+                    if ($relatedField) {
+                        $fieldValue = $this->getRelatedFieldValue($relatedField, $language, $imageFieldIdentifier);
                         $field = $imageFieldIdentifier;
                     } elseif ($field == $imageFieldIdentifier) {
                         $fieldObj = $contentValue->getFieldsByLanguage($language);
                         $fieldValue = $this->imageVariations($fieldObj[$field], $contentValue->versionInfo, $this->request->get('image'));
-                    }
-
-                    if (null === $fieldValue) {
-                        continue;
                     }
 
                     $content[$contentId]['fields'][] = array(
@@ -163,8 +168,8 @@ class ContentController extends BaseController
     /**
      * Checks if fields are given, if not - returns all of them.
      *
-     * @param string $fields
      * @param \eZ\Publish\API\Repository\Values\ContentType\ContentType $contentType
+     * @param string $fields
      *
      * @return array|null
      */
@@ -189,7 +194,7 @@ class ContentController extends BaseController
      * If none is set original is returned.
      *
      * @param \eZ\Publish\API\Repository\Values\Content\Field $fieldValue
-     * @param \eZ\Publish\Core\Repository\Values\Content\VersionInfo $versionInfo
+     * @param \eZ\Publish\API\Repository\Values\Content\VersionInfo $versionInfo
      * @param string|null $variation
      *
      * @return string
@@ -243,10 +248,10 @@ class ContentController extends BaseController
      */
     private function getImageFieldIdentifier($contentId, $language)
     {
-        $content = $this->contentService->loadContent($contentId, array($language));
+        $content = $this->contentService->loadContent($contentId);
         $contentType = $this->contentTypeService->loadContentType($content->contentInfo->contentTypeId);
 
-        if ($identifier = $this->getFieldIdentifier('image', $contentType)) {
+        if ($identifier = $this->getConfiguredFieldIdentifier('image', $contentType)) {
             return $identifier;
         }
 
@@ -266,20 +271,25 @@ class ContentController extends BaseController
     /**
      * Checks if content has image relation field, returns its ID if true.
      *
-     * @param \eZ\Publish\Core\Repository\Values\Content\Content $content
+     * @param \eZ\Publish\API\Repository\Values\Content\Content $content
+     * @param string $field
+     * @param string $imageFieldIdentifier
      * @param string $language
      *
      * @return int|null
      */
-    private function getRelation($content, $language)
+    private function getRelation(Content $content, $field, $imageFieldIdentifier, $language)
     {
         $contentType = $this->contentTypeService->loadContentType($content->contentInfo->contentTypeId);
 
-        foreach ($contentType->fieldDefinitions as $fieldDefinition) {
-            if ($fieldDefinition->fieldTypeIdentifier == 'ezobjectrelation') {
-                $fieldValue = $content->getFieldValue($fieldDefinition->identifier, $language);
+        foreach ($contentType->fieldDefinitions as $fieldDef) {
+            $isRelation = ($fieldDef->fieldTypeIdentifier == 'ezobjectrelation' && $field == $fieldDef->identifier);
+            if ($isRelation || $field == $imageFieldIdentifier) {
+                $fieldValue = $content->getFieldValue($fieldDef->identifier, $language);
 
-                return $fieldValue->destinationContentId;
+                if (isset($fieldValue->destinationContentId)) {
+                    return $fieldValue->destinationContentId;
+                }
             }
         }
 
@@ -289,18 +299,18 @@ class ContentController extends BaseController
     /**
      * Returns author of the content.
      *
-     * @param Content $contentValue
-     * @param ContentType $contentType
+     * @param \eZ\Publish\API\Repository\Values\Content\Content $contentValue
+     * @param \eZ\Publish\API\Repository\Values\ContentType\ContentType $contentType
      *
      * @return string
      */
     private function getAuthor(Content $contentValue, ContentType $contentType)
     {
-        $author = $contentValue->getFieldValue($this->getFieldIdentifier('author', $contentType));
+        $author = $contentValue->getFieldValue($this->getConfiguredFieldIdentifier('author', $contentType));
 
         if (null === $author) {
-            $user = $this->contentService->loadContentInfo($contentValue->contentInfo->ownerId);
-            $author = $user->name;
+            $userContentInfo = $this->contentService->loadContentInfo($contentValue->contentInfo->ownerId);
+            $author = $userContentInfo->name;
         }
 
         return (string) $author;
@@ -320,11 +330,11 @@ class ContentController extends BaseController
      *             blog_post: thumbnail
      *
      * @param string $fieldName
-     * @param ContentType $contentType
+     * @param \eZ\Publish\API\Repository\Values\ContentType\ContentType $contentType
      *
      * @return string
      */
-    private function getFieldIdentifier($fieldName, ContentType $contentType)
+    private function getConfiguredFieldIdentifier($fieldName, ContentType $contentType)
     {
         $contentTypeName = $contentType->identifier;
         if ($this->container->hasParameter('ez_recommendation.field_identifiers')) {

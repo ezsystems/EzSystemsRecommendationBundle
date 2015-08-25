@@ -1,16 +1,14 @@
 <?php
 /**
- * This file is part of the eZ Publish Kernel package
+ * This file is part of the eZ Publish Kernel package.
  *
  * @copyright Copyright (C) eZ Systems AS. All rights reserved.
  * @license For full copyright and license information view LICENSE file distributd with this source code.
  */
-
 namespace EzSystems\RecommendationBundle\Tests\Client;
 
 use EzSystems\RecommendationBundle\Client\YooChooseNotifier;
 use Guzzle\Http\Message\Response;
-use GuzzleHttp\ClientInterface;
 use PHPUnit_Framework_TestCase;
 
 class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
@@ -54,7 +52,7 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
                 'events' => array(
                     array(
                         'action' => $action,
-                        'uri' => 'http://example.com/api/ezp/v2/content/objects/'.$contentId,
+                        'uri' => 'http://example.com/api/ezp/v2/content/objects/' . $contentId,
                     ),
                 ),
             ),
@@ -62,7 +60,7 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * Returns the expected API endpoint for notifications
+     * Returns the expected API endpoint for notifications.
      * @return string
      */
     protected function getExpectedEndpoint()

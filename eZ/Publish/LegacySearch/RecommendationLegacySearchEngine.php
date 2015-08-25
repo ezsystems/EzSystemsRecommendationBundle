@@ -1,11 +1,10 @@
 <?php
 /**
- * This file is part of the EzSystemsRecommendationBundle package
+ * This file is part of the EzSystemsRecommendationBundle package.
  *
  * @copyright Copyright (C) eZ Systems AS. All rights reserved.
  * @license For full copyright and license information view LICENSE file distributd with this source code.
  */
-
 namespace EzSystems\RecommendationBundle\eZ\Publish\LegacySearch;
 
 use ezpSearchEngine;
@@ -76,12 +75,11 @@ class RecommendationLegacySearchEngine implements ezpSearchEngine
         $this->legacySearchEngine->commit();
     }
 
-    public function addNodeAssignment( $mainNodeID, $objectID, $nodeAssignmentIDList, $isMoved = false )
+    public function addNodeAssignment($mainNodeID, $objectID, $nodeAssignmentIDList, $isMoved = false)
     {
-        $this->recommendationClient->updateContent( $objectID );
-        if ( method_exists( $this->legacySearchEngine, 'addNodeAssignment' ) )
-        {
-            $this->legacySearchEngine->addNodeAssignment( $mainNodeID, $objectID, $nodeAssignmentIDList, $isMoved );
+        $this->recommendationClient->updateContent($objectID);
+        if (method_exists($this->legacySearchEngine, 'addNodeAssignment')) {
+            $this->legacySearchEngine->addNodeAssignment($mainNodeID, $objectID, $nodeAssignmentIDList, $isMoved);
         }
     }
 }

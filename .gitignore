@@ -2,3 +2,4 @@
 /.idea/
 composer.lock
 /components/
+.php_cs.cache

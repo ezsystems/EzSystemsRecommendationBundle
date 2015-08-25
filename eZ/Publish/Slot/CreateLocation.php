@@ -6,7 +6,6 @@
  * @license For full copyright and license information view LICENSE file distributed with this source code.
  * @version //autogentag//
  */
-
 namespace EzSystems\RecommendationBundle\eZ\Publish\Slot;
 
 use eZ\Publish\Core\SignalSlot\Signal;
@@ -17,7 +16,7 @@ use eZ\Publish\Core\SignalSlot\Signal;
 class CreateLocation extends Base
 {
     /**
-     * Receive the given $signal and react on it
+     * Receive the given $signal and react on it.
      *
      * @param \eZ\Publish\Core\SignalSlot\Signal $signal
      */

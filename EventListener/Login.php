@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This file is part of the EzSystemsRecommendationBundle package
+ * This file is part of the EzSystemsRecommendationBundle package.
  *
  * @copyright Copyright (C) eZ Systems AS. All rights reserved.
  * @license For full copyright and license information view LICENSE file distributed with this source code.
@@ -50,8 +50,7 @@ class Login
         GuzzleClient $guzzleClient,
         $options = array(),
         LoggerInterface $logger = null
-    )
-    {
+    ) {
         $this->authorizationChecker = $authorizationChecker;
         $this->session = $session;
         $this->guzzleClient = $guzzleClient;
@@ -69,7 +68,7 @@ class Login
         if ($this->authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY') | // user has just logged in
             $this->authorizationChecker->isGranted('IS_AUTHENTICATED_REMEMBERED')) { // user has logged in using remember_me cookie
 
-            $notificationUri = sprintf($this->getNotificationEndpoint().'%s/%s/%s',
+            $notificationUri = sprintf($this->getNotificationEndpoint() . '%s/%s/%s',
                 'login',
                 $this->session->get('yc-session-id'),
                 $event->getAuthenticationToken()->getUser()->getAPIUser()->id

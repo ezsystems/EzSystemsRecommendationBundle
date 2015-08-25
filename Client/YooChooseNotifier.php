@@ -1,6 +1,6 @@
 <?php
 /**
- * This file is part of the EzSystemsRecommendationBundle package
+ * This file is part of the EzSystemsRecommendationBundle package.
  *
  * @copyright Copyright (C) eZ Systems AS. All rights reserved.
  * @license For full copyright and license information view LICENSE file distributd with this source code.
@@ -105,11 +105,11 @@ class YooChooseNotifier implements RecommendationClient
             $this->notify(array(array(
                 'action' => 'update',
                 'uri' => $this->getContentUri($contentId),
-                'contentTypeId' => $this->getContentTypeId($contentId)
+                'contentTypeId' => $this->getContentTypeId($contentId),
             )));
         } catch (RequestException $e) {
             if (isset($this->logger)) {
-                $this->logger->error("YooChoose Post notification error: ".$e->getMessage());
+                $this->logger->error('YooChoose Post notification error: ' . $e->getMessage());
             }
         }
     }
@@ -127,11 +127,11 @@ class YooChooseNotifier implements RecommendationClient
             $this->notify(array(array(
                 'action' => 'delete',
                 'uri' => $this->getContentUri($contentId),
-                'contentTypeId' => $this->getContentTypeId($contentId)
+                'contentTypeId' => $this->getContentTypeId($contentId),
             )));
         } catch (RequestException $e) {
             if (isset($this->logger)) {
-                $this->logger->error("YooChoose Post notification error: ".$e->getMessage());
+                $this->logger->error('YooChoose Post notification error: ' . $e->getMessage());
             }
         }
     }
@@ -155,7 +155,7 @@ class YooChooseNotifier implements RecommendationClient
     }
 
     /**
-     * Gets ContentType ID based on $contentId
+     * Gets ContentType ID based on $contentId.
      *
      * @param mixed $contentId
      *
@@ -174,7 +174,7 @@ class YooChooseNotifier implements RecommendationClient
     }
 
     /**
-     * Generates the REST URI of content $contentId
+     * Generates the REST URI of content $contentId.
      *
      * @param $contentId
      *
@@ -205,13 +205,13 @@ class YooChooseNotifier implements RecommendationClient
     protected function notify(array $events)
     {
         foreach ($events as $event) {
-            if (array_keys($event) != array( 'action', 'uri', 'contentTypeId' )) {
+            if (array_keys($event) != array('action', 'uri', 'contentTypeId')) {
                 throw new InvalidArgumentException('Invalid action keys');
             }
         }
 
         if (isset($this->logger)) {
-            $this->logger->debug("POST notification to YooChoose:".json_encode($events, true));
+            $this->logger->debug('POST notification to YooChoose:' . json_encode($events, true));
         }
 
         $response = $this->guzzle->post(
@@ -219,17 +219,17 @@ class YooChooseNotifier implements RecommendationClient
             array(
                 'json' => array(
                     'transaction' => null,
-                    'events' => $events
+                    'events' => $events,
                 ),
                 'auth' => array(
                     $this->options['customer-id'],
-                    $this->options['license-key']
-                )
+                    $this->options['license-key'],
+                ),
             )
         );
 
         if (isset($this->logger)) {
-            $this->logger->debug("Got ".$response->getStatusCode()." from YooChoose notification POST");
+            $this->logger->debug('Got ' . $response->getStatusCode() . ' from YooChoose notification POST');
         }
     }
 
@@ -238,7 +238,7 @@ class YooChooseNotifier implements RecommendationClient
      */
     protected function configureOptions(OptionsResolver $resolver)
     {
-        $options = array( 'customer-id', 'license-key', 'api-endpoint', 'server-uri' );
+        $options = array('customer-id', 'license-key', 'api-endpoint', 'server-uri');
         // Could use setDefined() with symfony ~2.6
         $resolver->setOptional($options);
         $resolver->setDefaults(
@@ -246,13 +246,13 @@ class YooChooseNotifier implements RecommendationClient
                 'customer-id' => null,
                 'license-key' => null,
                 'server-uri' => null,
-                'api-endpoint' => null
+                'api-endpoint' => null,
             )
         );
     }
 
     /**
-     * Returns the yoochoose notification endpoint
+     * Returns the yoochoose notification endpoint.
      *
      * @return string
      */

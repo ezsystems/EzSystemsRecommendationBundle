@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This file is part of the EzSystemsRecommendationBundle package
+ * This file is part of the EzSystemsRecommendationBundle package.
  *
  * @copyright Copyright (C) eZ Systems AS. All rights reserved.
  * @license For full copyright and license information view LICENSE file distributed with this source code.
@@ -130,13 +130,13 @@ class RecommendationTwigExtension extends Twig_Extension
         return array(
             new Twig_SimpleFunction('yc_show_recommendations', array($this, 'showRecommendations'), array(
                 'is_safe' => array('html'),
-                'needs_environment' => true
+                'needs_environment' => true,
             )),
 
             new Twig_SimpleFunction('yc_track_user', array($this, 'trackUser'), array(
                 'is_safe' => array('html'),
-                'needs_environment' => true
-            ))
+                'needs_environment' => true,
+            )),
         );
     }
 
@@ -149,8 +149,7 @@ class RecommendationTwigExtension extends Twig_Extension
      */
     public function trackUser(Twig_Environment $twigEnvironment, $contentId)
     {
-        if (!in_array($this->getContentIdentifier($contentId), $this->options['includedContentTypes']))
-        {
+        if (!in_array($this->getContentIdentifier($contentId), $this->options['includedContentTypes'])) {
             return '';
         }
 
@@ -163,7 +162,7 @@ class RecommendationTwigExtension extends Twig_Extension
                 'userId' => $this->getCurrentUserId(),
                 'customerId' => $this->options['customerId'],
                 'consumeTimeout' => ($this->options['consumeTimeout'] * 1000),
-                'trackingScriptUrl' => $this->options['trackingScriptUrl']
+                'trackingScriptUrl' => $this->options['trackingScriptUrl'],
             )
         );
     }
@@ -241,7 +240,7 @@ class RecommendationTwigExtension extends Twig_Extension
                 'feedbackUrl' => $this->getFeedbackUrl($this->getContentTypeId($contentType)),
                 'contentType' => $this->getContentTypeId($this->getContentIdentifier($contentId)),
                 'outputTypeId' => $this->getContentTypeId($contentType),
-                'categoryPath' => $this->getLocationPathString($contentId)
+                'categoryPath' => $this->getLocationPathString($contentId),
             )
         );
     }

@@ -1,6 +1,6 @@
 <?php
 /**
- * This file is part of the EzSystemsRecommendationBundle package
+ * This file is part of the EzSystemsRecommendationBundle package.
  *
  * @copyright Copyright (C) eZ Systems AS. All rights reserved.
  * @license For full copyright and license information view LICENSE file distributd with this source code.
@@ -30,12 +30,12 @@ class ConfigurationMapper implements EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return array(
-            LegacyEvents::POST_BUILD_LEGACY_KERNEL => array( "onBuildKernel", 0 ),
+            LegacyEvents::POST_BUILD_LEGACY_KERNEL => array('onBuildKernel', 0),
         );
     }
 
     public function onBuildKernel(PostBuildKernelEvent $event)
     {
-        $GLOBALS["eZSearchPlugin_" . $this->siteaccess->name] = $this->recommendationLegacySearch;
+        $GLOBALS['eZSearchPlugin_' . $this->siteaccess->name] = $this->recommendationLegacySearch;
     }
 }

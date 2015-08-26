@@ -24,6 +24,8 @@ class ContentData extends ValueObjectVisitor
      */
     public function visit(Visitor $visitor, Generator $generator, $data)
     {
+        $visitor->setHeader('Content-Type', $generator->getMediaType('ContentList'));
+
         if (empty($data->contents)) {
             $visitor->setStatus(204);
 

@@ -102,16 +102,30 @@ services:
     ez_recommendation.rest.controller.content:
         class: %ez_recommendation.rest.controller.content.class%
         arguments:
-            - @ezpublish.config.resolver.core
-            - @ezpublish.image_alias.imagine.alias_generator
             - @ezpublish.urlalias_router
             - @ezpublish.api.service.content
             - @ezpublish.api.service.location
             - @ezpublish.api.service.content_type
             - @ezpublish.api.service.search
+            - @ez_recommendation.rest.field.value
         parent: ezpublish_rest.controller.base
 
     ez_recommendation.rest.controller.contenttype:
         class: %ez_recommendation.rest.controller.contenttype.class%
         parent: ez_recommendation.rest.controller.content
 
+    ez_recommendation.rest.field.value:
+        class: EzSystems\RecommendationBundle\Rest\Field\Value
+        arguments:
+            - @ezpublish.api.service.content
+            - @ezpublish.api.service.content_type
+            - @ez_recommendation.rest.field.type_value
+            - {fieldIdentifiers: %ez_recommendation.field_identifiers%}
+
+    ez_recommendation.rest.field.type_value:
+        class: EzSystems\RecommendationBundle\Rest\Field\TypeValue
+        arguments:
+            - @request_stack
+            - @ezpublish.config.resolver.core
+            - @ezpublish.fieldtype.ezxmltext.converter.html5
+            - @ezpublish.image_alias.imagine.alias_generator

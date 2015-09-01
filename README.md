@@ -58,7 +58,7 @@ The URI your site's REST API can be accessed from.
 ### `recommender.included_content_types`
 This allows you to define content types on which tracking script will be shown. Go to the Tracking section to get more details.
 
-If content's author or image are stored in different field, you can specify it in __default_settings.yml__
+If content's author or image are stored in different field, you can specify it in __parameters.yml__
 
 ```yaml
     ez_recommendation.field_identifiers:

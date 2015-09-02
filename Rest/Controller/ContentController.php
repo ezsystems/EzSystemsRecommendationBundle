@@ -9,6 +9,8 @@
 namespace EzSystems\RecommendationBundle\Rest\Controller;
 
 use eZ\Publish\API\Repository\Values\Content\Content;
+use eZ\Publish\API\Repository\Values\Content\Query;
+use eZ\Publish\API\Repository\Values\Content\Query\Criterion;
 use eZ\Publish\API\Repository\Values\ContentType\ContentType;
 use eZ\Publish\Core\REST\Server\Controller as BaseController;
 use eZ\Publish\API\Repository\ContentService;
@@ -73,43 +75,56 @@ class ContentController extends BaseController
      *
      * @return \EzSystems\RecommendationBundle\Rest\Values\ContentData
      *
-     * @throws \eZ\Publish\API\Repository\Exceptions\NotFoundExceptionif the content, version with the given id and languages or content type does not exist
+     * @throws \eZ\Publish\API\Repository\Exceptions\NotFoundException if the content, version with the given id and languages or content type does not exist
      * @throws \eZ\Publish\API\Repository\Exceptions\UnauthorizedException If the user has no access to read content and in case of un-published content: read versions
      */
     public function getContent($contentIdList)
     {
         $contentIds = explode(',', $contentIdList);
-        $content = $this->prepareContent($contentIds);
+        $lang = $this->request->get('lang');
 
-        return new ContentDataValue($content);
+        $criteria = array(new Criterion\ContentId($contentIds));
+
+        if (!$this->request->get('hidden')) {
+            $criteria[] = new Criterion\Visibility(Criterion\Visibility::VISIBLE);
+        }
+        if ($lang) {
+            $criteria[] = new Criterion\LanguageCode($lang);
+        }
+
+        $query = new Query();
+        $query->query = new Criterion\LogicalAnd($criteria);
+
+        $contentItems = $this->searchService->findContent($query)->searchHits;
+
+        $data = $this->prepareContent($contentItems);
+
+        return new ContentDataValue($data);
     }
 
     /**
      * Prepare content array.
      *
-     * @param array $contentIds
+     * @param array $data
      *
      * @return array
      */
-    protected function prepareContent($contentIds)
+    protected function prepareContent($data)
     {
         $requestLanguage = $this->request->get('lang');
         $requestedFields = $this->request->get('fields');
 
         $content = array();
 
-        foreach ($contentIds as $contentId) {
-            $contentValue = $this->contentService->loadContent(
-                $contentId,
-                (null === $requestLanguage) ? null : array($requestLanguage)
-            );
+        foreach ($data as $contentValue) {
+            $contentValue = $contentValue->valueObject;
             $contentType = $this->contentTypeService->loadContentType($contentValue->contentInfo->contentTypeId);
             $location = $this->locationService->loadLocation($contentValue->contentInfo->mainLocationId);
             $language = (null === $requestLanguage) ? $contentType->mainLanguageCode : $requestLanguage;
             $this->value->setFieldDefinitionsList($contentType);
 
-            $content[$contentId] = array(
-                'contentId' => $contentId,
+            $content[$contentValue->id] = array(
+                'contentId' => $contentValue->id,
                 'contentTypeId' => $contentType->id,
                 'identifier' => $contentType->identifier,
                 'language' => $language,
@@ -120,7 +135,7 @@ class ContentController extends BaseController
                     'href' => '/api/ezp/v2/content/locations' . $location->pathString,
                 ),
                 'locations' => array(
-                    'href' => '/api/ezp/v2/content/objects/' . $contentId . '/locations',
+                    'href' => '/api/ezp/v2/content/objects/' . $contentValue->id . '/locations',
                 ),
                 'categoryPath' => $location->pathString,
                 'fields' => array(),
@@ -130,7 +145,7 @@ class ContentController extends BaseController
             if (!empty($fields)) {
                 foreach ($fields as $field) {
                     $field = $this->value->getConfiguredFieldIdentifier($field, $contentType);
-                    $content[$contentId]['fields'][] = $this->value->getFieldValue($contentValue, $field, $language);
+                    $content[$contentValue->id]['fields'][] = $this->value->getFieldValue($contentValue, $field, $language);
                 }
             }
         }

@@ -47,27 +47,26 @@ class ContentTypeController extends ContentController
         $pageSize = $this->request->get('page_size', 10);
         $page = $this->request->get('page', 1);
         $offset = $page * $pageSize - $pageSize;
+        $path = $this->request->get('path');
+        $hidden = $this->request->get('hidden');
 
-        $contentTypesCriterion = array_map(function ($contentId) {
-            return new Criterion\ContentTypeId($contentId);
-        }, $contentTypeIds);
+        $criteria = array(new Criterion\ContentTypeId($contentTypeIds));
+
+        if ($path) {
+            $criteria[] = new Criterion\Subtree($path);
+        }
+        if (!$hidden) {
+            $criteria[] = new Criterion\Visibility(Criterion\Visibility::VISIBLE);
+        }
 
         $query = new Query();
-        $query->criterion = new Criterion\LogicalAnd(array(
-            new Criterion\LogicalOr(
-                $contentTypesCriterion
-            ),
-            new Criterion\Visibility(Criterion\Visibility::VISIBLE),
-        ));
+        $query->query = new Criterion\LogicalAnd($criteria);
 
         $query->limit = $pageSize;
         $query->offset = $offset;
 
-        $content = array();
-        foreach ($this->searchService->findContent($query)->searchHits as $hit) {
-            $content[] = $hit->valueObject->id;
-        }
+        $contentItems = $this->searchService->findContent($query)->searchHits;
 
-        return $this->prepareContent($content);
+        return $this->prepareContent($contentItems);
     }
 }

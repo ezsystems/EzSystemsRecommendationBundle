@@ -101,7 +101,9 @@ class Value
         } elseif (in_array('ezobjectrelation', $fieldDefinitions) && !$related) {
             $field = $content->getFieldValue($fieldNames['ezobjectrelation'], $language);
 
-            return $this->getImageFieldIdentifier($field->destinationContentId, $language, true);
+            if (!empty($field->destinationContentId)) {
+                return $this->getImageFieldIdentifier($field->destinationContentId, $language, true);
+            }
         } else {
             return $this->getConfiguredFieldIdentifier('image', $contentType);
         }

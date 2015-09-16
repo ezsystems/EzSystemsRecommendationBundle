@@ -16,7 +16,7 @@ This package is available via composer, so the instructions below are similar to
 
 Run the following from your eZ Publish installation root (pick most recent release, example here is last one as of this writing):
 ```bash
-php composer.phar require ezsystems/recommendation-bundle:~1.0@alpha
+php composer.phar require ezsystems/recommendation-bundle:~1.0@beta
 ```
 
 Enable the bundle in `ezpublish/EzPublishKernel.php`:

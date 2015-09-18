@@ -120,7 +120,7 @@ class ContentController extends BaseController
             $contentValue = $contentValue->valueObject;
             $contentType = $this->contentTypeService->loadContentType($contentValue->contentInfo->contentTypeId);
             $location = $this->locationService->loadLocation($contentValue->contentInfo->mainLocationId);
-            $language = (null === $requestLanguage) ? $contentType->mainLanguageCode : $requestLanguage;
+            $language = (null === $requestLanguage) ? $location->contentInfo->mainLanguageCode : $requestLanguage;
             $this->value->setFieldDefinitionsList($contentType);
 
             $content[$contentValue->id] = array(

@@ -65,7 +65,6 @@ class Value
 
         if ($relatedField) {
             $content = $this->contentService->loadContent($relatedField);
-            $field = $imageFieldIdentifier;
         }
 
         $value = '';

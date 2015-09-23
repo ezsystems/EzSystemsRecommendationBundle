@@ -44,6 +44,9 @@ class ContentController extends BaseController
     /** @var \EzSystems\RecommendationBundle\Rest\Field\Value */
     protected $value;
 
+    /** @var int $defaultAuthorId */
+    protected $defaultAuthorId;
+
     /**
      * @param \Symfony\Component\Routing\Generator\UrlGeneratorInterface $generator
      * @param \eZ\Publish\API\Repository\ContentService $contentService
@@ -51,6 +54,7 @@ class ContentController extends BaseController
      * @param \eZ\Publish\API\Repository\ContentTypeService $contentTypeService
      * @param \eZ\Publish\API\Repository\SearchService $searchService
      * @param \EzSystems\RecommendationBundle\Rest\Field\Value $value
+     * @param int $defaultAuthorId
      */
     public function __construct(
         UrlGenerator $generator,
@@ -58,7 +62,8 @@ class ContentController extends BaseController
         LocationService $locationService,
         ContentTypeService $contentTypeService,
         SearchService $searchService,
-        FieldValue $value
+        FieldValue $value,
+        $defaultAuthorId
     ) {
         $this->generator = $generator;
         $this->contentService = $contentService;
@@ -66,6 +71,7 @@ class ContentController extends BaseController
         $this->contentTypeService = $contentTypeService;
         $this->searchService = $searchService;
         $this->value = $value;
+        $this->defaultAuthorId = $defaultAuthorId;
     }
 
     /**
@@ -192,7 +198,8 @@ class ContentController extends BaseController
         );
 
         if (null === $author) {
-            $userContentInfo = $this->contentService->loadContentInfo($contentValue->contentInfo->ownerId);
+            $ownerId = empty($contentValue->contentInfo->ownerId) ? $this->defaultAuthorId : $contentValue->contentInfo->ownerId;
+            $userContentInfo = $this->contentService->loadContentInfo($ownerId);
             $author = $userContentInfo->name;
         }
 

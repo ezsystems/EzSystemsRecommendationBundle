@@ -3,6 +3,7 @@ parameters:
     ez_recommendation.default.yoochoose.license_key: ~
     ez_recommendation.default.server_uri: ~
     ez_recommendation.default.recommender.included_content_types: ~
+    ez_recommendation.default.author_id: 14
 
     ez_recommendation.api_endpoint: 'https://admin.yoochoose.net'
     ez_recommendation.recommender.api_endpoint: 'http://reco.yoochoose.net'

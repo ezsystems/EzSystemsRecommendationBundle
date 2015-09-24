@@ -20,6 +20,7 @@ use eZ\Publish\API\Repository\SearchService;
 use EzSystems\RecommendationBundle\Rest\Field\Value as FieldValue;
 use EzSystems\RecommendationBundle\Rest\Values\ContentData as ContentDataValue;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface as UrlGenerator;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Recommendation REST Content controller.
@@ -72,20 +73,21 @@ class ContentController extends BaseController
      * Prepares content for ContentDataValue class.
      *
      * @param string $contentIdList
+     * @param \Symfony\Component\HttpFoundation\Request $request
      *
      * @return \EzSystems\RecommendationBundle\Rest\Values\ContentData
      *
      * @throws \eZ\Publish\API\Repository\Exceptions\NotFoundException if the content, version with the given id and languages or content type does not exist
      * @throws \eZ\Publish\API\Repository\Exceptions\UnauthorizedException If the user has no access to read content and in case of un-published content: read versions
      */
-    public function getContent($contentIdList)
+    public function getContent($contentIdList, Request $request)
     {
         $contentIds = explode(',', $contentIdList);
-        $lang = $this->request->get('lang');
+        $lang = $request->get('lang');
 
         $criteria = array(new Criterion\ContentId($contentIds));
 
-        if (!$this->request->get('hidden')) {
+        if (!$request->get('hidden')) {
             $criteria[] = new Criterion\Visibility(Criterion\Visibility::VISIBLE);
         }
         if ($lang) {
@@ -97,7 +99,7 @@ class ContentController extends BaseController
 
         $contentItems = $this->searchService->findContent($query)->searchHits;
 
-        $data = $this->prepareContent($contentItems);
+        $data = $this->prepareContent($contentItems, $request);
 
         return new ContentDataValue($data);
     }
@@ -106,13 +108,14 @@ class ContentController extends BaseController
      * Prepare content array.
      *
      * @param array $data
+     * @param \Symfony\Component\HttpFoundation\Request $request
      *
      * @return array
      */
-    protected function prepareContent($data)
+    protected function prepareContent($data, Request $request)
     {
-        $requestLanguage = $this->request->get('lang');
-        $requestedFields = $this->request->get('fields');
+        $requestLanguage = $request->get('lang');
+        $requestedFields = $request->get('fields');
 
         $content = array();
 

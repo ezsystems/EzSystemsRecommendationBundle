@@ -34,6 +34,28 @@ recommendationBundleRestRoutes:
     resource: "@EzSystemsRecommendationBundle/Resources/config/routing_rest.yml"
     prefix:   %ezpublish_rest.path_prefix%
 ```
+Keep in mind, that legacy support is disabled by default. To enable legacy search engine (requires `ezpublish-kernel` bundle) uncomment these lines in bundle `services.yml`:
+```yaml
+#    ez_recommendation.legacy.search_engine:
+#        class: ezpSearchEngine
+#        factory_class: EzSystems\RecommendationBundle\eZ\Publish\LegacySearch\LegacySearchFactory
+#        factory_method: build
+#        arguments: [@ezpublish_legacy.kernel]
+#
+#    ez_recommendation.legacy.recommendation_search_engine:
+#        class: EzSystems\RecommendationBundle\eZ\Publish\LegacySearch\RecommendationLegacySearchEngine
+#        arguments:
+#            - @ez_recommendation.client.yoochoose_notifier
+#            - @ez_recommendation.legacy.search_engine
+#
+#    ez_recommendation.legacy.search_configuration_mapper:
+#        class: EzSystems\RecommendationBundle\eZ\Publish\LegacySearch\ConfigurationMapper
+#        arguments:
+#            - @ez_recommendation.legacy.recommendation_search_engine
+#            - @ezpublish.siteaccess
+#        tags:
+#            - { name: kernel.event_subscriber }
+```
 
 ## Configuration
 The bundle's configuration is siteaccess aware. This is an example of settings (config.yml):

@@ -11,6 +11,7 @@ namespace EzSystems\RecommendationBundle\Rest\Controller;
 use eZ\Publish\API\Repository\Values\Content\Query;
 use eZ\Publish\API\Repository\Values\Content\Query\Criterion;
 use EzSystems\RecommendationBundle\Rest\Values\ContentData as ContentDataValue;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Recommendation REST ContentType controller.
@@ -21,16 +22,17 @@ class ContentTypeController extends ContentController
      * Prepares content for ContentDataValue class.
      *
      * @param string $contentTypeIdList
+     * @param \Symfony\Component\HttpFoundation\Request $request
      *
      * @return \EzSystems\RecommendationBundle\Rest\Values\ContentData ContentDataValue
      *
      * @throws \eZ\Publish\API\Repository\Exceptions\NotFoundException if the content, version with the given id and languages or content type does not exist
      * @throws \eZ\Publish\API\Repository\Exceptions\UnauthorizedException If the user has no access to read content and in case of un-published content: read versions
      */
-    public function getContentType($contentTypeIdList)
+    public function getContentType($contentTypeIdList, Request $request)
     {
         $contentTypeIds = explode(',', $contentTypeIdList);
-        $content = $this->prepareContentByContentTypeIds($contentTypeIds);
+        $content = $this->prepareContentByContentTypeIds($contentTypeIds, $request);
 
         return new ContentDataValue($content);
     }
@@ -39,16 +41,17 @@ class ContentTypeController extends ContentController
      * Returns paged content based on ContentType ids.
      *
      * @param array $contentTypeIds
+     * @param \Symfony\Component\HttpFoundation\Request $request
      *
      * @return array
      */
-    protected function prepareContentByContentTypeIds($contentTypeIds)
+    protected function prepareContentByContentTypeIds($contentTypeIds, Request $request)
     {
-        $pageSize = $this->request->get('page_size', 10);
-        $page = $this->request->get('page', 1);
+        $pageSize = (int)$request->get('page_size', 10);
+        $page = $request->get('page', 1);
         $offset = $page * $pageSize - $pageSize;
-        $path = $this->request->get('path');
-        $hidden = $this->request->get('hidden');
+        $path = $request->get('path');
+        $hidden = $request->get('hidden');
 
         $criteria = array(new Criterion\ContentTypeId($contentTypeIds));
 
@@ -67,6 +70,6 @@ class ContentTypeController extends ContentController
 
         $contentItems = $this->searchService->findContent($query)->searchHits;
 
-        return $this->prepareContent($contentItems);
+        return $this->prepareContent($contentItems, $request);
     }
 }

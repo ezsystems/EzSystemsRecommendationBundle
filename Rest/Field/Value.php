@@ -12,6 +12,7 @@ use eZ\Publish\API\Repository\ContentTypeService;
 use eZ\Publish\API\Repository\Values\Content\Content;
 use eZ\Publish\API\Repository\Values\Content\Field;
 use eZ\Publish\API\Repository\Values\ContentType\ContentType;
+use EzSystems\RecommendationBundle\Exception\InvalidRelationException;
 
 class Value
 {
@@ -27,6 +28,9 @@ class Value
     /** @var array */
     protected $parameters;
 
+    /** @var \EzSystems\RecommendationBundle\Rest\Field\RelationMapper */
+    private $relationMapper;
+
     /** @var array */
     public $fieldDefIdentifiers;
 
@@ -40,12 +44,14 @@ class Value
         ContentService $contentService,
         ContentTypeService $contentTypeService,
         TypeValue $typeValue,
-        array $parameters
+        array $parameters,
+        RelationMapper $relationMapper
     ) {
         $this->contentService = $contentService;
         $this->contentTypeService = $contentTypeService;
         $this->typeValue = $typeValue;
         $this->parameters = $parameters;
+        $this->relationMapper = $relationMapper;
     }
 
     /**
@@ -60,16 +66,27 @@ class Value
     public function getFieldValue(Content $content, $field, $language)
     {
         $fieldObj = $content->getField($field, $language);
-        $relatedField = $this->getRelation($content, $field, $language);
+        $contentType = $this->contentTypeService->loadContentType($content->contentInfo->contentTypeId);
         $imageFieldIdentifier = $this->getImageFieldIdentifier($content->id, $language);
 
-        if ($relatedField) {
-            $content = $this->contentService->loadContent($relatedField);
+        $relatedContentId = $this->getRelation($content, $fieldObj->fieldDefIdentifier, $language);
+
+        if ($relatedContentId) {
+            $relatedContent = $this->contentService->loadContent($relatedContentId);
         }
 
-        $value = '';
-        if ($fieldObj) {
-            $value = $this->getParsedFieldValue($fieldObj, $content, $language, $imageFieldIdentifier);
+        $mapping = $this->relationMapper->getMapping($contentType->identifier, $field);
+
+        if ($mapping && $relatedContentId) {
+            $relatedContentType = $this->contentTypeService->loadContentType($relatedContent->contentInfo->contentTypeId);
+
+            if ($relatedContentType->identifier != $mapping['content']) {
+                throw new InvalidRelationException(sprintf("Invalid relation: expected '%s' object but recived '%s'", $mapping['content'], $relatedContentType->identifier));
+            }
+            $relatedField = $content->getField($mapping['field'], $language);
+            $value = $relatedField ? $this->getParsedFieldValue($relatedField, $relatedContent, $language, $imageFieldIdentifier) : '';
+        } else {
+            $value = $fieldObj ? $this->getParsedFieldValue($fieldObj, $content, $language, $imageFieldIdentifier) : '';
         }
 
         return array(

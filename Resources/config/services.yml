@@ -6,6 +6,7 @@ parameters:
     ez_recommendation.value_object_visitor.content_data.class: EzSystems\RecommendationBundle\Rest\ValueObjectVisitor\ContentData
     ez_recommendation.rest.controller.content.class: EzSystems\RecommendationBundle\Rest\Controller\ContentController
     ez_recommendation.rest.controller.contenttype.class: EzSystems\RecommendationBundle\Rest\Controller\ContentTypeController
+    ez_recommendation.field.relation_mapper.class: EzSystems\RecommendationBundle\Rest\Field\RelationMapper
 
 services:
     ez_recommendation.client.yoochoose_notifier:
@@ -112,6 +113,11 @@ services:
             - %ez_recommendation.default.author_id%
         parent: ezpublish_rest.controller.base
 
+    ez_recommendation.field.relation_mapper:
+        class: %ez_recommendation.field.relation_mapper.class%
+        arguments:
+            - %ez_recommendation.relations%
+
     ez_recommendation.rest.controller.contenttype:
         class: %ez_recommendation.rest.controller.contenttype.class%
         parent: ez_recommendation.rest.controller.content
@@ -123,6 +129,7 @@ services:
             - @ezpublish.api.service.content_type
             - @ez_recommendation.rest.field.type_value
             - {fieldIdentifiers: %ez_recommendation.field_identifiers%}
+            - @ez_recommendation.field.relation_mapper
 
     ez_recommendation.rest.field.type_value:
         class: EzSystems\RecommendationBundle\Rest\Field\TypeValue

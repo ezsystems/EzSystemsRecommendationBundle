@@ -109,6 +109,7 @@ services:
             - @ezpublish.api.service.content_type
             - @ezpublish.api.service.search
             - @ez_recommendation.rest.field.value
+            - %ez_recommendation.default.author_id%
         parent: ezpublish_rest.controller.base
 
     ez_recommendation.rest.controller.contenttype:

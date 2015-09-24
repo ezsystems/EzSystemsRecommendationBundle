@@ -138,6 +138,11 @@ Here you can define for which content types tracking script will be shown.
 
 You can find more information on the YooChoose documentation, about [tracking in general](https://doc.yoochoose.net/display/PUBDOC/1.+Tracking+Events), and about the [generic asynchronous javascript tracker](https://doc.yoochoose.net/display/PUBDOC/Tracking+with+yc.js).
 
+Additionaly, in case of missing content owner Id, there's option in `default_settings.yml` to set up default content author:
+```yaml
+    ez_recommendation.default.author_id: 14   # ID: 14 is default ID of admin user
+```
+
 ###Displaying
 
 In order to allow displaying recommendations on your site you must add portions of scripts which will integrate recommender engine with your site.

@@ -9,3 +9,5 @@ parameters:
     ez_recommendation.recommender.consume_timeout: 20
     ez_recommendation.tracking.api_endpoint: 'http://event.yoochoose.net'
     ez_recommendation.tracking.script_url: 'cdn.yoochoose.net/yct.js'
+
+    ez_recommendation.relations: []

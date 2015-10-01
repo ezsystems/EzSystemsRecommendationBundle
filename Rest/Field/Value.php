@@ -78,34 +78,35 @@ class Value
         $imageFieldIdentifier = $this->getImageFieldIdentifier($content->id, $language);
 
         $relatedContentId = $this->getRelation($content, $fieldObj->fieldDefIdentifier, $language);
-
-        if ($relatedContentId) {
-            $relatedContent = $this->contentService->loadContent($relatedContentId);
-        }
-
         $mapping = $this->relationMapper->getMapping($contentType->identifier, $field);
 
         try {
-            if ($mapping && $relatedContentId) {
-                $relatedContentType = $this->contentTypeService->loadContentType($relatedContent->contentInfo->contentTypeId);
+            if ($relatedContentId && $mapping) {
+                $relatedContent = $this->contentService->loadContent($relatedContentId);
 
-                if ($relatedContentType->identifier != $mapping['content']) {
-                    throw new InvalidRelationException(
-                        sprintf(
-                            "Invalid relation: field '%s:%s' (object: %s, field: %s) has improper relation to object '%s' (object: %s) but '%s:%s' expected.",
-                            $contentType->identifier,
-                            $field,
-                            $content->id,
-                            $fieldObj->id,
-                            $relatedContentType->identifier,
-                            $relatedContentId,
-                            $mapping['content'],
-                            $mapping['field']
-                        )
-                    );
+                if ($relatedContent && $relatedContent->versionInfo->contentInfo->published) {
+                    $relatedContentType = $this->contentTypeService->loadContentType($relatedContent->contentInfo->contentTypeId);
+
+                    if ($relatedContentType->identifier != $mapping['content']) {
+                        throw new InvalidRelationException(
+                            sprintf(
+                                "Invalid relation: field '%s:%s' (object: %s, field: %s) has improper relation to object '%s' (object: %s) but '%s:%s' expected.",
+                                $contentType->identifier,
+                                $field,
+                                $content->id,
+                                $fieldObj->id,
+                                $relatedContentType->identifier,
+                                $relatedContentId,
+                                $mapping['content'],
+                                $mapping['field']
+                            )
+                        );
+                    }
+                    $relatedField = $content->getField($mapping['field'], $language);
+                    $value = $relatedField ? $this->getParsedFieldValue($relatedField, $relatedContent, $language, $imageFieldIdentifier) : '';
+                } else {
+                    $value = '';
                 }
-                $relatedField = $content->getField($mapping['field'], $language);
-                $value = $relatedField ? $this->getParsedFieldValue($relatedField, $relatedContent, $language, $imageFieldIdentifier) : '';
             } else {
                 $value = $fieldObj ? $this->getParsedFieldValue($fieldObj, $content, $language, $imageFieldIdentifier) : '';
             }

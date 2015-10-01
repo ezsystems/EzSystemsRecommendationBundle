@@ -78,15 +78,12 @@ class Value
         $imageFieldIdentifier = $this->getImageFieldIdentifier($content->id, $language);
 
         $relatedContentId = $this->getRelation($content, $fieldObj->fieldDefIdentifier, $language);
-
-        if ($relatedContentId) {
-            $relatedContent = $this->contentService->loadContent($relatedContentId);
-        }
-
         $mapping = $this->relationMapper->getMapping($contentType->identifier, $field);
 
-        try {
-            if ($mapping && $relatedContentId) {
+        if ($relatedContentId && $mapping) {
+            $relatedContent = $this->contentService->loadContent($relatedContentId);
+
+            if ($relatedContent && $relatedContent->versionInfo->contentInfo->published) {
                 $relatedContentType = $this->contentTypeService->loadContentType($relatedContent->contentInfo->contentTypeId);
 
                 if ($relatedContentType->identifier != $mapping['content']) {
@@ -107,12 +104,10 @@ class Value
                 $relatedField = $content->getField($mapping['field'], $language);
                 $value = $relatedField ? $this->getParsedFieldValue($relatedField, $relatedContent, $language, $imageFieldIdentifier) : '';
             } else {
-                $value = $fieldObj ? $this->getParsedFieldValue($fieldObj, $content, $language, $imageFieldIdentifier) : '';
+                $value = '';
             }
-        } catch (InvalidRelationException $exception) {
-            $this->logger->warning($exception->getMessage());
-
-            $value = '';
+        } else {
+            $value = $fieldObj ? $this->getParsedFieldValue($fieldObj, $content, $language, $imageFieldIdentifier) : '';
         }
 
         return array(

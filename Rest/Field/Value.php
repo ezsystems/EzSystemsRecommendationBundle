@@ -13,6 +13,7 @@ use eZ\Publish\API\Repository\Values\Content\Content;
 use eZ\Publish\API\Repository\Values\Content\Field;
 use eZ\Publish\API\Repository\Values\ContentType\ContentType;
 use EzSystems\RecommendationBundle\Exception\InvalidRelationException;
+use Psr\Log\LoggerInterface;
 
 class Value
 {
@@ -34,24 +35,31 @@ class Value
     /** @var array */
     public $fieldDefIdentifiers;
 
+    /** @var \Psr\Log\LoggerInterface */
+    protected $logger;
+
     /**
      * @param \eZ\Publish\API\Repository\ContentService $contentService
      * @param \eZ\Publish\API\Repository\ContentTypeService $contentTypeService
      * @param \EzSystems\RecommendationBundle\Rest\Field\TypeValue $typeValue
      * @param array $parameters
+     * @param \EzSystems\RecommendationBundle\Rest\Field\RelationMapper $relationMapper
+     * @param \Psr\Log\LoggerInterface $logger
      */
     public function __construct(
         ContentService $contentService,
         ContentTypeService $contentTypeService,
         TypeValue $typeValue,
         array $parameters,
-        RelationMapper $relationMapper
+        RelationMapper $relationMapper,
+        LoggerInterface $logger
     ) {
         $this->contentService = $contentService;
         $this->contentTypeService = $contentTypeService;
         $this->typeValue = $typeValue;
         $this->parameters = $parameters;
         $this->relationMapper = $relationMapper;
+        $this->logger = $logger;
     }
 
     /**
@@ -77,16 +85,34 @@ class Value
 
         $mapping = $this->relationMapper->getMapping($contentType->identifier, $field);
 
-        if ($mapping && $relatedContentId) {
-            $relatedContentType = $this->contentTypeService->loadContentType($relatedContent->contentInfo->contentTypeId);
+        try {
+            if ($mapping && $relatedContentId) {
+                $relatedContentType = $this->contentTypeService->loadContentType($relatedContent->contentInfo->contentTypeId);
 
-            if ($relatedContentType->identifier != $mapping['content']) {
-                throw new InvalidRelationException(sprintf("Invalid relation: expected '%s' object but recived '%s'", $mapping['content'], $relatedContentType->identifier));
+                if ($relatedContentType->identifier != $mapping['content']) {
+                    throw new InvalidRelationException(
+                        sprintf(
+                            "Invalid relation: field '%s:%s' (object: %s, field: %s) has improper relation to object '%s' (object: %s) but '%s:%s' expected.",
+                            $contentType->identifier,
+                            $field,
+                            $content->id,
+                            $fieldObj->id,
+                            $relatedContentType->identifier,
+                            $relatedContentId,
+                            $mapping['content'],
+                            $mapping['field']
+                        )
+                    );
+                }
+                $relatedField = $content->getField($mapping['field'], $language);
+                $value = $relatedField ? $this->getParsedFieldValue($relatedField, $relatedContent, $language, $imageFieldIdentifier) : '';
+            } else {
+                $value = $fieldObj ? $this->getParsedFieldValue($fieldObj, $content, $language, $imageFieldIdentifier) : '';
             }
-            $relatedField = $content->getField($mapping['field'], $language);
-            $value = $relatedField ? $this->getParsedFieldValue($relatedField, $relatedContent, $language, $imageFieldIdentifier) : '';
-        } else {
-            $value = $fieldObj ? $this->getParsedFieldValue($fieldObj, $content, $language, $imageFieldIdentifier) : '';
+        } catch (InvalidRelationException $exception) {
+            $this->logger->warning($exception->getMessage());
+
+            $value = '';
         }
 
         return array(

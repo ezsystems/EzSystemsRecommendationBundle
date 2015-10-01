@@ -130,6 +130,7 @@ services:
             - @ez_recommendation.rest.field.type_value
             - {fieldIdentifiers: %ez_recommendation.field_identifiers%}
             - @ez_recommendation.field.relation_mapper
+            - @?logger
 
     ez_recommendation.rest.field.type_value:
         class: EzSystems\RecommendationBundle\Rest\Field\TypeValue

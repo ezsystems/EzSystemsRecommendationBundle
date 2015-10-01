@@ -9,6 +9,7 @@ namespace EzSystems\RecommendationBundle\Rest\Field;
 
 use eZ\Bundle\EzPublishCoreBundle\DependencyInjection\Configuration\ConfigResolver;
 use eZ\Bundle\EzPublishCoreBundle\Imagine\AliasGenerator as ImageVariationService;
+use eZ\Publish\Core\MVC\Exception\SourceImageNotFoundException;
 use eZ\Publish\API\Repository\Values\Content\Content;
 use eZ\Publish\API\Repository\Values\Content\Field;
 use eZ\Publish\Core\FieldType\XmlText\Converter\Html5;
@@ -98,7 +99,11 @@ class TypeValue
             $variation = $requestedVariation;
         }
 
-        return $this->imageVariationService->getVariation($field, $content->versionInfo, $variation)->uri;
+        try {
+            return $this->imageVariationService->getVariation($field, $content->versionInfo, $variation)->uri;
+        } catch (SourceImageNotFoundException $exception) {
+            return '';
+        }
     }
 
     /**

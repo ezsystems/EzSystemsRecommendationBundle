@@ -1,7 +1,7 @@
 # Recommendation Bundle
 This bundle integrates Recommendation services into eZ Platform. It supports the YooChoose recommender at this moment.
 
-**Work in progress** This Bundle is work in progress, and support is restricted to pull request (contribution) directly on this repository until it reaches v1.0. After that, it will offically be supported by eZ for users with eZ and Yoochoose subscription.
+**Work in progress** This Bundle is work in progress, and support is restricted to pull request (contribution) directly on this repository until it reaches v1.0. After that, it will officially be supported by eZ for users with eZ and Yoochoose subscription.
 
 ## Requirements
 

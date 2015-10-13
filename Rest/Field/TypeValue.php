@@ -71,7 +71,7 @@ class TypeValue
      */
     public function ezxmltext(Field $field)
     {
-        return  $this->html5Converter->convert($field->value->xml);
+        return '<![CDATA[' . $this->html5Converter->convert($field->value->xml) . ']]>';
     }
 
     /**

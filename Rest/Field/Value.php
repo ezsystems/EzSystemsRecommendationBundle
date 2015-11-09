@@ -201,10 +201,10 @@ class Value
         $contentTypeName = $contentType->identifier;
 
         if (isset($this->parameters['fieldIdentifiers'])) {
-            $fieldDefinitions = $this->parameters['fieldIdentifiers'];
+            $fieldIdentifiers = $this->parameters['fieldIdentifiers'];
 
-            if (isset($fieldDefinitions[$fieldName]) && !empty($fieldDefinitions[$fieldName][$contentTypeName])) {
-                return $fieldDefinitions[$fieldName][$contentTypeName];
+            if (isset($fieldIdentifiers[$fieldName]) && !empty($fieldIdentifiers[$fieldName][$contentTypeName])) {
+                return $fieldIdentifiers[$fieldName][$contentTypeName];
             }
         }
 

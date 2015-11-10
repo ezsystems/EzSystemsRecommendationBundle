@@ -12,3 +12,4 @@ parameters:
     ez_recommendation.tracking.script_url: 'cdn.yoochoose.net/yct.js'
 
     ez_recommendation.relations: []
+    ez_recommendation.field_identifiers: []

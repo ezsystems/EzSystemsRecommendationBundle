@@ -14,6 +14,10 @@ use Symfony\Component\HttpFoundation\Session\Session;
 use GuzzleHttp\ClientInterface as GuzzleClient;
 use GuzzleHttp\Exception\RequestException;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
+use eZ\Publish\Core\MVC\Symfony\Security\UserInterface as eZUser;
+use Symfony\Component\Security\Core\User;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
 /**
  * Sends notification to YooChoose servers when user is logged in.
@@ -63,6 +67,28 @@ class Login
         $this->options['customerId'] = $value;
     }
 
+    /**
+     * Return an ID or the Username if no ID available.
+     *
+     * @param TokenInterface $token
+     *
+     * @return mixed
+     */
+    protected function getUserIdentifier(TokenInterface $token)
+    {
+        $tokenUser = $token->getUser();
+
+        if ($tokenUser instanceof eZUser || !$tokenUser instanceof UserInterface) {
+            return $tokenUser->getAPIUser()->id;
+        }
+
+        if (method_exists($tokenUser, 'getId')) {
+            return $tokenUser->getId();
+        }
+
+        return $tokenUser->getUsername();
+    }
+
     public function onSecurityInteractiveLogin(InteractiveLoginEvent $event)
     {
         if ($this->authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY') || // user has just logged in
@@ -71,7 +97,7 @@ class Login
             $notificationUri = sprintf($this->getNotificationEndpoint() . '%s/%s/%s',
                 'login',
                 $this->session->get('yc-session-id'),
-                $event->getAuthenticationToken()->getUser()->getAPIUser()->id
+                $this->getUserIdentifier($event->getAuthenticationToken())
             );
 
             if (isset($this->logger)) {

@@ -309,8 +309,8 @@ class RecommendationTwigExtension extends Twig_Extension
      */
     private function getCurrentUserId()
     {
-        if ($this->authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY') |
-            $this->authorizationChecker->isGranted('IS_AUTHENTICATED_REMEMBERED')) {
+        if ($this->authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY') || // user has just logged in
+            $this->authorizationChecker->isGranted('IS_AUTHENTICATED_REMEMBERED')) { // user has logged in using remember_me cookie
             return $this->repository->getCurrentUser()->id;
         } else {
             return $this->session->get('yc-session-id');

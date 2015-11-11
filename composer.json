@@ -12,6 +12,10 @@
         "components/handlebars.js": "~3.0.0",
         "symfony/symfony": "~2.6"
     },
+    "require-dev": {
+        "ezsystems/ezpublish-kernel": "~6.0.0@beta",
+        "phpunit/phpunit": "~4.7"
+    },
     "autoload": {
         "psr-4": {
             "EzSystems\\RecommendationBundle\\": ""

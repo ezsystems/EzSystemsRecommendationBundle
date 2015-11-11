@@ -12,7 +12,7 @@
         >
 
     <testsuites>
-        <testsuite name="PlatformUIBundle tests suite">
+        <testsuite name="EzSystemsRecommendationBundle tests suite">
             <directory suffix="Test.php">./Tests</directory>
         </testsuite>
     </testsuites>

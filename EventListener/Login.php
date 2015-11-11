@@ -71,7 +71,7 @@ class Login
             $notificationUri = sprintf($this->getNotificationEndpoint() . '%s/%s/%s',
                 'login',
                 $this->session->get('yc-session-id'),
-                $event->getAuthenticationToken()->getUser()->getAPIUser()->id
+                $event->getAuthenticationToken()->getUser()->getUsername()
             );
 
             if (isset($this->logger)) {

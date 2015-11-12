@@ -152,7 +152,7 @@ class RecommendationTwigExtension extends Twig_Extension
         }
 
         return $twigEnvironment->render(
-            '@EzSystemsRecommendationBundle/Resources/public/views/track_user.html.twig',
+            'EzSystemsRecommendationBundle::track_user.html.twig',
             array(
                 'contentId' => $contentId,
                 'contentTypeId' => $this->getContentTypeId($this->getContentIdentifier($contentId)),
@@ -209,7 +209,6 @@ class RecommendationTwigExtension extends Twig_Extension
      *
      * @return string
      *
-     * @throws \EzSystems\RecommendationBundle\Exception\InvalidArgumentException when template is not found
      * @throws \EzSystems\RecommendationBundle\Exception\InvalidArgumentException when attributes are missing
      */
     public function showRecommendations(
@@ -221,16 +220,12 @@ class RecommendationTwigExtension extends Twig_Extension
         $template,
         array $fields
     ) {
-        if (!file_exists(sprintf('%s/../Resources/public/views/%s.html.twig', __DIR__, $template))) {
-            throw new InvalidArgumentException(sprintf('Template with the name `%s.html.twig` was not found under the `EzSystemsRecommendationBundle` views location', $template));
-        }
-
         if (empty($fields)) {
             throw new InvalidArgumentException('Missing recommendation fields, at least one field is required');
         }
 
         return $twigEnvironment->render(
-            sprintf('@EzSystemsRecommendationBundle/Resources/public/views/%s.html.twig', $template),
+            sprintf('EzSystemsRecommendationBundle::%s.html.twig', $template),
             array(
                 'contentId' => $contentId,
                 'language' => $this->getCurrentLanguage(),

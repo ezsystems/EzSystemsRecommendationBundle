@@ -39,7 +39,7 @@
 
 <div id="recommendations-target-{{ templateId }}"></div>
 
-{% include '@EzSystemsRecommendationBundle/Resources/public/views/show_recommendations.html.twig' with {
+{% include 'EzSystemsRecommendationBundle::show_recommendations.html.twig' with {
     'templateId': templateId,
     'scenario': scenario,
     'limit': limit,

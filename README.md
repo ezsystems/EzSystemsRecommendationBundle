@@ -183,7 +183,7 @@ Parameter       | Type   | Description
 `scenario`      | string | scenario used to display recommendations, you can create one at YooChoose dashboard
 `limit`         | int    | how many recommendations will be shown?
 `contentType`   | string | content type values you are expecting in response
-`template`      | string | HandleBars template name (your templates are stored under `EzRecommendationBundle/Resources/public/views` directory. Take a look on `default.html.twig` file which includes default template that can be used to prepare customised version)
+`template`      | string | HandleBars template name (your templates are stored under `RecommendationBundle/Resources/views` directory. Take a look on `default.html.twig` file which includes default template that can be used to prepare customised version)
 `fields`        | array  | here you can define which fields are required and will be requested from the recommender engine. These field names are also used inside HandleBars templates
 
 Sample integration should look like below:

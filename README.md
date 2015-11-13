@@ -10,13 +10,13 @@ This bundle integrates Recommendation services into eZ Platform. It supports the
 - eZ Publish 5.4.1+ or eZ Platform/Studio 2015.01 or above, with the REST API configured to use sessions and publicly open to the YOOCHOOSE servers.
 - A YOOCHOOSE subscription
 
-This bundle is independent from legacy's ezrecommendation extension, and doesn't require it.
+This bundle is independent from legacy's `ezrecommendation` extension, and doesn't require it.
 
 ## Installation
 
 This package is available via composer, so the instructions below are similar to how you install any other open source Symfony Bundle.
 
-Run the following from your eZ Publish installation root *(here with most recent 1.0.x release)*:
+Run the following from your eZ Publish / eZ Platform installation root *(here with most recent 1.0.x release)*:
 ```bash
 php composer.phar require ezsystems/recommendation-bundle:~1.0.0
 ```
@@ -29,7 +29,7 @@ $bundles = array(
 );
 
 ```
-Import additional routing by adding following lines to your `routing.yml` file:
+Import additional routing by adding the following lines to your `routing.yml` file:
 
 ```yaml
 recommendationBundleRestRoutes:
@@ -38,30 +38,30 @@ recommendationBundleRestRoutes:
 ```
 Keep in mind, that legacy support is disabled by default. To enable legacy search engine (requires `ezpublish-kernel` bundle) uncomment these lines in bundle `services.yml`:
 ```yaml
-#    ez_recommendation.legacy.search_engine:
-#        class: ezpSearchEngine
-#        factory_class: EzSystems\RecommendationBundle\eZ\Publish\LegacySearch\LegacySearchFactory
-#        factory_method: build
-#        arguments: [@ezpublish_legacy.kernel]
-#
-#    ez_recommendation.legacy.recommendation_search_engine:
-#        class: EzSystems\RecommendationBundle\eZ\Publish\LegacySearch\RecommendationLegacySearchEngine
-#        arguments:
-#            - @ez_recommendation.client.yoochoose_notifier
-#            - @ez_recommendation.legacy.search_engine
-#
-#    ez_recommendation.legacy.search_configuration_mapper:
-#        class: EzSystems\RecommendationBundle\eZ\Publish\LegacySearch\ConfigurationMapper
-#        arguments:
-#            - @ez_recommendation.legacy.recommendation_search_engine
-#            - @ezpublish.siteaccess
-#        tags:
-#            - { name: kernel.event_subscriber }
+# ez_recommendation.legacy.search_engine:
+#     class: ezpSearchEngine
+#     factory_class: EzSystems\RecommendationBundle\eZ\Publish\LegacySearch\LegacySearchFactory
+#     factory_method: build
+#     arguments: [@ezpublish_legacy.kernel]
+
+# ez_recommendation.legacy.recommendation_search_engine:
+#     class: EzSystems\RecommendationBundle\eZ\Publish\LegacySearch\RecommendationLegacySearchEngine
+#     arguments:
+#         - @ez_recommendation.client.yoochoose_notifier
+#         - @ez_recommendation.legacy.search_engine
+
+# ez_recommendation.legacy.search_configuration_mapper:
+#     class: EzSystems\RecommendationBundle\eZ\Publish\LegacySearch\ConfigurationMapper
+#     arguments:
+#         - @ez_recommendation.legacy.recommendation_search_engine
+#         - @ezpublish.siteaccess
+#     tags:
+#         - { name: kernel.event_subscriber }
 ```
 
 ## Configuration
 
-The bundle's configuration is siteaccess aware. This is an example of settings *(config.yml)*:
+The bundle's configuration depends on siteaccess. This is an example of settings *(config.yml)*:
 ```yaml
 ez_recommendation:
     system:
@@ -93,7 +93,7 @@ Format for `ez_recommendation.field_identifiers`:
              {content type}: {field with value}
 ```
 
-Actual example:
+A working example:
 
 ```yaml
     ez_recommendation.field_identifiers:
@@ -119,7 +119,12 @@ ez_recommendation:
         script_url: 'cdn.yoochoose.net/yct.js'
 ```
 
-Changing any of these parameters without a valid reason will break all calls to YOOCHOOSE. It can be useful to test the API by mocking the service, or if you have a hosted version of YOOCHOOSE Recommendation service.
+**IMPORTANT**
+Changing any of the parameters above without a valid reason will break all calls to YOOCHOOSE.
+
+*Possible use cases when parameters can be changed:*
+- testing the API by mocking the service
+- integrating with a hosted version of YOOCHOOSE Recommendation service
 
 ## Usage
 
@@ -129,13 +134,13 @@ Your content structure must be mapped to the YOOCHOOSE domain model. This must b
 
 ### Indexing
 
-**Public** content is automatically indexed. When necessary, eZ Publish will notify YOOCHOOSE of changes to content. Initial import is to be managed with your YOOCHOOSE sales representative. Note that your server's REST API will need to be open to the YOOCHOOSE servers for indexing to be possible.
+**Public** content is automatically indexed. When necessary, eZ Publish will notify YOOCHOOSE of changes to content. Initial content import is to be managed with your YOOCHOOSE sales representative. Note that your server's REST API have to be open to the YOOCHOOSE servers to allow content indexing.
 
-### Tracking
+### Tracking of user's activity
 
-Events from the site needs to be sent to YOOCHOOSE so that recommendations can be adapted to visitors. Tracking can be setup in multiple ways, depending on anyone's constraints.
+Events from the site need to be sent to YOOCHOOSE so that recommendations can be adapted to visitors. Tracking can be setup in multiple ways, depending on anyone's constraints.
 
-`EzRecommendationBundle` delivers Twig extension which helps integrate tracking functionality into your site. All you need to do is place small snippet code somewhere in the HEAD section of your header template (if your bundle is built on top of the DemoBundle this is `page_head.html.twig`):
+`EzSystemsRecommendationBundle` provides Twig extension which helps to integrate tracking functionality into your site. All you need to do is to place a small snippet code somewhere in the `HEAD` section of your header template (if your bundle is built on top of the DemoBundle this is `page_head.html.twig`):
 
 ```twig
 {% if content is defined %}
@@ -149,18 +154,18 @@ Here you can define for which content types tracking script will be shown.
 
 You can find more information on the YOOCHOOSE documentation, about [tracking in general](https://doc.yoochoose.net/display/PUBDOC/1.+Tracking+Events), and about the [generic asynchronous javascript tracker](https://doc.yoochoose.net/display/PUBDOC/Tracking+with+yc.js).
 
-Additionaly, in case of missing content owner Id, there's option in `default_settings.yml` to set up default content author:
+Additionaly, in case of missing content owner Id, there's option in `default_settings.yml` file to set up default content author:
 ```yaml
     ez_recommendation.default.author_id: 14   # ID: 14 is default ID of admin user
 ```
 
 ### Displaying
 
-In order to allow displaying recommendations on your site you must add portions of scripts which will integrate recommender engine with your site.
+In order to allow displaying recommendations on your site you must add scripts (included in the bundle). They will allow you to integrate recommender engine with your site.
 
-Implementation is very easy and can be performed in just a few steps (assuming that `EzRecommendationBundle` is properly configured and enabled in `EzPublishKernel.php`):
+Implementation is very easy and can be performed in just a few steps (assuming that `EzSystemsRecommendationBundle` is properly configured and enabled in `EzPublishKernel.php` file):
 
-* add additional JavaScript assets to your header template (if your bundle is built on top of the DemoBundle this is  `page_head_script.html.twig`):
+* add additional JavaScript assets to your header template (if your bundle is built on top of the DemoBundle this is `page_head_script.html.twig` file):
 
 ```twig
 {% javascripts
@@ -173,7 +178,7 @@ Implementation is very easy and can be performed in just a few steps (assuming t
 %}
 ```
 
-* place dedicated Twig helper in place where you want to display recommendations *(see further below for example)*:
+* insert dedicated Twig helper in place where you want to display recommendations *(see further below for example)*:
 
 ```twig
 {{ yc_show_recommendations(
@@ -186,16 +191,16 @@ Implementation is very easy and can be performed in just a few steps (assuming t
 ) }}
 ```
 
-Parameter meanings (all bellow are required):
+Meanings of the parameters (all bellow are required):
 
 Parameter       | Type   | Description
 ----------------|--------|------------
-`contentId`     | int    | this is in content based views normally the twig variable holding the content id (we want to get recommendations for)
+`contentId`     | int    | this is in content based views normally the Twig variable holding the content id (we want to get recommendations for)
 `scenario`      | string | scenario used to display recommendations, you can create one at YOOCHOOSE dashboard
 `limit`         | int    | how many recommendations will be shown?
 `contentType`   | string | content type values you are expecting in response
 `template`      | string | HandleBars template name (your templates are stored under `EzRecommendationBundle/Resources/public/views` directory. Take a look on `default.html.twig` file which includes default template that can be used to prepare customised version)
-`fields`        | array  | here you can define which fields are required and will be requested from the recommender engine. These field names are also used inside HandleBars templates
+`fields`        | array  | here you can define which fields are required and will be requested from the recommender engine. These field names are also used inside `Handle Bars` templates.
 
 Sample integration should look like below:
 
@@ -210,14 +215,14 @@ Sample integration should look like below:
 ) }}
 ```
 
-You can also bypass named arguments using standard value passing as arguments.
+You can also ommit names of arguments by using standard value passing as arguments.
 
 #### The item id
 The ItemId mentioned throughout this documentation is usually set to the viewed ContentId. Depending on requirements, it can be set to a different value, in collaboration with YOOCHOOSE.
 
 ## Troubleshooting
 
-Most operations are logged via the `ez_recommendation` [Monolog channel](http://symfony.com/doc/current/cookbook/logging/channels_handlers.html). To log everything about Recommendation to dev.recommendation.log, add the following to your `config.yml`:
+Most operations are logged via the `ez_recommendation` [Monolog channel](http://symfony.com/doc/current/cookbook/logging/channels_handlers.html). To log all events from `EzSystemsRecommendationBundle` to the `dev.recommendation.log` file, add the following entry to your `config.yml` file:
 
 ```yaml
 monolog:
@@ -229,7 +234,7 @@ monolog:
             level: info
 ```
 
-Tip: You can replace `info` by `debug` for more verbosity.
+**Tip:** You can replace `info` value with `debug` value for certain verbosity level.
 
 ## Other resources
 

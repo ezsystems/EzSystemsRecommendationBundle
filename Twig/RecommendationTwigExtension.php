@@ -11,13 +11,13 @@ namespace EzSystems\RecommendationBundle\Twig;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage;
 use Twig_Extension;
 use Twig_SimpleFunction;
 use Twig_Environment;
 use eZ\Publish\API\Repository\ContentService;
 use eZ\Publish\API\Repository\LocationService;
 use eZ\Publish\API\Repository\ContentTypeService;
-use eZ\Publish\Core\SignalSlot\Repository;
 use eZ\Publish\Core\MVC\Symfony\Locale\LocaleConverter;
 use EzSystems\RecommendationBundle\Exception\InvalidArgumentException;
 
@@ -28,9 +28,6 @@ class RecommendationTwigExtension extends Twig_Extension
 {
     /** @var \Symfony\Component\HttpFoundation\RequestStack */
     protected $requestStack;
-
-    /** @var \eZ\Publish\Core\SignalSlot\Repository */
-    protected $repository;
 
     /** @var \eZ\Publish\API\Repository\ContentTypeService */
     protected $contentTypeService;
@@ -47,6 +44,9 @@ class RecommendationTwigExtension extends Twig_Extension
     /** @var \Symfony\Component\Security\Core\Authorization\AuthorizationChecker */
     protected $authorizationChecker;
 
+    /** @var \Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage */
+    protected $tokenStorage;
+
     /** @var \Symfony\Component\HttpFoundation\Session\Session */
     protected $session;
 
@@ -57,33 +57,33 @@ class RecommendationTwigExtension extends Twig_Extension
      * Constructs EzSystemsRecommendationBundle Twig extension.
      *
      * @param \Symfony\Component\HttpFoundation\RequestStack $requestStack
-     * @param \eZ\Publish\Core\SignalSlot\Repository $repository
      * @param \eZ\Publish\API\Repository\ContentTypeService $contentTypeService
      * @param \eZ\Publish\API\Repository\ContentService $contentService
      * @param \eZ\Publish\API\Repository\LocationService $locationService
      * @param \eZ\Publish\Core\MVC\Symfony\Locale\LocaleConverter $localeConverter
      * @param \Symfony\Component\Security\Core\Authorization\AuthorizationChecker
+     * @param \Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage
      * @param \Symfony\Component\HttpFoundation\Session\Session $session
      * @param array $options
      */
     public function __construct(
         RequestStack $requestStack,
-        Repository $repository,
         ContentTypeService $contentTypeService,
         ContentService $contentService,
         LocationService $locationService,
         LocaleConverter $localeConverter,
         AuthorizationChecker $authorizationChecker,
+        TokenStorage $tokenStorage,
         Session $session,
         array $options
     ) {
         $this->requestStack = $requestStack;
-        $this->repository = $repository;
         $this->contentTypeService = $contentTypeService;
         $this->contentService = $contentService;
         $this->locationService = $locationService;
         $this->localeConverter = $localeConverter;
         $this->authorizationChecker = $authorizationChecker;
+        $this->tokenStorage = $tokenStorage;
         $this->session = $session;
         $this->options = $options;
     }
@@ -311,7 +311,7 @@ class RecommendationTwigExtension extends Twig_Extension
     {
         if ($this->authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY') || // user has just logged in
             $this->authorizationChecker->isGranted('IS_AUTHENTICATED_REMEMBERED')) { // user has logged in using remember_me cookie
-            return $this->repository->getCurrentUser()->id;
+            return $this->tokenStorage->getToken()->getUsername();
         } else {
             return $this->session->get('yc-session-id');
         }

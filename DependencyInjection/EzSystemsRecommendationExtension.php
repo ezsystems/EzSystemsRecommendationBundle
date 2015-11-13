@@ -1,5 +1,8 @@
 <?php
-
+/**
+ * @copyright Copyright (C) eZ Systems AS. All rights reserved.
+ * @license For full copyright and license information view LICENSE file distributed with this source code.
+ */
 namespace EzSystems\RecommendationBundle\DependencyInjection;
 
 use eZ\Bundle\EzPublishCoreBundle\DependencyInjection\Configuration\SiteAccessAware\ConfigurationProcessor;
@@ -15,6 +18,9 @@ use Symfony\Component\DependencyInjection\Loader;
  */
 class EzSystemsRecommendationExtension extends Extension
 {
+    /**
+     * {@inheritdoc}
+     */
     public function load(array $configs, ContainerBuilder $container)
     {
         $configuration = $this->getConfiguration($configs, $container);
@@ -45,6 +51,9 @@ class EzSystemsRecommendationExtension extends Extension
         $processor->mapConfig($config, new ConfigurationMapper());
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getAlias()
     {
         return 'ez_recommendation';

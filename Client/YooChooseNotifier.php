@@ -1,9 +1,7 @@
 <?php
 /**
- * This file is part of the EzSystemsRecommendationBundle package.
- *
  * @copyright Copyright (C) eZ Systems AS. All rights reserved.
- * @license For full copyright and license information view LICENSE file distributd with this source code.
+ * @license For full copyright and license information view LICENSE file distributed with this source code.
  */
 namespace EzSystems\RecommendationBundle\Client;
 
@@ -43,9 +41,9 @@ class YooChooseNotifier implements RecommendationClient
      * @param \eZ\Publish\API\Repository\ContentTypeService $contentTypeService
      * @param array $options
      *     Keys (all required):
-     *     - customer-id: the yoochoose customer ID, e.g. 12345
-     *     - license-key: yoochoose license key, e.g. 1234-5678-9012-3456-7890
-     *     - api-endpoint: yoochoose http api endpoint
+     *     - customer-id: the YooChoose customer ID, e.g. 12345
+     *     - license-key: YooChoose license key, e.g. 1234-5678-9012-3456-7890
+     *     - api-endpoint: YooChoose http api endpoint
      *     - server-uri: the site's REST API base URI (without the prefix), e.g. http://api.example.com
      * @param \Psr\Log\LoggerInterface|null $logger
      */
@@ -66,16 +64,34 @@ class YooChooseNotifier implements RecommendationClient
         $this->logger = $logger;
     }
 
+    /**
+     * Sets `customer-id` option when service is created which allows to
+     * inject parameter value according to siteaccess configuration.
+     *
+     * @param string $value
+     */
     public function setCustomerId($value)
     {
         $this->options['customer-id'] = $value;
     }
 
+    /**
+     * Sets `license-key` option when service is created which allows to
+     * inject parameter value according to siteaccess configuration.
+     *
+     * @param string $value
+     */
     public function setLicenseKey($value)
     {
         $this->options['license-key'] = $value;
     }
 
+    /**
+     * Sets `server-uri` option when service is created which allows to
+     * inject parameter value according to siteaccess configuration.
+     *
+     * @param string $value
+     */
     public function setServerUri($value)
     {
         $this->options['server-uri'] = $value;
@@ -92,6 +108,9 @@ class YooChooseNotifier implements RecommendationClient
         $this->options['included-content-types'] = $value;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function updateContent($contentId)
     {
         if (!in_array($this->getContentIdentifier($contentId), $this->options['included-content-types'])) {
@@ -114,6 +133,9 @@ class YooChooseNotifier implements RecommendationClient
         }
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function deleteContent($contentId)
     {
         if (!in_array($this->getContentIdentifier($contentId), $this->options['included-content-types'])) {
@@ -140,6 +162,7 @@ class YooChooseNotifier implements RecommendationClient
      * Returns ContentType identifier based on $contentId.
      *
      * @param int|mixed $contentId
+     *
      * @return string
      */
     private function getContentIdentifier($contentId)
@@ -252,7 +275,7 @@ class YooChooseNotifier implements RecommendationClient
     }
 
     /**
-     * Returns the yoochoose notification endpoint.
+     * Returns the YooChoose notification endpoint.
      *
      * @return string
      */

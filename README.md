@@ -76,9 +76,9 @@ ez_recommendation:
 
 Parameter                          | Description
 -----------------------------------|----------------------------
-yoochoose.customer_id	           | Your YooChoose customer ID.
-yoochoose.license_key	           | Your YooChoose license key.
-server_uri	                       | The URI your site's REST API can be accessed from.
+yoochoose.customer_id              | Your YooChoose customer ID.
+yoochoose.license_key              | Your YooChoose license key.
+server_uri                         | The URI your site's REST API can be accessed from.
 recommender.included_content_types | Content Types on which the tracking script will be shown. See Usage/Tracking further below for more information.
 
 ### Custom author and image field mapping

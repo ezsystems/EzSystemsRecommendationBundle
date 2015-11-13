@@ -234,4 +234,4 @@ Tip: You can replace `info` by `debug` for more verbosity.
 ## Other resources
 
 - [API doc for YooChoose Service](http://docs.ezreco.apiary.io/#)
-- [Devloper Guides for YooChoose Service](https://doc.yoochoose.net/display/PUBDOC/Developer+Guide)
+- [Developer Guides for YooChoose Service](https://doc.yoochoose.net/display/PUBDOC/Developer+Guide)

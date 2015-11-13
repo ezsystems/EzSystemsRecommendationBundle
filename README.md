@@ -1,22 +1,24 @@
 # Recommendation Bundle
-This bundle integrates Recommendation services into eZ Platform. It supports the YooChoose recommender at this moment.
+This bundle integrates Recommendation services into eZ Platform. It supports the [YOOCHOOSE](https://yoochoose.com/) recommender service.
 
-**Work in progress** This Bundle is work in progress, and support is restricted to pull request (contribution) directly on this repository until it reaches v1.0. After that, it will officially be supported by eZ for users with eZ and Yoochoose subscription.
+**Support** Stable versions of this bundle is officially supported by eZ as of version 1.0.0, for users with a eZ Enterprise and YOOCHOOSE subscription.
 
 ## Requirements
 
-- PHP 5.4.4
-- eZ Publish 5.4.1/2015.01 or above, with the REST API configured to use sessions and publicly open to the YooChoose servers.
-- A YooChoose license
+- PHP 5.4.4 *or higher PHP 5.x version*
+- Symfony 2.6 *or higher Symfony 2.x version*
+- eZ Publish 5.4.1+ or eZ Platform/Studio 2015.01 or above, with the REST API configured to use sessions and publicly open to the YOOCHOOSE servers.
+- A YOOCHOOSE subscription
 
 This bundle is independent from legacy's ezrecommendation extension, and doesn't require it.
 
 ## Installation
+
 This package is available via composer, so the instructions below are similar to how you install any other open source Symfony Bundle.
 
-Run the following from your eZ Publish installation root (pick most recent release, example here is last one as of this writing):
+Run the following from your eZ Publish installation root *(here with most recent 1.0.x release)*:
 ```bash
-php composer.phar require ezsystems/recommendation-bundle:~1.0@beta
+php composer.phar require ezsystems/recommendation-bundle:~1.0.0
 ```
 
 Enable the bundle in `ezpublish/EzPublishKernel.php`:
@@ -58,7 +60,8 @@ Keep in mind, that legacy support is disabled by default. To enable legacy searc
 ```
 
 ## Configuration
-The bundle's configuration is siteaccess aware. This is an example of settings (config.yml):
+
+The bundle's configuration is siteaccess aware. This is an example of settings *(config.yml)*:
 ```yaml
 ez_recommendation:
     system:
@@ -71,16 +74,18 @@ ez_recommendation:
                 included_content_types: ["blog", "article"]
 ```
 
-### `yoochoose.customer_id` and `yoochoose.license_key`
-These are your YooChoose customer ID and license keys.
+Parameter                          | Description
+-----------------------------------|----------------------------
+yoochoose.customer_id              | Your YOOCHOOSE customer ID.
+yoochoose.license_key              | Your YOOCHOOSE license key.
+server_uri                         | The URI your site's REST API can be accessed from.
+recommender.included_content_types | Content Types on which the tracking script will be shown. See Usage/Tracking further below for more information.
 
-### `server_uri`
-The URI your site's REST API can be accessed from.
-
-### `recommender.included_content_types`
-This allows you to define content types on which tracking script will be shown. Go to the Tracking section to get more details.
+### Custom author and image field mapping
 
 If content's author or image are stored in different field, you can specify it in __parameters.yml__
+
+Format for `ez_recommendation.field_identifiers`:
 
 ```yaml
     ez_recommendation.field_identifiers:
@@ -88,7 +93,7 @@ If content's author or image are stored in different field, you can specify it i
              {content type}: {field with value}
 ```
 
-For example:
+Actual example:
 
 ```yaml
     ez_recommendation.field_identifiers:
@@ -99,7 +104,10 @@ For example:
              blog_post: main_image
 ```
 
-### [advanced]
+### Advanced configuration
+
+You can select advanced options for YOOCHOOSE backend using the following settings:
+
 ```yaml
 ez_recommendation:
     api_endpoint: 'https://admin.yoochoose.net'
@@ -111,18 +119,21 @@ ez_recommendation:
         script_url: 'cdn.yoochoose.net/yct.js'
 ```
 
-All of those settings will set advanced options for YooChoose backend. Changing any of these parameters without a valid reason will break all calls to YooChoose. It can be useful to test the API by mocking the service, or if you have a hosted version of YooChoose Recommendation service.
+Changing any of these parameters without a valid reason will break all calls to YOOCHOOSE. It can be useful to test the API by mocking the service, or if you have a hosted version of YOOCHOOSE Recommendation service.
 
 ## Usage
 
 ### Initial setup
-Your content structure must be mapped to the YooChoose domain model. This must be done in collaboration with YooChoose.
+
+Your content structure must be mapped to the YOOCHOOSE domain model. This must be done in collaboration with YOOCHOOSE.
 
 ### Indexing
-**Public** content is automatically indexed. When necessary, eZ Publish will notify YooChoose of changes to content. Initial import is to be managed with your YooChoose sales representative. Note that your server's REST API will need to be open to the YooChoose servers for indexing to be possible.
+
+**Public** content is automatically indexed. When necessary, eZ Publish will notify YOOCHOOSE of changes to content. Initial import is to be managed with your YOOCHOOSE sales representative. Note that your server's REST API will need to be open to the YOOCHOOSE servers for indexing to be possible.
 
 ### Tracking
-Events from the site needs to be sent to YooChoose so that recommendations can be adapted to visitors. Tracking can be setup in multiple ways, depending on anyone's constraints.
+
+Events from the site needs to be sent to YOOCHOOSE so that recommendations can be adapted to visitors. Tracking can be setup in multiple ways, depending on anyone's constraints.
 
 `EzRecommendationBundle` delivers Twig extension which helps integrate tracking functionality into your site. All you need to do is place small snippet code somewhere in the HEAD section of your header template (if your bundle is built on top of the DemoBundle this is `page_head.html.twig`):
 
@@ -136,14 +147,14 @@ Next step is to configure settings under the `recommender.included_content_types
 
 Here you can define for which content types tracking script will be shown.
 
-You can find more information on the YooChoose documentation, about [tracking in general](https://doc.yoochoose.net/display/PUBDOC/1.+Tracking+Events), and about the [generic asynchronous javascript tracker](https://doc.yoochoose.net/display/PUBDOC/Tracking+with+yc.js).
+You can find more information on the YOOCHOOSE documentation, about [tracking in general](https://doc.yoochoose.net/display/PUBDOC/1.+Tracking+Events), and about the [generic asynchronous javascript tracker](https://doc.yoochoose.net/display/PUBDOC/Tracking+with+yc.js).
 
 Additionaly, in case of missing content owner Id, there's option in `default_settings.yml` to set up default content author:
 ```yaml
     ez_recommendation.default.author_id: 14   # ID: 14 is default ID of admin user
 ```
 
-###Displaying
+### Displaying
 
 In order to allow displaying recommendations on your site you must add portions of scripts which will integrate recommender engine with your site.
 
@@ -180,7 +191,7 @@ Parameter meanings (all bellow are required):
 Parameter       | Type   | Description
 ----------------|--------|------------
 `contentId`     | int    | this is in content based views normally the twig variable holding the content id (we want to get recommendations for)
-`scenario`      | string | scenario used to display recommendations, you can create one at YooChoose dashboard
+`scenario`      | string | scenario used to display recommendations, you can create one at YOOCHOOSE dashboard
 `limit`         | int    | how many recommendations will be shown?
 `contentType`   | string | content type values you are expecting in response
 `template`      | string | HandleBars template name (your templates are stored under `RecommendationBundle/Resources/views` directory. Take a look on `default.html.twig` file which includes default template that can be used to prepare customised version)
@@ -202,9 +213,10 @@ Sample integration should look like below:
 You can also bypass named arguments using standard value passing as arguments.
 
 #### The item id
-The ItemId mentioned throughout this documentation is usually set to the viewed ContentId. Depending on requirements, it can be set to a different value, in collaboration with YooChoose.
+The ItemId mentioned throughout this documentation is usually set to the viewed ContentId. Depending on requirements, it can be set to a different value, in collaboration with YOOCHOOSE.
 
 ## Troubleshooting
+
 Most operations are logged via the `ez_recommendation` [Monolog channel](http://symfony.com/doc/current/cookbook/logging/channels_handlers.html). To log everything about Recommendation to dev.recommendation.log, add the following to your `config.yml`:
 
 ```yaml
@@ -217,4 +229,9 @@ monolog:
             level: info
 ```
 
-You can replace `info` by `debug` for more verbosity.
+Tip: You can replace `info` by `debug` for more verbosity.
+
+## Other resources
+
+- [API doc for YOOCHOOSE Service](http://docs.ezreco.apiary.io/#)
+- [Developer Guides for YOOCHOOSE Service](https://doc.yoochoose.net/display/PUBDOC/Developer+Guide)

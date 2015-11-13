@@ -1,8 +1,5 @@
 <?php
-
 /**
- * This file is part of the EzSystemsRecommendationBundle package.
- *
  * @copyright Copyright (C) eZ Systems AS. All rights reserved.
  * @license For full copyright and license information view LICENSE file distributed with this source code.
  */
@@ -145,6 +142,7 @@ class RecommendationTwigExtension extends Twig_Extension
      *
      * @param \Twig_Environment $twigEnvironment
      * @param int|mixed $contentId
+     *
      * @return string
      */
     public function trackUser(Twig_Environment $twigEnvironment, $contentId)
@@ -171,6 +169,7 @@ class RecommendationTwigExtension extends Twig_Extension
      * Returns ContentType identifier based on $contentId.
      *
      * @param int|mixed $contentId
+     *
      * @return string
      */
     private function getContentIdentifier($contentId)
@@ -189,6 +188,7 @@ class RecommendationTwigExtension extends Twig_Extension
      * Returns ContentType ID based on $contentType name.
      *
      * @param string $contentType
+     *
      * @return int
      */
     private function getContentTypeId($contentType)
@@ -206,9 +206,11 @@ class RecommendationTwigExtension extends Twig_Extension
      * @param string $contentType
      * @param string $template
      * @param array $fields
+     *
+     * @return string
+     *
      * @throws \EzSystems\RecommendationBundle\Exception\InvalidArgumentException when template is not found
      * @throws \EzSystems\RecommendationBundle\Exception\InvalidArgumentException when attributes are missing
-     * @return string
      */
     public function showRecommendations(
         Twig_Environment $twigEnvironment,
@@ -249,6 +251,7 @@ class RecommendationTwigExtension extends Twig_Extension
      * Returns location path string based on $contentId.
      *
      * @param int|mixed $contentId
+     *
      * @return string
      */
     private function getLocationPathString($contentId)
@@ -290,6 +293,7 @@ class RecommendationTwigExtension extends Twig_Extension
      * that recommendations were successfully fetched and displayed.
      *
      * @param int $outputContentTypeId ContentType ID for which recommendations should be delivered
+     *
      * @return string
      */
     private function getFeedbackUrl($outputContentTypeId)

@@ -1,8 +1,5 @@
 <?php
-
 /**
- * This file is part of the EzSystemsRecommendationBundle package.
- *
  * @copyright Copyright (C) eZ Systems AS. All rights reserved.
  * @license For full copyright and license information view LICENSE file distributed with this source code.
  */
@@ -58,11 +55,20 @@ class Login
         $this->logger = $logger;
     }
 
+    /**
+     * Sets `customerId` option when service is created which allows to
+     * inject parameter value according to siteaccess configuration.
+     *
+     * @param string $value
+     */
     public function setCustomerId($value)
     {
         $this->options['customerId'] = $value;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function onSecurityInteractiveLogin(InteractiveLoginEvent $event)
     {
         if ($this->authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY') || // user has just logged in

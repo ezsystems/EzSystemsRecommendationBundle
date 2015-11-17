@@ -215,7 +215,7 @@ Sample integration should look like below:
 ) }}
 ```
 
-You can also ommit names of arguments by using standard value passing as arguments.
+You can also omit names of arguments by using standard value passing as arguments.
 
 #### The item id
 The ItemId mentioned throughout this documentation is usually set to the viewed ContentId. Depending on requirements, it can be set to a different value, in collaboration with YOOCHOOSE.

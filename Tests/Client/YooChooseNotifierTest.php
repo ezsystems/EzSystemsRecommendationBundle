@@ -6,7 +6,7 @@
 namespace EzSystems\RecommendationBundle\Tests\Client;
 
 use PHPUnit_Framework_TestCase;
-use Guzzle\Http\Message\Response;
+use GuzzleHttp\Message\Response;
 use eZ\Publish\Core\Repository\Values\Content\Content;
 use eZ\Publish\Core\Repository\Values\ContentType\ContentType;
 use eZ\Publish\Core\Repository\Values\Content\VersionInfo;
@@ -174,6 +174,7 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
             ->expects($this->any())
             ->method('loadContent')
             ->will($this->returnValue(new Content(array(
+                'internalFields' => array(), // For older versions of kernel
                 'versionInfo' => new VersionInfo(array(
                     'contentInfo' => new ContentInfo(array(
                         'contentTypeId' => $contentTypeId,

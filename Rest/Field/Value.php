@@ -72,6 +72,16 @@ class Value
     public function getFieldValue(Content $content, $field, $language)
     {
         $fieldObj = $content->getField($field, $language);
+
+        if (!isset($fieldObj)) {
+            $this->logger->warning('Invalid field name. Field: ' . $field);
+
+            return array(
+                'key' => $field,
+                'value' => '',
+            );
+        }
+
         $contentType = $this->contentTypeService->loadContentType($content->contentInfo->contentTypeId);
         $imageFieldIdentifier = $this->getImageFieldIdentifier($content->id, $language);
 

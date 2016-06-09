@@ -7,7 +7,7 @@ This bundle integrates Recommendation services into eZ Platform. It supports the
 
 - PHP 5.4.4 *or higher PHP 5.x version*
 - Symfony 2.6 *or higher Symfony 2.x version*
-- eZ Publish 5.4.1+ or eZ Platform/Studio 2015.01 or above, with the REST API configured to use sessions and publicly open to the YOOCHOOSE servers.
+- eZ Publish v5.4.1+ or eZ Platform/Studio v1.0+, with the REST API configured to use sessions and publicly open to the YOOCHOOSE servers.
 - A YOOCHOOSE subscription
 
 This bundle is independent from legacy's `ezrecommendation` extension, and doesn't require it.
@@ -18,7 +18,8 @@ This package is available via composer, so the instructions below are similar to
 
 Run the following from your eZ Publish / eZ Platform installation root *(here with most recent 1.0.x release)*:
 ```bash
-php composer.phar require --update-no-dev ezsystems/recommendation-bundle:~1.0.0
+composer require --no-update ezsystems/recommendation-bundle:^1.0.0
+composer update --prefer-dist
 ```
 
 Enable the bundle in `ezpublish/EzPublishKernel.php`:

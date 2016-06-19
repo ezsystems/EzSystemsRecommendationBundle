@@ -138,7 +138,12 @@ class YooChooseNotifier implements RecommendationClient
      */
     public function deleteContent($contentId)
     {
-        if (!in_array($this->getContentIdentifier($contentId), $this->options['included-content-types'])) {
+        try {
+            if (!in_array($this->getContentIdentifier($contentId), $this->options['included-content-types'])) {
+                return;
+            }
+        } catch( \eZ\Publish\Core\Base\Exceptions\NotFoundException $e ) {
+            // This is an internal draft
             return;
         }
 

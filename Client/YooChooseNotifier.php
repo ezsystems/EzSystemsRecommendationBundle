@@ -114,6 +114,8 @@ class YooChooseNotifier implements RecommendationClient
     public function updateContent($contentId)
     {
         if (!in_array($this->getContentTypeIdentifier($contentId), $this->options['included-content-types'])) {
+
+            // this Content is not intended to be submitted because ContentType was excluded
             return;
         }
 
@@ -138,7 +140,15 @@ class YooChooseNotifier implements RecommendationClient
      */
     public function deleteContent($contentId)
     {
-        if (!in_array($this->getContentTypeIdentifier($contentId), $this->options['included-content-types'])) {
+        try {
+            if (!in_array($this->getContentTypeIdentifier($contentId), $this->options['included-content-types'])) {
+
+                // this Content is not intended to be submitted because ContentType was excluded
+                return;
+            }
+        } catch (NotFoundException $e) {
+
+            // this is most likely a internal draft, or otherwise invalid, ignoring
             return;
         }
 

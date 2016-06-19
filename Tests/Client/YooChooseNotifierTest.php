@@ -9,7 +9,6 @@ use PHPUnit_Framework_TestCase;
 use GuzzleHttp\Message\Response;
 use eZ\Publish\Core\Repository\Values\Content\Content;
 use eZ\Publish\Core\Repository\Values\ContentType\ContentType;
-use eZ\Publish\Core\Repository\Values\Content\VersionInfo;
 use eZ\Publish\API\Repository\Values\Content\ContentInfo;
 use EzSystems\RecommendationBundle\Client\YooChooseNotifier;
 
@@ -42,8 +41,7 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
 
         $this->notifier = new YooChooseNotifier(
             $this->guzzleClientMock,
-            $this->getContentServiceMock(self::CONTENT_TYPE_ID),
-            $this->getContentTypeServiceMock(self::CONTENT_TYPE_ID),
+            $this->getRepositoryServiceMock(self::CONTENT_TYPE_ID),
             array(
                 'customer-id' => self::CUSTOMER_ID,
                 'license-key' => self::LICENSE_KEY,
@@ -172,18 +170,6 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
 
         $contentServiceMock
             ->expects($this->any())
-            ->method('loadContent')
-            ->will($this->returnValue(new Content(array(
-                'internalFields' => array(), // For older versions of kernel
-                'versionInfo' => new VersionInfo(array(
-                    'contentInfo' => new ContentInfo(array(
-                        'contentTypeId' => $contentTypeId,
-                    )),
-                )),
-            ))));
-
-        $contentServiceMock
-            ->expects($this->any())
             ->method('loadContentInfo')
             ->will($this->returnValue(new ContentInfo(array(
                 'contentTypeId' => $contentTypeId,
@@ -193,24 +179,41 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * Returns ContentTypeService mock object.
+     * Returns Repository mock object.
      *
      * @param int $identifier
      *
-     * @return \eZ\Publish\API\Repository\ContentTypeService|\PHPUnit_Framework_MockObject_MockObject
+     * @return \eZ\Publish\Core\SignalSlot\Repository|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected function getContentTypeServiceMock($identifier)
+    protected function getRepositoryServiceMock($identifier)
     {
-        $contentTypeServiceMock = $this->getMock('eZ\Publish\API\Repository\ContentTypeService');
+        $repositoryInterfaceServiceMock = $this->getMock('eZ\Publish\API\Repository\Repository');
+        $signalDispatcherServiceMock = $this->getMock('eZ\Publish\Core\SignalSlot\SignalDispatcher');
 
-        $contentTypeServiceMock
+        $repositoryServiceMock = $this->getMock(
+            'eZ\Publish\Core\SignalSlot\Repository',
+            array('sudo', 'getContentService', 'getContentTypeService'),
+            array($repositoryInterfaceServiceMock, $signalDispatcherServiceMock)
+        );
+
+        $repositoryServiceMock
             ->expects($this->any())
-            ->method('loadContentType')
+            ->method('getContentService')
+            ->will($this->returnValue($this->getContentServiceMock($identifier)));
+
+        $repositoryServiceMock
+            ->expects($this->any())
+            ->method('getContentTypeService')
+            ->will($this->returnValue(null));
+
+        $repositoryServiceMock
+            ->expects($this->any())
+            ->method('sudo')
             ->will($this->returnValue(new ContentType(array(
                 'fieldDefinitions' => array(),
                 'identifier' => $identifier,
             ))));
 
-        return $contentTypeServiceMock;
+        return $repositoryServiceMock;
     }
 }

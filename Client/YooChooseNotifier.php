@@ -10,6 +10,7 @@ use GuzzleHttp\Exception\RequestException;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use eZ\Publish\Core\SignalSlot\Repository;
 use eZ\Publish\API\Repository\ContentService;
 use eZ\Publish\API\Repository\ContentTypeService;
 
@@ -33,6 +34,10 @@ class YooChooseNotifier implements RecommendationClient
     /** @var \eZ\Publish\API\Repository\ContentTypeService */
     private $contentTypeService;
 
+    /** @var \eZ\Publish\Core\SignalSlot\Repository */
+    private $repository;
+
+
     /**
      * Constructs a YooChooseNotifier Recommendation Client.
      *
@@ -51,6 +56,7 @@ class YooChooseNotifier implements RecommendationClient
         GuzzleClient $guzzle,
         ContentService $contentService,
         ContentTypeService $contentTypeService,
+        Repository $repository,
         array $options,
         LoggerInterface $logger = null
     ) {
@@ -61,6 +67,7 @@ class YooChooseNotifier implements RecommendationClient
         $this->guzzle = $guzzle;
         $this->contentService = $contentService;
         $this->contentTypeService = $contentTypeService;
+        $this->repository = $repository;
         $this->logger = $logger;
     }
 
@@ -113,7 +120,12 @@ class YooChooseNotifier implements RecommendationClient
      */
     public function updateContent($contentId)
     {
-        if (!in_array($this->getContentIdentifier($contentId), $this->options['included-content-types'])) {
+        try {
+            if (!in_array($this->getContentIdentifier($contentId), $this->options['included-content-types'])) {
+                return;
+            }
+        } catch (\eZ\Publish\Core\Base\Exceptions\NotFoundException $e) {
+            // Prevent crash if the content ID is invalid
             return;
         }
 
@@ -167,13 +179,18 @@ class YooChooseNotifier implements RecommendationClient
      */
     private function getContentIdentifier($contentId)
     {
-        $contentType = $this->contentTypeService->loadContentType(
-            $this->contentService
-                ->loadContent($contentId)
-                ->contentInfo
-                ->contentTypeId
-        );
-
+        $repository = $this->repository;
+        $contentTypeService = $this->contentTypeService;
+        $contentService = $this->contentService;
+        $contentType = $repository->sudo( function( $repository ) use( $contentId, $contentTypeService, $contentService ) {
+            $contentType = $contentTypeService->loadContentType(
+                $contentService
+                    ->loadContent($contentId)
+                    ->contentInfo
+                    ->contentTypeId
+            );
+            return $contentType;
+        });
         return $contentType->identifier;
     }
 

@@ -113,7 +113,7 @@ class YooChooseNotifier implements RecommendationClient
      */
     public function updateContent($contentId)
     {
-        if (!in_array($this->getContentIdentifier($contentId), $this->options['included-content-types'])) {
+        if (!in_array($this->getContentTypeIdentifier($contentId), $this->options['included-content-types'])) {
             return;
         }
 
@@ -138,7 +138,7 @@ class YooChooseNotifier implements RecommendationClient
      */
     public function deleteContent($contentId)
     {
-        if (!in_array($this->getContentIdentifier($contentId), $this->options['included-content-types'])) {
+        if (!in_array($this->getContentTypeIdentifier($contentId), $this->options['included-content-types'])) {
             return;
         }
 
@@ -165,7 +165,7 @@ class YooChooseNotifier implements RecommendationClient
      *
      * @return string
      */
-    private function getContentIdentifier($contentId)
+    private function getContentTypeIdentifier($contentId)
     {
         $contentType = $this->contentTypeService->loadContentType(
             $this->contentService

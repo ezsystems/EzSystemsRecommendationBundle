@@ -5,8 +5,8 @@
  */
 namespace EzSystems\RecommendationBundle\Tests\Client;
 
+use GuzzleHttp\Psr7\Response;
 use PHPUnit_Framework_TestCase;
-use GuzzleHttp\Message\Response;
 use eZ\Publish\Core\Repository\Values\Content\Content;
 use eZ\Publish\Core\Repository\Values\ContentType\ContentType;
 use eZ\Publish\Core\Repository\Values\Content\VersionInfo;

@@ -256,7 +256,8 @@ class YooChooseNotifier implements RecommendationClient
             $this->logger->debug('POST notification to YooChoose:' . json_encode($events, true));
         }
 
-        $response = $this->guzzle->post(
+        $response = $this->guzzle->request(
+            'POST',
             $this->getNotificationEndpoint(),
             array(
                 'json' => array(

@@ -10,7 +10,8 @@ use eZ\Bundle\EzPublishCoreBundle\Imagine\AliasGenerator as ImageVariationServic
 use eZ\Publish\Core\MVC\Exception\SourceImageNotFoundException;
 use eZ\Publish\API\Repository\Values\Content\Content;
 use eZ\Publish\API\Repository\Values\Content\Field;
-use eZ\Publish\Core\FieldType\XmlText\Converter\Html5;
+use eZ\Bundle\EzPublishCoreBundle\FieldType\RichText\Converter\Html5 as RichHtml5;
+use eZ\Publish\Core\FieldType\XmlText\Converter\Html5 as XmlHtml5;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 class TypeValue
@@ -21,28 +22,34 @@ class TypeValue
     /** @var \eZ\Bundle\EzPublishCoreBundle\DependencyInjection\Configuration\ConfigResolver */
     private $configResolver;
 
-    /** @var \eZ\Publish\Core\FieldType\XmlText\Converter\Html5 */
-    private $html5Converter;
-
     /** @var \eZ\Bundle\EzPublishCoreBundle\Imagine\AliasGenerator */
     protected $imageVariationService;
+
+    /** @var \eZ\Bundle\EzPublishCoreBundle\FieldType\RichText\Converter\Html5 */
+    private $richHtml5Converter;
+
+    /** @var \eZ\Publish\Core\FieldType\XmlText\Converter\Html5 */
+    private $xmlHtml5Converter;
 
     /**
      * @param \Symfony\Component\HttpFoundation\RequestStack $request
      * @param \eZ\Bundle\EzPublishCoreBundle\DependencyInjection\Configuration\ConfigResolver $configResolver
-     * @param \eZ\Publish\Core\FieldType\XmlText\Converter\Html5 $html5Converter
      * @param \eZ\Bundle\EzPublishCoreBundle\Imagine\AliasGenerator $imageVariationService
+     * @param \eZ\Bundle\EzPublishCoreBundle\FieldType\RichText\Converter\Html5 $richHtml5Converter
+     * @param \eZ\Publish\Core\FieldType\XmlText\Converter\Html5 $xmlHtml5Converter
      */
     public function __construct(
         RequestStack $request,
         ConfigResolver $configResolver,
-        Html5 $html5Converter,
-        ImageVariationService $imageVariationService
+        ImageVariationService $imageVariationService,
+        RichHtml5 $richHtml5Converter,
+        XmlHtml5 $xmlHtml5Converter = null
     ) {
         $this->request = $request;
         $this->configResolver = $configResolver;
-        $this->html5Converter = $html5Converter;
         $this->imageVariationService = $imageVariationService;
+        $this->richHtml5Converter = $richHtml5Converter;
+        $this->xmlHtml5Converter = $xmlHtml5Converter;
     }
 
     /**
@@ -69,7 +76,19 @@ class TypeValue
      */
     public function ezxmltext(Field $field)
     {
-        return '<![CDATA[' . $this->html5Converter->convert($field->value->xml) . ']]>';
+        return '<![CDATA[' . $this->xmlHtml5Converter->convert($field->value->xml) . ']]>';
+    }
+
+    /**
+     * Method for parsing ezrichtext field.
+     *
+     * @param \eZ\Publish\API\Repository\Values\Content\Field $field
+     *
+     * @return string
+     */
+    public function ezrichtext(Field $field)
+    {
+        return '<![CDATA[' . $this->richHtml5Converter->convert($field->value->xml)->saveHTML() . ']]>';
     }
 
     /**

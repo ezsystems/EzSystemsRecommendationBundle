@@ -13,7 +13,7 @@
         "symfony/symfony": "~2.6"
     },
     "require-dev": {
-        "ezsystems/ezpublish-kernel": "~6.0.0@beta | ~5.1",
+        "ezsystems/ezpublish-kernel": "~6.0.0 | ~5.1",
         "phpunit/phpunit": "~4.7"
     },
     "autoload": {
@@ -23,7 +23,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "1.1.x-dev"
+            "dev-master": "1.0.x-dev"
         }
     }
 }

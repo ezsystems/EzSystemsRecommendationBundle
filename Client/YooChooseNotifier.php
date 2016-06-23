@@ -5,13 +5,14 @@
  */
 namespace EzSystems\RecommendationBundle\Client;
 
+use Exception;
 use GuzzleHttp\ClientInterface as GuzzleClient;
 use GuzzleHttp\Exception\RequestException;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use eZ\Publish\API\Repository\ContentService;
-use eZ\Publish\API\Repository\ContentTypeService;
+use eZ\Publish\Core\SignalSlot\Repository;
+use eZ\Publish\API\Repository\Exceptions\NotFoundException;
 
 /**
  * A recommendation client that sends notifications to a YooChoose server.
@@ -27,18 +28,14 @@ class YooChooseNotifier implements RecommendationClient
     /** @var \Psr\Log\LoggerInterface|null */
     private $logger;
 
-    /** @var \eZ\Publish\API\Repository\ContentService */
-    private $contentService;
-
-    /** @var \eZ\Publish\API\Repository\ContentTypeService */
-    private $contentTypeService;
+    /** @var \eZ\Publish\Core\SignalSlot\Repository */
+    private $repository;
 
     /**
      * Constructs a YooChooseNotifier Recommendation Client.
      *
      * @param \GuzzleHttp\ClientInterface $guzzle
-     * @param \eZ\Publish\API\Repository\ContentService $contentService
-     * @param \eZ\Publish\API\Repository\ContentTypeService $contentTypeService
+     * @param \eZ\Publish\Core\SignalSlot\Repository $repository
      * @param array $options
      *     Keys (all required):
      *     - customer-id: the YooChoose customer ID, e.g. 12345
@@ -49,8 +46,7 @@ class YooChooseNotifier implements RecommendationClient
      */
     public function __construct(
         GuzzleClient $guzzle,
-        ContentService $contentService,
-        ContentTypeService $contentTypeService,
+        Repository $repository,
         array $options,
         LoggerInterface $logger = null
     ) {
@@ -59,8 +55,7 @@ class YooChooseNotifier implements RecommendationClient
 
         $this->options = $resolver->resolve($options);
         $this->guzzle = $guzzle;
-        $this->contentService = $contentService;
-        $this->contentTypeService = $contentTypeService;
+        $this->repository = $repository;
         $this->logger = $logger;
     }
 
@@ -113,9 +108,15 @@ class YooChooseNotifier implements RecommendationClient
      */
     public function updateContent($contentId)
     {
-        if (!in_array($this->getContentTypeIdentifier($contentId), $this->options['included-content-types'])) {
+        try {
+            if (!in_array($this->getContentTypeIdentifier($contentId), $this->options['included-content-types'])) {
 
-            // this Content is not intended to be submitted because ContentType was excluded
+                // this Content is not intended to be submitted because ContentType was excluded
+                return;
+            }
+        } catch (NotFoundException $e) {
+
+            // this is most likely a internal draft, or otherwise invalid, ignoring
             return;
         }
 
@@ -177,12 +178,19 @@ class YooChooseNotifier implements RecommendationClient
      */
     private function getContentTypeIdentifier($contentId)
     {
-        $contentType = $this->contentTypeService->loadContentType(
-            $this->contentService
-                ->loadContent($contentId)
-                ->contentInfo
-                ->contentTypeId
-        );
+        $contentTypeService = $this->repository->getContentTypeService();
+        $contentService = $this->repository->getContentService();
+
+        $contentType = $this->repository->sudo(function () use ($contentId, $contentTypeService, $contentService) {
+            $contentType = $contentTypeService->loadContentType(
+                $contentService
+                    ->loadContent($contentId)
+                    ->contentInfo
+                    ->contentTypeId
+            );
+
+            return $contentType;
+        });
 
         return $contentType->identifier;
     }
@@ -196,11 +204,12 @@ class YooChooseNotifier implements RecommendationClient
      */
     protected function getContentTypeId($contentId)
     {
+        $contentService = $this->repository->getContentService();
         $contentTypeId = null;
 
         try {
-            $contentTypeId = $this->contentService->loadContentInfo($contentId)->contentTypeId;
-        } catch (\Exception $e) {
+            $contentTypeId = $contentService->loadContentInfo($contentId)->contentTypeId;
+        } catch (Exception $e) {
         }
 
         return $contentTypeId;

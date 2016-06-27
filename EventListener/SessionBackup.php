@@ -37,7 +37,11 @@ class SessionBackup
      */
     public function onKernelRequest(GetResponseEvent $event)
     {
-        if ($this->session->get('yc-session-id', null) == null) {
+        if (!$this->session->isStarted()) {
+            return;
+        }
+
+        if (!$this->session->has('yc-session-id')) {
             $this->session->set('yc-session-id', $this->session->getId());
         }
     }

@@ -80,4 +80,13 @@ class RecommendationLegacySearchEngine implements ezpSearchEngine
             $this->legacySearchEngine->addNodeAssignment($mainNodeID, $objectID, $nodeAssignmentIDList, $isMoved);
         }
     }
+
+    public function updateNodeVisibility($nodeID, $action)
+    {
+        // TODO: fetch the object ID
+        // $this->recommendationClient->updateContent($objectID);
+        if (method_exists($this->legacySearchEngine, 'updateNodeVisibility')) {
+            $this->legacySearchEngine->updateNodeVisibility($nodeID, $action);
+        }
+    }
 }

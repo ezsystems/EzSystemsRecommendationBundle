@@ -27,16 +27,6 @@ class RecommendationLegacySearchEngine implements ezpSearchEngine
         $this->legacySearchEngine = $legacySearchEngine;
     }
 
-    public function needCommit()
-    {
-        return $this->legacySearchEngine->needCommit();
-    }
-
-    public function needRemoveWithUpdate()
-    {
-        return $this->legacySearchEngine->needRemoveWithUpdate();
-    }
-
     public function addObject($contentObject, $commit = true)
     {
         $this->recommendationClient->updateContent($contentObject->attribute('id'));
@@ -58,26 +48,24 @@ class RecommendationLegacySearchEngine implements ezpSearchEngine
         return $this->legacySearchEngine->removeObjectById($contentObjectId, $commit);
     }
 
-    public function search($searchText, $params = array(), $searchTypes = array())
-    {
-        return $this->legacySearchEngine->search($searchText, $params, $searchTypes);
-    }
-
-    public function supportedSearchTypes()
-    {
-        return $this->legacySearchEngine->supportedSearchTypes();
-    }
-
-    public function commit()
-    {
-        $this->legacySearchEngine->commit();
-    }
-
     public function addNodeAssignment($mainNodeID, $objectID, $nodeAssignmentIDList, $isMoved = false)
     {
         $this->recommendationClient->updateContent($objectID);
         if (method_exists($this->legacySearchEngine, 'addNodeAssignment')) {
             $this->legacySearchEngine->addNodeAssignment($mainNodeID, $objectID, $nodeAssignmentIDList, $isMoved);
+        }
+    }
+
+    /**
+     *  Proxy all other calls to the real legacy search engine.
+     */
+    public function __call($name, $arguments)
+    {
+        if (method_exists($this->legacySearchEngine, $name)) {
+            return call_user_func_array(
+                array($this->legacySearchEngine, $name),
+                $arguments
+            );
         }
     }
 }

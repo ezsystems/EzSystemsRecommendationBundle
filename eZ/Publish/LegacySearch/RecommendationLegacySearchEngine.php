@@ -80,4 +80,60 @@ class RecommendationLegacySearchEngine implements ezpSearchEngine
             $this->legacySearchEngine->addNodeAssignment($mainNodeID, $objectID, $nodeAssignmentIDList, $isMoved);
         }
     }
+
+    public function cleanup()
+    {
+        if (method_exists($this->legacySearchEngine, 'cleanup')) {
+            return $this->legacySearchEngine->cleanup();
+        }
+    }
+
+    public function updateObjectsSection($objectIDs, $sectionID)
+    {
+        if (method_exists($this->legacySearchEngine, 'updateObjectsSection')) {
+            return $this->legacySearchEngine->updateObjectsSection($objectIDs, $sectionID);
+        }
+    }
+
+    public function updateObjectState($objectID, $objectStateList)
+    {
+        if (method_exists($this->legacySearchEngine, 'updateObjectState')) {
+            return $this->legacySearchEngine->updateObjectState($objectID, $objectStateList);
+        }
+    }
+
+    public function updateNodeSection($nodeID, $sectionID)
+    {
+        if (method_exists($this->legacySearchEngine, 'updateNodeSection')) {
+            return $this->legacySearchEngine->updateNodeSection($nodeID, $sectionID);
+        }
+    }
+
+    public function updateNodeVisibility($nodeID, $action)
+    {
+        if (method_exists($this->legacySearchEngine, 'updateNodeVisibility')) {
+            return $this->legacySearchEngine->updateNodeVisibility($nodeID, $action);
+        }
+    }
+
+    public function removeNodeAssignment($mainNodeID, $newMainNodeID, $objectID, $nodeAssigmentIDList)
+    {
+        if (method_exists($this->legacySearchEngine, 'removeNodeAssignment')) {
+            return $this->legacySearchEngine->removeNodeAssignment($mainNodeID, $newMainNodeID, $objectID, $nodeAssigmentIDList);
+        }
+    }
+
+    public function removeNodes($nodeIdList)
+    {
+        if (method_exists($this->legacySearchEngine, 'removeNodes')) {
+            return $this->legacySearchEngine->removeNodes($nodeIdList);
+        }
+    }
+
+    public function swapNode($nodeID, $selectedNodeID, $nodeIdList)
+    {
+        if (method_exists($this->legacySearchEngine, 'swapNode')) {
+            return $this->legacySearchEngine->swapNode($nodeID, $selectedNodeID, $nodeIdList);
+        }
+    }
 }

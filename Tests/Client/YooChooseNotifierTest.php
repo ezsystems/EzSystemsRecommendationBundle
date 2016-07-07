@@ -5,8 +5,9 @@
  */
 namespace EzSystems\RecommendationBundle\Tests\Client;
 
-use GuzzleHttp\Psr7\Response;
 use PHPUnit_Framework_TestCase;
+use GuzzleHttp\Message\Response;
+use GuzzleHttp\Promise\Promise;
 use eZ\Publish\Core\Repository\Values\Content\Content;
 use eZ\Publish\Core\Repository\Values\ContentType\ContentType;
 use eZ\Publish\API\Repository\Values\Content\ContentInfo;
@@ -145,17 +146,30 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
         $licenseKey,
         $apiEndpoint
     ) {
-        $this->guzzleClientMock
-            ->expects($this->once())
-            ->method('request')
-            ->with(
-                'POST',
-                $this->equalTo($this->getExpectedEndpoint($apiEndpoint, $customerId)),
-                $this->equalTo($this->getNotificationBody(
-                    $action, $contentId, $contentTypeId, $serverUri, $customerId, $licenseKey
-                ))
-            )
-            ->will($this->returnValue(new Response(202)));
+        if (method_exists($this->guzzleClientMock, 'post')) {
+            $this->guzzleClientMock
+                ->expects($this->once())
+                ->method('post')
+                ->with(
+                    $this->equalTo($this->getExpectedEndpoint($apiEndpoint, $customerId)),
+                    $this->equalTo($this->getNotificationBody(
+                        $action, $contentId, $contentTypeId, $serverUri, $customerId, $licenseKey
+                    ))
+                )
+                ->will($this->returnValue(new Response(202)));
+        } else {
+            $this->guzzleClientMock
+                ->expects($this->once())
+                ->method('requestAsync')
+                ->with(
+                    'POST',
+                    $this->equalTo($this->getExpectedEndpoint($apiEndpoint, $customerId)),
+                    $this->equalTo($this->getNotificationBody(
+                        $action, $contentId, $contentTypeId, $serverUri, $customerId, $licenseKey
+                    ))
+                )
+                ->will($this->returnValue(new Promise()));
+        }
     }
 
     /**

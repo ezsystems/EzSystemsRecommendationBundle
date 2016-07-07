@@ -242,6 +242,7 @@ class YooChooseNotifier implements RecommendationClient
      *
      * @param array $events
      *
+     * @throws \InvalidArgumentException If provided $events seems to be of wrong type
      * @throws \GuzzleHttp\Exception\RequestException if a request error occurs
      */
     protected function notify(array $events)
@@ -256,6 +257,46 @@ class YooChooseNotifier implements RecommendationClient
             $this->logger->debug('POST notification to YooChoose:' . json_encode($events, true));
         }
 
+        if (method_exists($this->guzzle, 'post')) {
+            $this->notifyGuzzle5($events);
+        } else {
+            $this->notifyGuzzle6($events);
+        }
+    }
+
+    /**
+     * Notifies the YooChoose API using Guzzle 5 (for PHP 5.4 support).
+     *
+     * @param array $events
+     */
+    private function notifyGuzzle5(array $events)
+    {
+        $response = $this->guzzle->post(
+            $this->getNotificationEndpoint(),
+            array(
+                'json' => array(
+                    'transaction' => null,
+                    'events' => $events,
+                ),
+                'auth' => array(
+                    $this->options['customer-id'],
+                    $this->options['license-key'],
+                ),
+            )
+        );
+
+        if (isset($this->logger)) {
+            $this->logger->debug('Got ' . $response->getStatusCode() . ' from YooChoose notification POST');
+        }
+    }
+
+    /**
+     * Notifies the YooChoose API using Guzzle 6.
+     *
+     * @param array $events
+     */
+    private function notifyGuzzle6(array $events)
+    {
         $response = $this->guzzle->request(
             'POST',
             $this->getNotificationEndpoint(),

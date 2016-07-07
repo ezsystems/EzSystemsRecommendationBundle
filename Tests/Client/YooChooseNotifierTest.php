@@ -5,9 +5,9 @@
  */
 namespace EzSystems\RecommendationBundle\Tests\Client;
 
-use GuzzleHttp\Psr7\Response as PSR7Response;
 use PHPUnit_Framework_TestCase;
 use GuzzleHttp\Message\Response;
+use GuzzleHttp\Promise\Promise;
 use eZ\Publish\Core\Repository\Values\Content\Content;
 use eZ\Publish\Core\Repository\Values\ContentType\ContentType;
 use eZ\Publish\API\Repository\Values\Content\ContentInfo;
@@ -160,7 +160,7 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
         } else {
             $this->guzzleClientMock
                 ->expects($this->once())
-                ->method('request')
+                ->method('requestAsync')
                 ->with(
                     'POST',
                     $this->equalTo($this->getExpectedEndpoint($apiEndpoint, $customerId)),
@@ -168,7 +168,7 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
                         $action, $contentId, $contentTypeId, $serverUri, $customerId, $licenseKey
                     ))
                 )
-                ->will($this->returnValue(new PSR7Response(200)));
+                ->will($this->returnValue(new Promise()));
         }
     }
 

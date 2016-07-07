@@ -291,13 +291,13 @@ class YooChooseNotifier implements RecommendationClient
     }
 
     /**
-     * Notifies the YooChoose API using Guzzle 6.
+     * Notifies the YooChoose API using Guzzle 6 asynchronously.
      *
      * @param array $events
      */
     private function notifyGuzzle6(array $events)
     {
-        $response = $this->guzzle->request(
+        $promise = $this->guzzle->requestAsync(
             'POST',
             $this->getNotificationEndpoint(),
             array(
@@ -313,7 +313,7 @@ class YooChooseNotifier implements RecommendationClient
         );
 
         if (isset($this->logger)) {
-            $this->logger->debug('Got ' . $response->getStatusCode() . ' from YooChoose notification POST');
+            $this->logger->debug('Got asynchronously ' . $promise->getState() . ' from YooChoose notification POST');
         }
     }
 

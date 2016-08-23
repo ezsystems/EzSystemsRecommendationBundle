@@ -16,8 +16,8 @@
                     contextItems: '{{ contentId }}',
                     categoryPath: '{{ categoryPath }}',
                     fields: [{% for entry in fields %}'{{ entry }}', {% endfor %}],
-                    errorMessageCaption: '{{ 'Error occurred while loading recommendations'|trans }}',
-                    notSupportedMessageCaption: '{{ 'Cannot display recommendations, your browser is not supported'|trans }}',
+                    errorMessage: '{{ 'Error occurred while loading recommendations'|trans }}',
+                    notSupportedMessage: '{{ 'Cannot display recommendations, your browser is not supported'|trans }}',
                     unauthorizedMessage: '{{ 'Internal error, unauthorized access to recommender engine (code: 401)'|trans }}',
                     internalServerErrorMessage: '{{ 'Internal server error, please validate your recommendation settings (code: 500)'|trans }}'
                 });

@@ -11,6 +11,7 @@ matrix:
     include:
         - php: 7.0
         - php: 5.6
+          env: SYMFONY_VERSION="~3.0" KERNEL_VERSION="dev-sf3 as 6.6.x-dev"
         - php: 5.5
         - php: 5.4
           env: SYMFONY_VERSION="~2.7.0"
@@ -26,9 +27,10 @@ before_script:
   - if [ $TRAVIS_PHP_VERSION != "hhvm" ]; then phpenv config-rm xdebug.ini ; fi
   - echo 'memory_limit = -1' >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
   # If set update symfony version
-  - if [ "$SYMFONY_VERSION" != "" ]; then composer require --no-update symfony/symfony=$SYMFONY_VERSION; fi;
+  - if [ "$SYMFONY_VERSION" != "" ]; then composer require --no-update symfony/symfony="$SYMFONY_VERSION"; fi;
+  - if [ "$KERNEL_VERSION" != "" ]; then composer require --dev --no-update ezsystems/ezpublish-kernel="$KERNEL_VERSION"; fi;
   # Install packages using composer
-  - composer install --dev --prefer-dist
+  - composer install  --prefer-dist
   # Detecting timezone issues by testing on random timezone
   - TEST_TIMEZONES=("America/New_York" "Asia/Calcutta" "UTC")
   - TEST_TIMEZONE=${TEST_TIMEZONES["`shuf -i 0-2 -n 1`"]}

@@ -6,7 +6,7 @@ This bundle integrates Recommendation services into eZ Platform. It supports the
 ## Requirements
 
 - PHP 5.4.4 *or higher PHP 5.x version*
-- Symfony 2.6 *or higher Symfony 2.x version*
+- Symfony 2.7 *or higher Symfony 2.x version*
 - eZ Publish v5.4.1+ or eZ Platform/Studio v1.0+, with the REST API configured to use sessions and publicly open to the YOOCHOOSE servers.
 - A YOOCHOOSE subscription
 

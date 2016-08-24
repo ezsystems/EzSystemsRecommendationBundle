@@ -17,92 +17,92 @@ parameters:
 
 services:
     ez_recommendation.ez_slot.base:
-        class: %ez_recommendation.ez_slot.base.class%
+        class: "%ez_recommendation.ez_slot.base.class%"
         abstract: true
         arguments:
-            - @ez_recommendation.client.yoochoose_notifier
+            - "@ez_recommendation.client.yoochoose_notifier"
 
     ez_recommendation.ez_slot.persistence_aware_base:
-        class: %ez_recommendation.ez_slot.persistence_aware_base.class%
+        class: "%ez_recommendation.ez_slot.persistence_aware_base.class%"
         abstract: true
         arguments:
-            - @ez_recommendation.client.yoochoose_notifier
-            - @ezpublish.api.persistence_handler
+            - "@ez_recommendation.client.yoochoose_notifier"
+            - "@ezpublish.api.persistence_handler"
 
     ez_recommendation.ez_slot.publish_version:
         parent: ez_recommendation.ez_slot.base
-        class: %ez_recommendation.ez_slot.publish_version.class%
+        class: "%ez_recommendation.ez_slot.publish_version.class%"
         tags:
             - {name: ezpublish.api.slot, signal: ContentService\PublishVersionSignal}
 
     ez_recommendation.ez_slot.copy_content:
         parent: ez_recommendation.ez_slot.base
-        class: %ez_recommendation.ez_slot.copy_content.class%
+        class: "%ez_recommendation.ez_slot.copy_content.class%"
         tags:
             - {name: ezpublish.api.slot, signal: ContentService\CopyContentSignal}
 
     ez_recommendation.ez_slot.delete_content:
         parent: ez_recommendation.ez_slot.base
-        class: %ez_recommendation.ez_slot.delete_content.class%
+        class: "%ez_recommendation.ez_slot.delete_content.class%"
         tags:
             - {name: ezpublish.api.slot, signal: ContentService\DeleteContentSignal}
 
     ez_recommendation.ez_slot.delete_version:
         parent: ez_recommendation.ez_slot.base
-        class: %ez_recommendation.ez_slot.delete_version.class%
+        class: "%ez_recommendation.ez_slot.delete_version.class%"
         tags:
             - {name: ezpublish.api.slot, signal: ContentService\DeleteVersionSignal}
 
     ez_recommendation.ez_slot.delete_location:
         parent: ez_recommendation.ez_slot.base
-        class: %ez_recommendation.ez_slot.delete_location.class%
+        class: "%ez_recommendation.ez_slot.delete_location.class%"
         tags:
             - {name: ezpublish.api.slot, signal: LocationService\DeleteLocationSignal}
 
     ez_recommendation.ez_slot.create_location:
         parent: ez_recommendation.ez_slot.base
-        class: %ez_recommendation.ez_slot.create_location.class%
+        class: "%ez_recommendation.ez_slot.create_location.class%"
         tags:
             - {name: ezpublish.api.slot, signal: LocationService\CreateLocationSignal}
 
     ez_recommendation.ez_slot.copy_subtree:
         parent: ez_recommendation.ez_slot.persistence_aware_base
-        class: %ez_recommendation.ez_slot.copy_subtree.class%
+        class: "%ez_recommendation.ez_slot.copy_subtree.class%"
         tags:
             - {name: ezpublish.api.slot, signal: LocationService\CopySubtreeSignal}
 
     ez_recommendation.ez_slot.move_subtree:
         parent: ez_recommendation.ez_slot.persistence_aware_base
-        class: %ez_recommendation.ez_slot.move_subtree.class%
+        class: "%ez_recommendation.ez_slot.move_subtree.class%"
         tags:
             - {name: ezpublish.api.slot, signal: LocationService\MoveSubtreeSignal}
 
     ez_recommendation.ez_slot.trash:
         parent: ez_recommendation.ez_slot.base
-        class: %ez_recommendation.ez_slot.trash.class%
+        class: "%ez_recommendation.ez_slot.trash.class%"
         tags:
             - {name: ezpublish.api.slot, signal: TrashService\TrashSignal}
 
     ez_recommendation.ez_slot.recover:
         parent: ez_recommendation.ez_slot.persistence_aware_base
-        class: %ez_recommendation.ez_slot.recover.class%
+        class: "%ez_recommendation.ez_slot.recover.class%"
         tags:
             - {name: ezpublish.api.slot, signal: TrashService\RecoverSignal}
 
     ez_recommendation.ez_slot.hide_location:
         parent: ez_recommendation.ez_slot.base
-        class: %ez_recommendation.ez_slot.hide_location.class%
+        class: "%ez_recommendation.ez_slot.hide_location.class%"
         tags:
             - {name: ezpublish.api.slot, signal: LocationService\HideLocationSignal}
 
     ez_recommendation.ez_slot.unhide_location:
         parent: ez_recommendation.ez_slot.base
-        class: %ez_recommendation.ez_slot.unhide_location.class%
+        class: "%ez_recommendation.ez_slot.unhide_location.class%"
         tags:
             - {name: ezpublish.api.slot, signal: LocationService\UnhideLocationSignal}
 
     ez_recommendation.ez_slot.set_content_state:
         parent: ez_recommendation.ez_slot.base
-        class: %ez_recommendation.ez_slot.set_content_state.class%
+        class: "%ez_recommendation.ez_slot.set_content_state.class%"
         tags:
             - {name: ezpublish.api.slot, signal: ObjectStateService\SetContentStateSignal}

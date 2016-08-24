@@ -10,12 +10,12 @@ parameters:
 
 services:
     ez_recommendation.client.yoochoose_notifier:
-        class: %ez_recommendation.client.yoochoose_notifier.class%
+        class: "%ez_recommendation.client.yoochoose_notifier.class%"
         arguments:
-            - @ez_recommendation.client.yoochoose_notifier.guzzle_client
-            - @ezpublish.api.repository
-            - {api-endpoint: %ez_recommendation.api_endpoint%}
-            - @?logger
+            - "@ez_recommendation.client.yoochoose_notifier.guzzle_client"
+            - "@ezpublish.api.repository"
+            - {api-endpoint: "%ez_recommendation.api_endpoint%"}
+            - "@?logger"
         calls:
             - [setCustomerId, [$yoochoose.customer_id;ez_recommendation$]]
             - [setLicenseKey, [$yoochoose.license_key;ez_recommendation$]]
@@ -27,7 +27,7 @@ services:
     ez_recommendation.client.yoochoose_notifier.guzzle_client:
         class: GuzzleHttp\Client
         arguments:
-            - { base_url: %ez_recommendation.api_endpoint% }
+            - { base_url: "%ez_recommendation.api_endpoint%" }
 
   # The configured eZ Publish Platform legacy search engine - enable lines below only if you're using legacy bridge.
 
@@ -35,38 +35,38 @@ services:
   #     class: ezpSearchEngine
   #     factory_class: EzSystems\RecommendationBundle\eZ\Publish\LegacySearch\LegacySearchFactory
   #     factory_method: build
-  #     arguments: [@ezpublish_legacy.kernel]
+  #     arguments: ["@ezpublish_legacy.kernel"]
 
   # ez_recommendation.legacy.recommendation_search_engine:
   #     class: EzSystems\RecommendationBundle\eZ\Publish\LegacySearch\RecommendationLegacySearchEngine
   #     arguments:
-  #         - @ez_recommendation.client.yoochoose_notifier
-  #         - @ez_recommendation.legacy.search_engine
+  #         - "@ez_recommendation.client.yoochoose_notifier"
+  #         - "@ez_recommendation.legacy.search_engine"
 
   # ez_recommendation.legacy.search_configuration_mapper:
   #     class: EzSystems\RecommendationBundle\eZ\Publish\LegacySearch\ConfigurationMapper
   #     arguments:
-  #         - @ez_recommendation.legacy.recommendation_search_engine
-  #         - @ezpublish.siteaccess
+  #         - "@ez_recommendation.legacy.recommendation_search_engine"
+  #         - "@ezpublish.siteaccess"
   #     tags:
   #         - { name: kernel.event_subscriber }
 
     ez_recommendation.twig.extension:
-        class: %ez_recommendation.twig.extension.class%
+        class: "%ez_recommendation.twig.extension.class%"
         public: true
         arguments:
-            - @request_stack
-            - @ezpublish.api.service.content_type
-            - @ezpublish.api.service.content
-            - @ezpublish.api.service.location
-            - @ezpublish.locale.converter
-            - @security.authorization_checker
-            - @security.token_storage
-            - @session
-            - recommenderEndPoint: %ez_recommendation.recommender.api_endpoint%
-              consumeTimeout: %ez_recommendation.recommender.consume_timeout%
-              trackingScriptUrl: %ez_recommendation.tracking.script_url%
-              trackingEndPoint: %ez_recommendation.tracking.api_endpoint%
+            - "@request_stack"
+            - "@ezpublish.api.service.content_type"
+            - "@ezpublish.api.service.content"
+            - "@ezpublish.api.service.location"
+            - "@ezpublish.locale.converter"
+            - "@security.authorization_checker"
+            - "@security.token_storage"
+            - "@session"
+            - recommenderEndPoint: "%ez_recommendation.recommender.api_endpoint%"
+              consumeTimeout: "%ez_recommendation.recommender.consume_timeout%"
+              trackingScriptUrl: "%ez_recommendation.tracking.script_url%"
+              trackingEndPoint: "%ez_recommendation.tracking.api_endpoint%"
         calls:
             - [setIncludedContentTypes, [$recommender.included_content_types;ez_recommendation$]]
             - [setCustomerId, [$yoochoose.customer_id;ez_recommendation$]]
@@ -74,13 +74,13 @@ services:
             - { name: twig.extension }
 
     ez_recommendation.event_listener.login:
-        class: %ez_recommendation.event_listener.login.class%
+        class: "%ez_recommendation.event_listener.login.class%"
         arguments:
-            - @security.authorization_checker
-            - @session
-            - @ez_recommendation.client.yoochoose_notifier.guzzle_client
-            - trackingEndPoint: %ez_recommendation.tracking.api_endpoint%
-            - @?logger
+            - "@security.authorization_checker"
+            - "@session"
+            - "@ez_recommendation.client.yoochoose_notifier.guzzle_client"
+            - trackingEndPoint: "%ez_recommendation.tracking.api_endpoint%"
+            - "@?logger"
         calls:
             - [setCustomerId, [$yoochoose.customer_id;ez_recommendation$]]
         tags:
@@ -88,54 +88,54 @@ services:
             - { name: monolog.logger, channel: ez_recommendation }
 
     ez_recommendation.event_listener.session_backup:
-        class: %ez_recommendation.event_listener.session_backup.class%
+        class: "%ez_recommendation.event_listener.session_backup.class%"
         arguments:
-            - @session
+            - "@session"
         tags:
             - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest }
 
     ez_recommendation.value_object_visitor.content_data:
         parent: ezpublish_rest.output.value_object_visitor.base
-        class: %ez_recommendation.value_object_visitor.content_data.class%
+        class: "%ez_recommendation.value_object_visitor.content_data.class%"
         tags:
             - { name: ezpublish_rest.output.value_object_visitor, type: EzSystems\RecommendationBundle\Rest\Values\ContentData }
 
     ez_recommendation.rest.controller.content:
-        class: %ez_recommendation.rest.controller.content.class%
+        class: "%ez_recommendation.rest.controller.content.class%"
         arguments:
-            - @ezpublish.urlalias_router
-            - @ezpublish.api.service.content
-            - @ezpublish.api.service.location
-            - @ezpublish.api.service.content_type
-            - @ezpublish.api.service.search
-            - @ez_recommendation.rest.field.value
-            - %ez_recommendation.default.author_id%
+            - "@ezpublish.urlalias_router"
+            - "@ezpublish.api.service.content"
+            - "@ezpublish.api.service.location"
+            - "@ezpublish.api.service.content_type"
+            - "@ezpublish.api.service.search"
+            - "@ez_recommendation.rest.field.value"
+            - "%ez_recommendation.default.author_id%"
         parent: ezpublish_rest.controller.base
 
     ez_recommendation.field.relation_mapper:
-        class: %ez_recommendation.field.relation_mapper.class%
+        class: "%ez_recommendation.field.relation_mapper.class%"
         arguments:
-            - %ez_recommendation.relations%
+            - "%ez_recommendation.relations%"
 
     ez_recommendation.rest.controller.contenttype:
-        class: %ez_recommendation.rest.controller.contenttype.class%
+        class: "%ez_recommendation.rest.controller.contenttype.class%"
         parent: ez_recommendation.rest.controller.content
 
     ez_recommendation.rest.field.value:
         class: EzSystems\RecommendationBundle\Rest\Field\Value
         arguments:
-            - @ezpublish.api.service.content
-            - @ezpublish.api.service.content_type
-            - @ez_recommendation.rest.field.type_value
-            - {fieldIdentifiers: %ez_recommendation.field_identifiers%}
-            - @ez_recommendation.field.relation_mapper
-            - @?logger
+            - "@ezpublish.api.service.content"
+            - "@ezpublish.api.service.content_type"
+            - "@ez_recommendation.rest.field.type_value"
+            - {fieldIdentifiers: "%ez_recommendation.field_identifiers%"}
+            - "@ez_recommendation.field.relation_mapper"
+            - "@?logger"
 
     ez_recommendation.rest.field.type_value:
         class: EzSystems\RecommendationBundle\Rest\Field\TypeValue
         arguments:
-            - @request_stack
-            - @ezpublish.config.resolver.core
-            - @ezpublish.image_alias.imagine.alias_generator
-            - @ezpublish.fieldtype.ezrichtext.converter.output.xhtml5.core
-            - @?ezpublish.fieldtype.ezxmltext.converter.html5
+            - "@request_stack"
+            - "@ezpublish.config.resolver.core"
+            - "@ezpublish.image_alias.imagine.alias_generator"
+            - "@ezpublish.fieldtype.ezrichtext.converter.output.xhtml5.core"
+            - "@?ezpublish.fieldtype.ezxmltext.converter.html5"

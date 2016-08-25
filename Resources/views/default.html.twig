@@ -2,7 +2,7 @@
     https://doc.ez.no/display/DOCTEST/Customer+Attribute+Mappings to see the list of default field names. #}
 
 <script id="recommendations-template-{{ templateId }}" type="text/x-handlebars-template">
-    {% raw %}
+    {% verbatim %}
         <div class="content-view-line">
             {{#each this}}
                 <article class="class-article">
@@ -31,10 +31,10 @@
                     </div>
                 </article>
             {{else}}
-                <div class="content-view-line">{% endraw %}{{ 'No recommendations found'|trans }}{% raw %}</div>
+                <div class="content-view-line">{% endverbatim %}{{ 'No recommendations found'|trans }}{% verbatim %}</div>
             {{/each}}
         </div>
-    {% endraw %}
+    {% endverbatim %}
 </script>
 
 <div id="recommendations-target-{{ templateId }}"></div>

@@ -29,6 +29,7 @@ class ContentTypeController extends ContentController
     public function getContentType($contentTypeIdList, Request $request)
     {
         $contentTypeIds = explode(',', $contentTypeIdList);
+
         $content = $this->prepareContentByContentTypeIds($contentTypeIds, $request);
 
         return new ContentDataValue($content);
@@ -55,9 +56,14 @@ class ContentTypeController extends ContentController
         if ($path) {
             $criteria[] = new Criterion\Subtree($path);
         }
+
         if (!$hidden) {
             $criteria[] = new Criterion\Visibility(Criterion\Visibility::VISIBLE);
         }
+
+        $siteAccess = $request->get('sa', $this->siteAccess->name);
+        $rootLocationId = $this->configResolver->getParameter('content.tree_root.location_id', null, $siteAccess);
+        $criteria[] = new Criterion\Subtree($this->locationService->loadLocation($rootLocationId)->pathString);
 
         $query = new Query();
         $query->query = new Criterion\LogicalAnd($criteria);

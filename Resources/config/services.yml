@@ -110,7 +110,10 @@ services:
             - "@ezpublish.api.service.search"
             - "@ez_recommendation.rest.field.value"
             - "%ez_recommendation.default.author_id%"
+            - '@ezpublish.config.resolver'
         parent: ezpublish_rest.controller.base
+        calls:
+            - [setSiteAccess, [@ezpublish.siteaccess]]
 
     ez_recommendation.field.relation_mapper:
         class: "%ez_recommendation.field.relation_mapper.class%"

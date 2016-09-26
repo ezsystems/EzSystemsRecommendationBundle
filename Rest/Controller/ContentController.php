@@ -5,10 +5,12 @@
  */
 namespace EzSystems\RecommendationBundle\Rest\Controller;
 
+use eZ\Publish\Core\MVC\ConfigResolverInterface;
 use eZ\Publish\API\Repository\Values\Content\Content;
 use eZ\Publish\API\Repository\Values\Content\Query;
 use eZ\Publish\API\Repository\Values\Content\Query\Criterion;
 use eZ\Publish\API\Repository\Values\ContentType\ContentType;
+use eZ\Publish\Core\MVC\Symfony\SiteAccess;
 use eZ\Publish\Core\REST\Server\Controller as BaseController;
 use eZ\Publish\API\Repository\ContentService;
 use eZ\Publish\API\Repository\LocationService;
@@ -42,6 +44,12 @@ class ContentController extends BaseController
     /** @var \EzSystems\RecommendationBundle\Rest\Field\Value */
     protected $value;
 
+    /** @var \eZ\Publish\Core\MVC\ConfigResolverInterface */
+    protected $configResolver;
+
+    /** @var \eZ\Publish\Core\MVC\Symfony\SiteAccess */
+    protected $siteAccess;
+
     /** @var int $defaultAuthorId */
     protected $defaultAuthorId;
 
@@ -53,6 +61,7 @@ class ContentController extends BaseController
      * @param \eZ\Publish\API\Repository\SearchService $searchService
      * @param \EzSystems\RecommendationBundle\Rest\Field\Value $value
      * @param int $defaultAuthorId
+     * @param \eZ\Publish\Core\MVC\ConfigResolverInterface $configResolver
      */
     public function __construct(
         UrlGenerator $generator,
@@ -61,7 +70,8 @@ class ContentController extends BaseController
         ContentTypeService $contentTypeService,
         SearchService $searchService,
         FieldValue $value,
-        $defaultAuthorId
+        $defaultAuthorId,
+        ConfigResolverInterface $configResolver
     ) {
         $this->generator = $generator;
         $this->contentService = $contentService;
@@ -70,6 +80,15 @@ class ContentController extends BaseController
         $this->searchService = $searchService;
         $this->value = $value;
         $this->defaultAuthorId = $defaultAuthorId;
+        $this->configResolver = $configResolver;
+    }
+
+    /**
+     * @param \eZ\Publish\Core\MVC\Symfony\SiteAccess $siteAccess
+     */
+    public function setSiteAccess(SiteAccess $siteAccess)
+    {
+        $this->siteAccess = $siteAccess;
     }
 
     /**
@@ -93,6 +112,7 @@ class ContentController extends BaseController
         if (!$request->get('hidden')) {
             $criteria[] = new Criterion\Visibility(Criterion\Visibility::VISIBLE);
         }
+
         if ($lang) {
             $criteria[] = new Criterion\LanguageCode($lang);
         }

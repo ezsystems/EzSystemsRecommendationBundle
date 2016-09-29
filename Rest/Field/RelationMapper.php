@@ -11,7 +11,7 @@ class RelationMapper
     protected $fieldMappings;
 
     /**
-     * @param array $fieldMapping
+     * @param array $fieldMappings
      */
     public function __construct(array $fieldMappings)
     {

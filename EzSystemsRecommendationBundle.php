@@ -3,18 +3,23 @@
  * This file is part of the EzSystemRecommendationBundle package.
  *
  * @copyright Copyright (C) eZ Systems AS. All rights reserved.
- * @license For full copyright and license information view LICENSE file distributd with this source code.
+ * @license For full copyright and license information view LICENSE file distributed with this source code.
  */
 namespace EzSystems\RecommendationBundle;
 
 use EzSystems\RecommendationBundle\DependencyInjection\EzSystemsRecommendationExtension;
+use EzSystems\RecommendationBundle\DependencyInjection\Compiler\RestResponsePass;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 class EzSystemsRecommendationBundle extends Bundle
 {
-    /** @var EzSystemsRecommendationExtension */
+    /** @var \EzSystems\RecommendationBundle\DependencyInjection\EzSystemsRecommendationExtension */
     protected $extension;
 
+    /**
+     * @return \EzSystems\RecommendationBundle\DependencyInjection\EzSystemsRecommendationExtension
+     */
     public function getContainerExtension()
     {
         if (!isset($this->extension)) {
@@ -22,5 +27,15 @@ class EzSystemsRecommendationBundle extends Bundle
         }
 
         return $this->extension;
+    }
+
+    /**
+     * @param \Symfony\Component\DependencyInjection\ContainerBuilder $container
+     */
+    public function build(ContainerBuilder $container)
+    {
+        parent::build($container);
+
+        $container->addCompilerPass(new RestResponsePass());
     }
 }

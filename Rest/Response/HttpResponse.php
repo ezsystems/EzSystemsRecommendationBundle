@@ -11,9 +11,6 @@ use eZ\Publish\Core\REST\Common\Output\Generator;
 
 class HttpResponse extends Response
 {
-    /**
-     * {@inheritdoc}
-     */
     public function render(Generator $generator, $data)
     {
         return $this->contentListElementGenerator->generateElement($generator, $data->contents);

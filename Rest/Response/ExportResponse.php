@@ -11,6 +11,7 @@ use eZ\Publish\Core\REST\Common\Output\Generator;
 use EzSystems\RecommendationBundle\Rest\Exception\ExportInProgressException;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class ExportResponse extends Response
 {
@@ -25,9 +26,6 @@ class ExportResponse extends Response
         $this->apiEndpoint = $apiEndpoint;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function render(Generator $generator, $data)
     {
         ini_set('max_execution_time', 0);
@@ -114,7 +112,7 @@ class ExportResponse extends Response
                 )
             )->getBody();
         } catch (\Exception $e) {
-            $response = json_encode([
+            return new JsonResponse([
                 $e->getMessage(), $e->getCode(), $e->getFile(), $e->getLine(),
             ]);
         }

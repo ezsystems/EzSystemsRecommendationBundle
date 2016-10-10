@@ -166,7 +166,7 @@ services:
         class: "%ez_recommendation.rest.response.http.class%"
         parent: ez_recommendation.rest.response
         tags:
-            - { name: ez_recommendation.rest.response_type, type: http}
+            - { name: ez_recommendation.rest.response_type, type: http }
 
     ez_recommendation.rest.response.export:
         class: "%ez_recommendation.rest.response.export.class%"
@@ -174,5 +174,5 @@ services:
         calls:
             - [setApiEndpoint, ["%ez_recommendation.api_endpoint%"]]
         tags:
-            - { name: ez_recommendation.rest.response_type, type: export}
+            - { name: ez_recommendation.rest.response_type, type: export }
 

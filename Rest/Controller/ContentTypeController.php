@@ -1,5 +1,7 @@
 <?php
 /**
+ * This file is part of the EzSystemRecommendationBundle package.
+ *
  * @copyright Copyright (C) eZ Systems AS. All rights reserved.
  * @license For full copyright and license information view LICENSE file distributed with this source code.
  */
@@ -15,10 +17,17 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class ContentTypeController extends ContentController
 {
+    /** @var array */
+    private $pageSizes = [
+        'http' => 10,
+        'export' => 1000,
+    ];
+
     /**
      * Prepares content for ContentDataValue class.
      *
      * @param string $contentTypeIdList
+     * @param string $responseType
      * @param \Symfony\Component\HttpFoundation\Request $request
      *
      * @return \EzSystems\RecommendationBundle\Rest\Values\ContentData ContentDataValue
@@ -26,26 +35,33 @@ class ContentTypeController extends ContentController
      * @throws \eZ\Publish\API\Repository\Exceptions\NotFoundException if the content, version with the given id and languages or content type does not exist
      * @throws \eZ\Publish\API\Repository\Exceptions\UnauthorizedException If the user has no access to read content and in case of un-published content: read versions
      */
-    public function getContentType($contentTypeIdList, Request $request)
+    public function getContentType($contentTypeIdList, $responseType, Request $request)
     {
         $contentTypeIds = explode(',', $contentTypeIdList);
 
-        $content = $this->prepareContentByContentTypeIds($contentTypeIds, $request);
+        $content = $this->prepareContentByContentTypeIds($contentTypeIds, $responseType, $request);
 
-        return new ContentDataValue($content);
+        return new ContentDataValue($content, [
+            'responseType' => $responseType,
+            'chunkSize' => $request->get('page_size', $this->getDeafultPageSize($responseType)),
+            'documentRoot' => $request->server->get('DOCUMENT_ROOT'),
+            'host' => $request->getSchemeAndHttpHost(),
+            'customerId' => $this->customerId,
+        ]);
     }
 
     /**
      * Returns paged content based on ContentType ids.
      *
      * @param array $contentTypeIds
+     * @param string $responseType
      * @param \Symfony\Component\HttpFoundation\Request $request
      *
      * @return array
      */
-    protected function prepareContentByContentTypeIds($contentTypeIds, Request $request)
+    protected function prepareContentByContentTypeIds($contentTypeIds, $responseType, Request $request)
     {
-        $pageSize = (int)$request->get('page_size', 10);
+        $pageSize = (int)$request->get('page_size', $this->getDeafultPageSize($responseType));
         $page = $request->get('page', 1);
         $offset = $page * $pageSize - $pageSize;
         $path = $request->get('path');
@@ -68,11 +84,27 @@ class ContentTypeController extends ContentController
         $query = new Query();
         $query->query = new Criterion\LogicalAnd($criteria);
 
-        $query->limit = $pageSize;
-        $query->offset = $offset;
+        if ($responseType != 'export') {
+            $query->limit = $pageSize;
+            $query->offset = $offset;
+        }
 
         $contentItems = $this->searchService->findContent($query)->searchHits;
 
         return $this->prepareContent($contentItems, $request);
+    }
+
+    /**
+     * @param string $responseType
+     *
+     * @return mixed
+     */
+    private function getDeafultPageSize($responseType)
+    {
+        if (isset($this->pageSizes[$responseType])) {
+            return $this->pageSizes[$responseType];
+        }
+
+        return $this->pageSizes['http'];
     }
 }

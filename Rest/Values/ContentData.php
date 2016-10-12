@@ -17,9 +17,11 @@ class ContentData
      * Constructs ContentData object.
      *
      * @param array $contents
+     * @param array $options
      */
-    public function __construct($contents)
+    public function __construct(array $contents, array $options = [])
     {
         $this->contents = $contents;
+        $this->options = $options;
     }
 }

@@ -8,16 +8,29 @@ namespace EzSystems\RecommendationBundle\Rest\ValueObjectVisitor;
 use eZ\Publish\Core\REST\Common\Output\ValueObjectVisitor;
 use eZ\Publish\Core\REST\Common\Output\Generator;
 use eZ\Publish\Core\REST\Common\Output\Visitor;
+use EzSystems\RecommendationBundle\Rest\Exception\ResponseClassNotImplementedException;
 
 /**
  * ContentData converter for REST output.
  */
 class ContentData extends ValueObjectVisitor
 {
+    private $responseRenderers = [];
+
+    /**
+     * @param array $responseRenderers
+     */
+    public function setResponseRendereres($responseRenderers)
+    {
+        $this->responseRenderers = $responseRenderers;
+    }
+
     /**
      * @param \eZ\Publish\Core\REST\Common\Output\Visitor $visitor
      * @param \eZ\Publish\Core\REST\Common\Output\Generator $generator
      * @param mixed $data
+     * @return mixed
+     * @throws \EzSystems\RecommendationBundle\Rest\Exception\ResponseClassNotImplementedException
      */
     public function visit(Visitor $visitor, Generator $generator, $data)
     {
@@ -29,62 +42,10 @@ class ContentData extends ValueObjectVisitor
             return;
         }
 
-        $generator->startObjectElement('contentList');
-        $generator->startList('content');
-
-        foreach ($data->contents as $content) {
-            $generator->startObjectElement('content');
-
-            $generator->startValueElement('contentId', $content['contentId']);
-            $generator->endValueElement('contentId');
-
-            $generator->startValueElement('contentTypeId', $content['contentTypeId']);
-            $generator->endValueElement('contentTypeId');
-
-            $generator->startValueElement('identifier', $content['identifier']);
-            $generator->endValueElement('identifier');
-
-            $generator->startValueElement('language', $content['language']);
-            $generator->endValueElement('language');
-
-            $generator->startValueElement('publishedDate', $content['publishedDate']);
-            $generator->endValueElement('publishedDate');
-
-            $generator->startValueElement('author', $content['author']);
-            $generator->endValueElement('author');
-
-            $generator->startValueElement('uri', $content['uri']);
-            $generator->endValueElement('uri');
-
-            $generator->startValueElement('categoryPath', $content['categoryPath']);
-            $generator->endValueElement('categoryPath');
-
-            $generator->startObjectElement('mainLocation');
-            $generator->startAttribute('href', $content['mainLocation']['href']);
-            $generator->endAttribute('href');
-            $generator->endObjectElement('mainLocation');
-
-            $generator->startObjectElement('locations');
-            $generator->startAttribute('href', $content['locations']['href']);
-            $generator->endAttribute('href');
-            $generator->endObjectElement('locations');
-
-            $generator->startList('fields');
-
-            foreach ($content['fields'] as $field) {
-                $generator->startHashElement('fields');
-                $generator->startValueElement('key', $field['key']);
-                $generator->endValueElement('key');
-                $generator->startValueElement('value', $field['value']);
-                $generator->endValueElement('value');
-                $generator->endHashElement('fields');
-            }
-
-            $generator->endList('fields');
-
-            $generator->endObjectElement('content');
+        if (!isset($this->responseRenderers[$data->options['responseType']])) {
+            throw new ResponseClassNotImplementedException(sprintf('Renderer for %s response not implemented.', $data->options['responseType']));
         }
-        $generator->endList('content');
-        $generator->endObjectElement('contentList');
+
+        return $this->responseRenderers[$data->options['responseType']]->render($generator, $data);
     }
 }

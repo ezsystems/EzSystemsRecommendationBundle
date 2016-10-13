@@ -47,6 +47,7 @@ class ContentTypeController extends ContentController
             'documentRoot' => $request->server->get('DOCUMENT_ROOT'),
             'host' => $request->getSchemeAndHttpHost(),
             'customerId' => $this->customerId,
+            'contentTypeIds' => $contentTypeIds,
         ]);
     }
 

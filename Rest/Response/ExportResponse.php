@@ -55,7 +55,7 @@ class ExportResponse extends Response
 
         unlink($data->options['documentRoot'] . '/var/export/.lock');
 
-        echo $this->sendYCResponse($urls, $data->options['customerId'], $chunkDirPath);
+        echo $this->sendYCResponse($urls, $data->options, $chunkDirPath);
 
         $generator->reset();
 
@@ -63,7 +63,7 @@ class ExportResponse extends Response
     }
 
     /**
-     * @param $documentRoot
+     * @param string $documentRoot
      *
      * @return false|string
      */
@@ -80,28 +80,34 @@ class ExportResponse extends Response
     }
 
     /**
-     * @param $urls
-     * @param $customerId
-     * @param $chunkDirPath
+     * @param string $urls
+     * @param array $options
+     * @param string $chunkDirPath
      *
      * @return \Psr\Http\Message\StreamInterface|string
      */
-    private function sendYCResponse($urls, $customerId, $chunkDirPath)
+    private function sendYCResponse($urls, $options, $chunkDirPath)
     {
         $guzzle = new Client([
             'base_uri' => $this->apiEndpoint . '/api/',
         ]);
 
+        $contentTypeId = count($options['contentTypeIds']) == 1
+            ? array_pop($options['contentTypeIds'])
+            : $options['contentTypeIds'];
+
         try {
             $response = $guzzle->send(
                 new Request(
                     'POST',
-                    sprintf('%s/items', $customerId),
+                    sprintf('%s/items', $options['customerId']),
                     [],
                     json_encode([
-                        'transaction' => '',
+                        'transaction' => null,
                         'events' => [
                             'action' => 'FULL',
+                            'format' => 'EZ',
+                            'contentTypeId' => $contentTypeId,
                             'uri' => $urls,
                             'credentials' => [
                                 'login' => 'yc',

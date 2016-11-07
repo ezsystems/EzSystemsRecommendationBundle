@@ -94,8 +94,6 @@ services:
 
     ez_recommendation.event_listener.session_backup:
         class: "%ez_recommendation.event_listener.session_backup.class%"
-        arguments:
-            - "@session"
         tags:
             - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest }
 

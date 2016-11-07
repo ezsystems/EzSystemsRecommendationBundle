@@ -1,6 +1,7 @@
 {
     "name": "ezsystems/recommendation-bundle",
     "description": "Integration of the YooChoose recommender engine into eZ Publish Platform",
+    "license": "GPL-2.0",
     "authors": [
         {
             "name": "eZ Systems",

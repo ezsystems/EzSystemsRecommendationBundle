@@ -5,7 +5,6 @@
  */
 namespace EzSystems\RecommendationBundle\EventListener;
 
-use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpKernel\Event\GetResponseEvent;
 
 /**
@@ -13,19 +12,6 @@ use Symfony\Component\HttpKernel\Event\GetResponseEvent;
  */
 class SessionBackup
 {
-    /** @var \Symfony\Component\HttpFoundation\Session\Session */
-    protected $session;
-
-    /**
-     * Constructs onKernelRequest event listener.
-     *
-     * @param \Symfony\Component\HttpFoundation\Session\Session $session
-     */
-    public function __construct(Session $session)
-    {
-        $this->session = $session;
-    }
-
     /**
      * Creates a backup of current sessionId in case of sessionId change,
      * we need this value to identify user on YooChoose side.
@@ -37,12 +23,14 @@ class SessionBackup
      */
     public function onKernelRequest(GetResponseEvent $event)
     {
-        if (!$this->session->isStarted()) {
+        $session = $event->getRequest()->getSession();
+
+        if (!$session->isStarted()) {
             return;
         }
 
-        if (!$this->session->has('yc-session-id')) {
-            $this->session->set('yc-session-id', $this->session->getId());
+        if (!$session->has('yc-session-id')) {
+            $session->set('yc-session-id', $session->getId());
         }
     }
 }

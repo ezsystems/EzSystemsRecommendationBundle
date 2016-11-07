@@ -1,4 +1,7 @@
 # Recommendation Bundle
+
+[![SensioLabsInsight](https://insight.sensiolabs.com/projects/1a1934d8-2677-4ae0-be94-6c1d3f541b38/big.png)](https://insight.sensiolabs.com/projects/1a1934d8-2677-4ae0-be94-6c1d3f541b38)
+
 This bundle integrates Recommendation services into eZ Platform. It supports the [YOOCHOOSE](https://yoochoose.com/) recommender service.
 
 **Support** Stable versions of this bundle is officially supported by eZ as of version 1.0.0, for users with a eZ Enterprise and YOOCHOOSE subscription.

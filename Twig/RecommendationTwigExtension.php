@@ -191,7 +191,7 @@ class RecommendationTwigExtension extends Twig_Extension
      *
      * @return int
      */
-    private function getContentTypeId($contentType)
+    protected function getContentTypeId($contentType)
     {
         return $this->contentTypeService->loadContentTypeByIdentifier($contentType)->id;
     }
@@ -249,7 +249,7 @@ class RecommendationTwigExtension extends Twig_Extension
      *
      * @return string
      */
-    private function getLocationPathString($contentId)
+    protected function getLocationPathString($contentId)
     {
         $content = $this->contentService->loadContent($contentId);
         $location = $this->locationService->loadLocation($content->contentInfo->mainLocationId);
@@ -262,7 +262,7 @@ class RecommendationTwigExtension extends Twig_Extension
      *
      * @return string
      */
-    private function getCurrentLanguage()
+    protected function getCurrentLanguage()
     {
         $request = $this->requestStack->getCurrentRequest();
 
@@ -274,7 +274,7 @@ class RecommendationTwigExtension extends Twig_Extension
      *
      * @return string
      */
-    private function getEndPointUrl()
+    protected function getEndPointUrl()
     {
         return sprintf('%s/api/%d/%s/',
             $this->options['recommenderEndPoint'],
@@ -291,7 +291,7 @@ class RecommendationTwigExtension extends Twig_Extension
      *
      * @return string
      */
-    private function getFeedbackUrl($outputContentTypeId)
+    protected function getFeedbackUrl($outputContentTypeId)
     {
         return sprintf('%s/api/%d/rendered/%s/%d/',
             $this->options['trackingEndPoint'],

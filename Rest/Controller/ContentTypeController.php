@@ -45,8 +45,12 @@ class ContentTypeController extends ContentController
             'responseType' => $responseType,
             'chunkSize' => $request->get('page_size', $this->getDeafultPageSize($responseType)),
             'documentRoot' => $request->server->get('DOCUMENT_ROOT'),
+            'webHook' => $request->get('webHook'),
+            'transaction' => $request->get('transaction', date('YmdHis', time())),
+            'lang' => $request->get('lang'),
             'host' => $request->getSchemeAndHttpHost(),
             'customerId' => $this->customerId,
+            'licenseKey' => $this->licenseKey,
             'contentTypeIds' => $contentTypeIds,
         ]);
     }
@@ -67,30 +71,33 @@ class ContentTypeController extends ContentController
         $offset = $page * $pageSize - $pageSize;
         $path = $request->get('path');
         $hidden = $request->get('hidden');
+        $contentItems = array();
 
-        $criteria = array(new Criterion\ContentTypeId($contentTypeIds));
+        foreach ($contentTypeIds as $contentTypeId) {
+            $criteria = array(new Criterion\ContentTypeId($contentTypeId));
 
-        if ($path) {
-            $criteria[] = new Criterion\Subtree($path);
+            if ($path) {
+                $criteria[] = new Criterion\Subtree($path);
+            }
+
+            if (!$hidden) {
+                $criteria[] = new Criterion\Visibility(Criterion\Visibility::VISIBLE);
+            }
+
+            $siteAccess = $request->get('sa', $this->siteAccess->name);
+            $rootLocationId = $this->configResolver->getParameter('content.tree_root.location_id', null, $siteAccess);
+            $criteria[] = new Criterion\Subtree($this->locationService->loadLocation($rootLocationId)->pathString);
+
+            $query = new Query();
+            $query->query = new Criterion\LogicalAnd($criteria);
+
+            if ($responseType != 'export') {
+                $query->limit = $pageSize;
+                $query->offset = $offset;
+            }
+
+            $contentItems[$contentTypeId] = $this->searchService->findContent($query)->searchHits;
         }
-
-        if (!$hidden) {
-            $criteria[] = new Criterion\Visibility(Criterion\Visibility::VISIBLE);
-        }
-
-        $siteAccess = $request->get('sa', $this->siteAccess->name);
-        $rootLocationId = $this->configResolver->getParameter('content.tree_root.location_id', null, $siteAccess);
-        $criteria[] = new Criterion\Subtree($this->locationService->loadLocation($rootLocationId)->pathString);
-
-        $query = new Query();
-        $query->query = new Criterion\LogicalAnd($criteria);
-
-        if ($responseType != 'export') {
-            $query->limit = $pageSize;
-            $query->offset = $offset;
-        }
-
-        $contentItems = $this->searchService->findContent($query)->searchHits;
 
         return $this->prepareContent($contentItems, $request);
     }

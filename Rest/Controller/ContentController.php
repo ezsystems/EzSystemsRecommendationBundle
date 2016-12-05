@@ -54,6 +54,9 @@ class ContentController extends BaseController
     /** @var int */
     protected $customerId;
 
+    /** @var string */
+    protected $licenseKey;
+
     /** @var int $defaultAuthorId */
     protected $defaultAuthorId;
 
@@ -96,14 +99,19 @@ class ContentController extends BaseController
     }
 
     /**
-     * Sets `customerId` option when service is created which allows to
-     * inject parameter value according to siteaccess configuration.
-     *
-     * @param string $value
+     * @param int $value
      */
     public function setCustomerId($value)
     {
         $this->customerId = $value;
+    }
+
+    /**
+     * @param string $value
+     */
+    public function setLicenseKey($value)
+    {
+        $this->licenseKey = $value;
     }
 
     /**
@@ -166,37 +174,38 @@ class ContentController extends BaseController
         $requestedFields = $request->get('fields');
 
         $content = array();
+        foreach ($data as $contentTypeId => $items) {
+            foreach ($items as $contentValue) {
+                $contentValue = $contentValue->valueObject;
+                $contentType = $this->contentTypeService->loadContentType($contentValue->contentInfo->contentTypeId);
+                $location = $this->locationService->loadLocation($contentValue->contentInfo->mainLocationId);
+                $language = (null === $requestLanguage) ? $location->contentInfo->mainLanguageCode : $requestLanguage;
+                $this->value->setFieldDefinitionsList($contentType);
 
-        foreach ($data as $contentValue) {
-            $contentValue = $contentValue->valueObject;
-            $contentType = $this->contentTypeService->loadContentType($contentValue->contentInfo->contentTypeId);
-            $location = $this->locationService->loadLocation($contentValue->contentInfo->mainLocationId);
-            $language = (null === $requestLanguage) ? $location->contentInfo->mainLanguageCode : $requestLanguage;
-            $this->value->setFieldDefinitionsList($contentType);
+                $content[$contentTypeId][$contentValue->id] = array(
+                    'contentId' => $contentValue->id,
+                    'contentTypeId' => $contentType->id,
+                    'identifier' => $contentType->identifier,
+                    'language' => $language,
+                    'publishedDate' => $contentValue->contentInfo->publishedDate->format('c'),
+                    'author' => $this->getAuthor($contentValue, $contentType),
+                    'uri' => $this->generator->generate($location, array(), false),
+                    'mainLocation' => array(
+                        'href' => '/api/ezp/v2/content/locations' . $location->pathString,
+                    ),
+                    'locations' => array(
+                        'href' => '/api/ezp/v2/content/objects/' . $contentValue->id . '/locations',
+                    ),
+                    'categoryPath' => $location->pathString,
+                    'fields' => array(),
+                );
 
-            $content[$contentValue->id] = array(
-                'contentId' => $contentValue->id,
-                'contentTypeId' => $contentType->id,
-                'identifier' => $contentType->identifier,
-                'language' => $language,
-                'publishedDate' => $contentValue->contentInfo->publishedDate->format('c'),
-                'author' => $this->getAuthor($contentValue, $contentType),
-                'uri' => $this->generator->generate($location, array(), false),
-                'mainLocation' => array(
-                    'href' => '/api/ezp/v2/content/locations' . $location->pathString,
-                ),
-                'locations' => array(
-                    'href' => '/api/ezp/v2/content/objects/' . $contentValue->id . '/locations',
-                ),
-                'categoryPath' => $location->pathString,
-                'fields' => array(),
-            );
-
-            $fields = $this->prepareFields($contentType, $requestedFields);
-            if (!empty($fields)) {
-                foreach ($fields as $field) {
-                    $field = $this->value->getConfiguredFieldIdentifier($field, $contentType);
-                    $content[$contentValue->id]['fields'][] = $this->value->getFieldValue($contentValue, $field, $language);
+                $fields = $this->prepareFields($contentType, $requestedFields);
+                if (!empty($fields)) {
+                    foreach ($fields as $field) {
+                        $field = $this->value->getConfiguredFieldIdentifier($field, $contentType);
+                        $content[$contentTypeId][$contentValue->id]['fields'][] = $this->value->getFieldValue($contentValue, $field, $language);
+                    }
                 }
             }
         }

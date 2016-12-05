@@ -34,23 +34,25 @@ class ExportResponse extends Response
         }
 
         $chunkDir = $this->createChunkDir($data->options['documentRoot']);
-        $chunkDirPath = $data->options['documentRoot'] . '/var/export' . $chunkDir;
-        $chunks = array_chunk($data->contents, $data->options['chunkSize']);
 
         $urls = [];
-        touch($data->options['documentRoot'] . '/var/export/.lock');
+        $chunkDirPath = $data->options['documentRoot'] . '/var/export' . $chunkDir;
+        foreach ($data->contents as $contentTypeId => $items) {
+            $chunks = array_chunk($items, $data->options['chunkSize']);
 
-        foreach ($chunks as $id => $chunk) {
-            $chunkPath = $chunkDirPath . $id;
+            touch($data->options['documentRoot'] . '/var/export/.lock');
 
-            $generator->reset();
-            $generator->startDocument($chunk);
+            foreach ($chunks as $id => $chunk) {
+                $chunkPath = $chunkDirPath . $contentTypeId . $id;
 
-            $this->contentListElementGenerator->generateElement($generator, $chunk);
+                $generator->reset();
+                $generator->startDocument($chunk);
 
-            file_put_contents($chunkPath, $generator->endDocument($chunk));
+                $this->contentListElementGenerator->generateElement($generator, $chunk);
 
-            $urls[] = sprintf('%s/api/ezp/v2/ez_recommendation/v1/exportDownload%s%s', $data->options['host'], $chunkDir, $id);
+                file_put_contents($chunkPath, $generator->endDocument($chunk));
+                $urls[$contentTypeId][] = sprintf('%s/api/ezp/v2/ez_recommendation/v1/exportDownload%s%s', $data->options['host'], $chunkDir, $contentTypeId . $id);
+            }
         }
 
         unlink($data->options['documentRoot'] . '/var/export/.lock');
@@ -80,40 +82,47 @@ class ExportResponse extends Response
     }
 
     /**
-     * @param string $urls
+     * @param array $urls
      * @param array $options
      * @param string $chunkDirPath
      *
      * @return \Psr\Http\Message\StreamInterface|string
      */
-    private function sendYCResponse($urls, $options, $chunkDirPath)
+    private function sendYCResponse(array $urls, $options, $chunkDirPath)
     {
         $guzzle = new Client([
-            'base_uri' => $this->apiEndpoint . '/api/',
+            'base_uri' => $options['webHook'],
         ]);
 
-        $contentTypeId = count($options['contentTypeIds']) == 1
-            ? array_pop($options['contentTypeIds'])
-            : $options['contentTypeIds'];
+        $events = [];
+        $password = $this->secureDir($chunkDirPath);
+
+        foreach ($urls as $contentTypeId => $urlList) {
+            $events[] = [
+                'action' => 'FULL',
+                'format' => 'EZ',
+                'contentTypeId' => $contentTypeId,
+                'lang' => $options['lang'],
+                'uri' => $urlList,
+                'credentials' => [
+                    'login' => 'yc',
+                    'password' => $password,
+                ],
+            ];
+        }
 
         try {
             $response = $guzzle->send(
                 new Request(
                     'POST',
-                    sprintf('%s/items', $options['customerId']),
-                    [],
+                    '',
+                    [
+                        'Content-Type' => 'application/json',
+                        'Authorization' => 'Basic ' . base64_encode($options['customerId'] . ':' . $options['licenseKey']),
+                    ],
                     json_encode([
-                        'transaction' => null,
-                        'events' => [
-                            'action' => 'FULL',
-                            'format' => 'EZ',
-                            'contentTypeId' => $contentTypeId,
-                            'uri' => $urls,
-                            'credentials' => [
-                                'login' => 'yc',
-                                'password' => $this->secureDir($chunkDirPath),
-                            ],
-                        ],
+                        'transaction' => $options['transaction'],
+                        'events' => $events,
                     ])
                 )
             )->getBody();

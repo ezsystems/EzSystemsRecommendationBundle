@@ -13,6 +13,13 @@ class HttpResponse extends Response
 {
     public function render(Generator $generator, $data)
     {
-        return $this->contentListElementGenerator->generateElement($generator, $data->contents);
+        $contents = array();
+        foreach ($data->contents as $contentTypes) {
+            foreach ($contentTypes as $contentType) {
+                $contents[] = $contentType;
+            }
+        }
+
+        return $this->contentListElementGenerator->generateElement($generator, $contents);
     }
 }

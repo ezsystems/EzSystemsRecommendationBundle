@@ -118,6 +118,7 @@ services:
         calls:
             - [setSiteAccess, [@ezpublish.siteaccess]]
             - [setCustomerId, [$yoochoose.customer_id;ez_recommendation$]]
+            - [setLicenseKey, [$yoochoose.license_key;ez_recommendation$]]
 
     ez_recommendation.rest.controller.export:
         class: "%ez_recommendation.rest.controller.export.class%"

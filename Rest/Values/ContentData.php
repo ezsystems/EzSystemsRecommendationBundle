@@ -13,6 +13,9 @@ class ContentData
     /** @var array */
     public $contents;
 
+    /** @var array */
+    public $options;
+
     /**
      * Constructs ContentData object.
      *

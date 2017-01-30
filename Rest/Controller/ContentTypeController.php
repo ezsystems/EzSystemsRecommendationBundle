@@ -7,27 +7,20 @@
  */
 namespace EzSystems\RecommendationBundle\Rest\Controller;
 
-use eZ\Publish\API\Repository\Values\Content\Query;
-use eZ\Publish\API\Repository\Values\Content\Query\Criterion;
+use EzSystems\RecommendationBundle\Rest\Exception\ExportInProgressException;
 use EzSystems\RecommendationBundle\Rest\Values\ContentData as ContentDataValue;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
  * Recommendation REST ContentType controller.
  */
 class ContentTypeController extends ContentController
 {
-    /** @var array */
-    private $pageSizes = [
-        'http' => 10,
-        'export' => 1000,
-    ];
-
     /**
      * Prepares content for ContentDataValue class.
      *
      * @param string $contentTypeIdList
-     * @param string $responseType
      * @param \Symfony\Component\HttpFoundation\Request $request
      *
      * @return \EzSystems\RecommendationBundle\Rest\Values\ContentData ContentDataValue
@@ -35,84 +28,54 @@ class ContentTypeController extends ContentController
      * @throws \eZ\Publish\API\Repository\Exceptions\NotFoundException if the content, version with the given id and languages or content type does not exist
      * @throws \eZ\Publish\API\Repository\Exceptions\UnauthorizedException If the user has no access to read content and in case of un-published content: read versions
      */
-    public function getContentType($contentTypeIdList, $responseType, Request $request)
+    public function getContentType($contentTypeIdList, Request $request)
     {
-        $contentTypeIds = explode(',', $contentTypeIdList);
+        $options = $this->parseRequest($request);
+        $options['contentTypeIds'] = explode(',', $contentTypeIdList);
 
-        $content = $this->prepareContentByContentTypeIds($contentTypeIds, $responseType, $request);
+        $content = $this->contentType->prepareContentByContentTypeIds($options);
 
-        return new ContentDataValue($content, [
-            'responseType' => $responseType,
-            'chunkSize' => $request->get('page_size', $this->getDeafultPageSize($responseType)),
-            'documentRoot' => $request->server->get('DOCUMENT_ROOT'),
-            'webHook' => $request->get('webHook'),
-            'transaction' => $request->get('transaction', date('YmdHis', time())),
-            'lang' => $request->get('lang'),
-            'host' => $request->getSchemeAndHttpHost(),
-            'customerId' => $this->customerId,
-            'licenseKey' => $this->licenseKey,
-            'contentTypeIds' => $contentTypeIds,
-        ]);
+        return new ContentDataValue($content, $options);
     }
 
     /**
-     * Returns paged content based on ContentType ids.
-     *
-     * @param array $contentTypeIds
-     * @param string $responseType
+     * @param string $contentTypeIdList
      * @param \Symfony\Component\HttpFoundation\Request $request
      *
-     * @return array
-     */
-    protected function prepareContentByContentTypeIds($contentTypeIds, $responseType, Request $request)
-    {
-        $pageSize = (int)$request->get('page_size', $this->getDeafultPageSize($responseType));
-        $page = $request->get('page', 1);
-        $offset = $page * $pageSize - $pageSize;
-        $path = $request->get('path');
-        $hidden = $request->get('hidden');
-        $contentItems = array();
-
-        foreach ($contentTypeIds as $contentTypeId) {
-            $criteria = array(new Criterion\ContentTypeId($contentTypeId));
-
-            if ($path) {
-                $criteria[] = new Criterion\Subtree($path);
-            }
-
-            if (!$hidden) {
-                $criteria[] = new Criterion\Visibility(Criterion\Visibility::VISIBLE);
-            }
-
-            $siteAccess = $request->get('sa', $this->siteAccess->name);
-            $rootLocationId = $this->configResolver->getParameter('content.tree_root.location_id', null, $siteAccess);
-            $criteria[] = new Criterion\Subtree($this->locationService->loadLocation($rootLocationId)->pathString);
-
-            $query = new Query();
-            $query->query = new Criterion\LogicalAnd($criteria);
-
-            if ($responseType != 'export') {
-                $query->limit = $pageSize;
-                $query->offset = $offset;
-            }
-
-            $contentItems[$contentTypeId] = $this->searchService->findContent($query)->searchHits;
-        }
-
-        return $this->prepareContent($contentItems, $request);
-    }
-
-    /**
-     * @param string $responseType
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
      *
-     * @return mixed
+     * @throws ExportInProgressException
      */
-    private function getDeafultPageSize($responseType)
+    public function exportContentType($contentTypeIdList, Request $request)
     {
-        if (isset($this->pageSizes[$responseType])) {
-            return $this->pageSizes[$responseType];
+        $options = $this->parseRequest($request, 'export');
+
+        if (file_exists($options['documentRoot'] . '/var/export/.lock')) {
+            throw new ExportInProgressException('Export is running');
         }
 
-        return $this->pageSizes['http'];
+        $options['contentTypeIdList'] = $contentTypeIdList;
+
+        $optionString = '';
+        foreach ($options as $key => $option) {
+            $optionString .= !empty($option) ? ' --' . $key . '=' . $option : '';
+        }
+
+        $cmd = sprintf('%s/console ezreco:runexport %s --env=prod',
+            $this->container->getParameter('kernel.root_dir'),
+            $optionString
+        );
+
+        exec(
+            sprintf(
+                '%s -d memory_limit=-1 %s > %s 2>&1 & echo $! > %s',
+                PHP_BINARY,
+                $cmd,
+                $options['documentRoot'] . '/var/export/.log',
+                $options['documentRoot'] . '/var/export/.pid'
+            )
+        );
+
+        return new JsonResponse([sprintf('Export started at %s', date('Y-m-d H:i:s'))]);
     }
 }

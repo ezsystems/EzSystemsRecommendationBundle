@@ -66,20 +66,15 @@ class Value
      * @param \eZ\Publish\API\Repository\Values\Content\Content $content
      * @param string $field
      * @param string $language
+     * @param array $options
      *
      * @return array
      */
-    public function getFieldValue(Content $content, $field, $language)
+    public function getFieldValue(Content $content, $field, $language, $options)
     {
         $fieldObj = $content->getField($field, $language);
-
-        if (!isset($fieldObj)) {
-            $this->logger->warning('Invalid field name. Field: ' . $field);
-
-            return array(
-                'key' => $field,
-                'value' => '',
-            );
+        if (null === $fieldObj) {
+            $fieldObj = $content->getField($field);
         }
 
         $contentType = $this->contentTypeService->loadContentType($content->contentInfo->contentTypeId);
@@ -111,12 +106,12 @@ class Value
                         );
                     }
                     $relatedField = $content->getField($mapping['field'], $language);
-                    $value = $relatedField ? $this->getParsedFieldValue($relatedField, $relatedContent, $language, $imageFieldIdentifier) : '';
+                    $value = $relatedField ? $this->getParsedFieldValue($relatedField, $relatedContent, $language, $imageFieldIdentifier, $options) : '';
                 } else {
                     $value = '';
                 }
             } else {
-                $value = $fieldObj ? $this->getParsedFieldValue($fieldObj, $content, $language, $imageFieldIdentifier) : '';
+                $value = $fieldObj ? $this->getParsedFieldValue($fieldObj, $content, $language, $imageFieldIdentifier, $options) : '';
             }
         } catch (InvalidRelationException $exception) {
             $this->logger->warning($exception->getMessage());
@@ -124,10 +119,7 @@ class Value
             $value = '';
         }
 
-        return array(
-            'key' => $field,
-            'value' => $value,
-        );
+        return $value;
     }
 
     /**
@@ -263,10 +255,10 @@ class Value
      *
      * @return mixed
      */
-    public function getParsedFieldValue(Field $field, Content $content, $language, $imageFieldIdentifier)
+    public function getParsedFieldValue(Field $field, Content $content, $language, $imageFieldIdentifier, $options)
     {
         $fieldType = $this->fieldDefIdentifiers[$field->fieldDefIdentifier];
 
-        return $this->typeValue->$fieldType($field, $content, $language, $imageFieldIdentifier);
+        return $this->typeValue->$fieldType($field, $content, $language, $imageFieldIdentifier, $options);
     }
 }

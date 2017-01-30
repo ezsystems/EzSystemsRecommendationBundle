@@ -5,14 +5,19 @@
  */
 namespace EzSystems\RecommendationBundle\Tests\Client;
 
+<<<<<<< HEAD
 use PHPUnit_Framework_TestCase;
+=======
+use eZ\Publish\Core\REST\Client\Values\Content\Content;
+use Guzzle\Http\Message\Response;
+>>>>>>> EZS-1272 Ez content export to file - restrictions and high load
 use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Psr7\Response;
 use eZ\Publish\Core\Repository\Values\ContentType\ContentType;
 use eZ\Publish\API\Repository\Values\Content\ContentInfo;
 use EzSystems\RecommendationBundle\Client\YooChooseNotifier;
 
-class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
+class YooChooseNotifierTest extends \PHPUnit\Framework\TestCase
 {
     const CUSTOMER_ID = '12345';
 
@@ -26,6 +31,10 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
 
     const CONTENT_ID = 31415;
 
+    const ACTION_UPDATE = 'UPDATE';
+
+    const ACTION_DELETE = 'DELETE';
+
     /** @var \EzSystems\RecommendationBundle\Client\YooChooseNotifier */
     protected $notifier;
 
@@ -37,7 +46,11 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
      */
     public function setUp()
     {
+<<<<<<< HEAD
         $this->guzzleClientMock = $this->getMock('GuzzleHttp\ClientInterface');
+=======
+        $this->guzzleClientMock = $this->getMockBuilder('GuzzleHttp\ClientInterface')->getMock();
+>>>>>>> EZS-1272 Ez content export to file - restrictions and high load
 
         $this->notifier = new YooChooseNotifier(
             $this->guzzleClientMock,
@@ -52,13 +65,32 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
                 'server-uri' => self::SERVER_URI,
             )
         );
+
+        $this->notifier = $this->getMockBuilder('EzSystems\RecommendationBundle\Client\YooChooseNotifier')
+            ->setConstructorArgs(array(
+                $this->guzzleClientMock,
+                $this->getRepositoryServiceMock(self::CONTENT_TYPE_ID),
+                $this->getContentServiceMock(self::CONTENT_TYPE_ID),
+                $this->getMockBuilder('eZ\Publish\API\Repository\LocationService')->getMock(),
+                $this->getMockBuilder('eZ\Publish\API\Repository\ContentTypeService')->getMock(),
+                array(
+                    'customer-id' => self::CUSTOMER_ID,
+                    'license-key' => self::LICENSE_KEY,
+                    'api-endpoint' => self::API_ENDPOINT,
+                    'server-uri' => self::SERVER_URI,
+                ),
+            ))
+            ->setMethods(['getContentTypeIdentifier'])
+            ->getMock()
+        ;
+        $this->notifier->method('getContentTypeIdentifier')->willReturn('article');
         $this->notifier->setIncludedContentTypes(array(self::CONTENT_TYPE_ID));
     }
 
     public function testUpdateContent()
     {
         $this->setGuzzleExpectations(
-            'update',
+            self::ACTION_UPDATE,
             self::CONTENT_ID,
             self::CONTENT_TYPE_ID,
             self::CUSTOMER_ID,
@@ -72,7 +104,7 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
     public function testDeleteContent()
     {
         $this->setGuzzleExpectations(
-            'delete',
+            self::ACTION_DELETE,
             self::CONTENT_ID,
             self::CONTENT_TYPE_ID,
             self::CUSTOMER_ID,
@@ -194,7 +226,10 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
             ->method('loadContentInfo')
             ->will($this->returnValue(new ContentInfo(array(
                 'contentTypeId' => $contentTypeId,
-            ))));
+            ))))
+//            ->method('loadContent')
+//            ->willReturn(new Content())
+        ;
 
         return $contentServiceMock;
     }

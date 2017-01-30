@@ -19,12 +19,27 @@ class ExportController extends Controller
     /** @var \Symfony\Component\HttpKernel\Kernel */
     private $kernel;
 
+    /** @var bool */
+    private $authenticationMethod;
+
+    /** @var string */
+    private $authenticationLogin;
+
+    /** @var string */
+    private $authenticationPassword;
+
     /**
      * @param \Symfony\Component\HttpKernel\Kernel $kernel
+     * @param bool $authenticationMethod
+     * @param bool $authenticationLogin
+     * @param bool $authenticationPassword
      */
-    public function __construct(Kernel $kernel)
+    public function __construct(Kernel $kernel, $authenticationMethod, $authenticationLogin, $authenticationPassword)
     {
         $this->kernel = $kernel;
+        $this->authenticationMethod = $authenticationMethod;
+        $this->authenticationLogin = $authenticationLogin;
+        $this->authenticationPassword = $authenticationPassword;
     }
 
     /**
@@ -68,13 +83,18 @@ class ExportController extends Controller
      */
     private function authenticate($filePath, ServerBag $server)
     {
+        if ($this->authenticationMethod == 'none' || $this->authenticationMethod == 'user') {
+            return true;
+        }
+
+        $user = $server->get('PHP_AUTH_USER');
+        $pass = crypt($server->get('PHP_AUTH_PW'), md5($server->get('PHP_AUTH_PW')));
+
         $passFile = $this->kernel->getRootDir() . '/../web/var/export/'
             . substr($filePath, 0, strrpos($filePath, '/'))
             . '/.htpasswd';
 
         list($auth['user'], $auth['pass']) = explode(':', file_get_contents($passFile));
-        $user = $server->get('PHP_AUTH_USER');
-        $pass = crypt($server->get('PHP_AUTH_PW'), md5($server->get('PHP_AUTH_PW')));
 
         return $user == $auth['user'] && $pass == $auth['pass'];
     }

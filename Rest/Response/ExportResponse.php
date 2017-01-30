@@ -33,12 +33,11 @@ class ExportResponse extends Response
             throw new ExportInProgressException('Export is running');
         }
 
-        $chunkDir = $this->createChunkDir($data->options['documentRoot']);
-
         $urls = [];
-        $chunkDirPath = $data->options['documentRoot'] . '/var/export' . $chunkDir;
+        $chunkDirPath = $data->options['documentRoot'] . '/var/export' . $data->options['chunkDir'];
+
         foreach ($data->contents as $contentTypeId => $items) {
-            $chunks = array_chunk($items, $data->options['chunkSize']);
+            $chunks = array_chunk($items, $data->options['pageSize']);
 
             touch($data->options['documentRoot'] . '/var/export/.lock');
 
@@ -51,7 +50,7 @@ class ExportResponse extends Response
                 $this->contentListElementGenerator->generateElement($generator, $chunk);
 
                 file_put_contents($chunkPath, $generator->endDocument($chunk));
-                $urls[$contentTypeId][] = sprintf('%s/api/ezp/v2/ez_recommendation/v1/exportDownload%s%s', $data->options['host'], $chunkDir, $contentTypeId . $id);
+                $urls[$contentTypeId][] = sprintf('%s/api/ezp/v2/ez_recommendation/v1/exportDownload%s%s', $data->options['host'], $data->options['chunkDir'], $contentTypeId . $id);
             }
         }
 
@@ -69,7 +68,7 @@ class ExportResponse extends Response
      *
      * @return false|string
      */
-    private function createChunkDir($documentRoot)
+    public function createChunkDir($documentRoot)
     {
         $chunkDir = date('/Y/m/d/H/i/', time());
 
@@ -88,27 +87,23 @@ class ExportResponse extends Response
      *
      * @return \Psr\Http\Message\StreamInterface|string
      */
-    private function sendYCResponse(array $urls, $options, $chunkDirPath)
+    public function sendYCResponse(array $urls, $options, $chunkDirPath)
     {
-        $guzzle = new Client([
+        $guzzle = new Client(array(
             'base_uri' => $options['webHook'],
-        ]);
+        ));
 
-        $events = [];
-        $password = $this->secureDir($chunkDirPath);
+        $events = array();
 
         foreach ($urls as $contentTypeId => $urlList) {
-            $events[] = [
+            $events[] = array(
                 'action' => 'FULL',
                 'format' => 'EZ',
                 'contentTypeId' => $contentTypeId,
                 'lang' => $options['lang'],
                 'uri' => $urlList,
-                'credentials' => [
-                    'login' => 'yc',
-                    'password' => $password,
-                ],
-            ];
+                'credentials' => $this->secureDir($chunkDirPath),
+            );
         }
 
         try {
@@ -116,20 +111,20 @@ class ExportResponse extends Response
                 new Request(
                     'POST',
                     '',
-                    [
+                    array(
                         'Content-Type' => 'application/json',
                         'Authorization' => 'Basic ' . base64_encode($options['customerId'] . ':' . $options['licenseKey']),
-                    ],
-                    json_encode([
+                    ),
+                    json_encode(array(
                         'transaction' => $options['transaction'],
                         'events' => $events,
-                    ])
+                    ))
                 )
             )->getBody();
         } catch (\Exception $e) {
-            return new JsonResponse([
+            return new JsonResponse(array(
                 $e->getMessage(), $e->getCode(), $e->getFile(), $e->getLine(),
-            ]);
+            ));
         }
 
         return $response;
@@ -142,9 +137,23 @@ class ExportResponse extends Response
      */
     private function secureDir($dir)
     {
-        $password = substr(md5(microtime()), 0, 10);
-        file_put_contents($dir . '.htpasswd', sprintf('yc:%s', crypt($password, md5($password))));
+        if ($this->authenticationMethod == 'none') {
+            return array('none');
+        } elseif ($this->authenticationMethod == 'user') {
+            return array(
+                'login' => $this->authenticationLogin,
+                'password' => $this->authenticationPassword,
+            );
+        }
 
-        return $password;
+        $user = 'yc';
+        $password = substr(md5(microtime()), 0, 10);
+
+        file_put_contents($dir . '.htpasswd', sprintf('%s:%s', $user, crypt($password, md5($password))));
+
+        return array(
+            'login' => $user,
+            'password' => $password,
+        );
     }
 }

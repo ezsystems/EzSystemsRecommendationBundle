@@ -73,6 +73,18 @@ class TypeValue
     }
 
     /**
+     * Method for parsing ezrichtext field.
+     *
+     * @param \eZ\Publish\API\Repository\Values\Content\Field $field
+     *
+     * @return string
+     */
+    public function ezrichtext(Field $field)
+    {
+        return '<![CDATA[' . $this->richHtml5Converter->convert($field->value->xml)->saveHTML() . ']]>';
+    }
+
+    /**
      * Method for parsing ezimage field.
      *
      * @param \eZ\Publish\API\Repository\Values\Content\Field $field
@@ -83,7 +95,7 @@ class TypeValue
      * @throws \eZ\Publish\API\Repository\Exceptions\InvalidVariationException
      * @throws \eZ\Publish\Core\MVC\Exception\SourceImageNotFoundException
      */
-    public function ezimage(Field $field, Content $content)
+    public function ezimage(Field $field, Content $content, $language, $imageFieldIdentifier, $options)
     {
         if (!isset($field->value->id)) {
             return '';
@@ -91,7 +103,8 @@ class TypeValue
 
         $variations = $this->configResolver->getParameter('image_variations');
         $variation = 'original';
-        $requestedVariation = $this->request->getCurrentRequest()->get('image');
+
+        $requestedVariation = $options['image'];
 
         if ((null !== $requestedVariation) || in_array($requestedVariation, array_keys($variations))) {
             $variation = $requestedVariation;
@@ -115,12 +128,12 @@ class TypeValue
      *
      * @return string
      */
-    public function ezobjectrelation(Field $field, Content $content, $language, $imageFieldIdentifier)
+    public function ezobjectrelation(Field $field, Content $content, $language, $imageFieldIdentifier, $options)
     {
         $fields = $content->getFieldsByLanguage($language);
         foreach ($fields as $type => $field) {
             if ($type == $imageFieldIdentifier) {
-                return $this->ezimage($field, $content);
+                return $this->ezimage($field, $content, $language, $imageFieldIdentifier, $options);
             }
         }
 

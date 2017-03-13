@@ -23,6 +23,6 @@ class CopyContent extends Base
             return;
         }
 
-        $this->client->updateContent($signal->dstContentId);
+        $this->client->updateContent($signal->dstContentId, $signal->dstVersionNo);
     }
 }

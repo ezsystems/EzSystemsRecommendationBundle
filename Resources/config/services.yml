@@ -12,8 +12,11 @@ services:
     ez_recommendation.client.yoochoose_notifier:
         class: "%ez_recommendation.client.yoochoose_notifier.class%"
         arguments:
-            - "@ez_recommendation.client.yoochoose_notifier.guzzle_client"
-            - "@ezpublish.api.repository"
+            - @ez_recommendation.client.yoochoose_notifier.guzzle_client
+            - @ezpublish.api.repository
+            - @ezpublish.api.service.content
+            - @ezpublish.api.service.location
+            - @ezpublish.api.service.content_type
             - {api-endpoint: "%ez_recommendation.api_endpoint%"}
             - "@?logger"
         calls:
@@ -134,8 +137,7 @@ services:
     ez_recommendation.rest.field.type_value:
         class: EzSystems\RecommendationBundle\Rest\Field\TypeValue
         arguments:
-            - "@request_stack"
-            - "@ezpublish.config.resolver.core"
-            - "@ezpublish.image_alias.imagine.alias_generator"
-            - "@ezpublish.fieldtype.ezrichtext.converter.output.xhtml5.core"
-            - "@?ezpublish.fieldtype.ezxmltext.converter.html5"
+            - @request_stack
+            - @ezpublish.config.resolver.core
+            - @ezpublish.image_alias.imagine.alias_generator
+            - @ezpublish.fieldtype.ezrichtext.converter.output.xhtml5.core

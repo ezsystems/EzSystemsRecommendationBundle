@@ -18,6 +18,6 @@ class UnhideLocation extends Base
             return;
         }
 
-        $this->client->updateContent($signal->contentId);
+        $this->client->unhideLocation($signal->locationId);
     }
 }

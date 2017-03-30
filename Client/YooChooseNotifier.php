@@ -6,6 +6,9 @@
 namespace EzSystems\RecommendationBundle\Client;
 
 use Exception;
+use eZ\Publish\API\Repository\ContentService;
+use eZ\Publish\API\Repository\ContentTypeService;
+use eZ\Publish\API\Repository\LocationService;
 use GuzzleHttp\ClientInterface as GuzzleClient;
 use GuzzleHttp\Exception\RequestException;
 use InvalidArgumentException;
@@ -31,11 +34,23 @@ class YooChooseNotifier implements RecommendationClient
     /** @var \eZ\Publish\Core\SignalSlot\Repository */
     private $repository;
 
+    /** @var \eZ\Publish\API\Repository\ContentService */
+    private $contentService;
+
+    /** @var \eZ\Publish\API\Repository\LocationService */
+    private $locationService;
+
+    /** @var \eZ\Publish\API\Repository\ContentTypeService */
+    private $contentTypeService;
+
     /**
      * Constructs a YooChooseNotifier Recommendation Client.
      *
      * @param \GuzzleHttp\ClientInterface $guzzle
      * @param \eZ\Publish\Core\SignalSlot\Repository $repository
+     * @param \eZ\Publish\API\Repository\ContentService $contentService
+     * @param \eZ\Publish\API\Repository\LocationService $locationService
+     * @param \eZ\Publish\API\Repository\ContentTypeService $contentTypeService
      * @param array $options
      *     Keys (all required):
      *     - customer-id: the YooChoose customer ID, e.g. 12345
@@ -47,6 +62,9 @@ class YooChooseNotifier implements RecommendationClient
     public function __construct(
         GuzzleClient $guzzle,
         Repository $repository,
+        ContentService $contentService,
+        LocationService $locationService,
+        ContentTypeService $contentTypeService,
         array $options,
         LoggerInterface $logger = null
     ) {
@@ -56,6 +74,9 @@ class YooChooseNotifier implements RecommendationClient
         $this->options = $resolver->resolve($options);
         $this->guzzle = $guzzle;
         $this->repository = $repository;
+        $this->contentService = $contentService;
+        $this->locationService = $locationService;
+        $this->contentTypeService = $contentTypeService;
         $this->logger = $logger;
     }
 
@@ -170,6 +191,83 @@ class YooChooseNotifier implements RecommendationClient
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function hideLocation($locationId, $isChild = false)
+    {
+        $location = $this->locationService->loadLocation($locationId);
+        $content = $this->contentService->loadContent($location->contentId);
+
+        $children = $this->locationService->loadLocationChildren($location)->locations;
+        foreach ($children as $child) {
+            $this->hideLocation($child->id, true);
+        }
+
+        if (!in_array($this->getContentIdentifier($content->id), $this->options['included-content-types'])) {
+            return;
+        }
+
+        if (!$isChild) {
+            $contentLocations = $this->locationService->loadLocations($content->contentInfo);
+            foreach ($contentLocations as $contentLocation) {
+                if (!$contentLocation->hidden) {
+                    return;
+                }
+            }
+        }
+
+        if (isset($this->logger)) {
+            $this->logger->info("Notifying YooChoose: hide($content->id)");
+        }
+
+        try {
+            $this->notify(array(array(
+                'action' => 'delete',
+                'uri' => $this->getContentUri($content->id),
+                'contentTypeId' => $this->getContentTypeId($content->id),
+            )));
+        } catch (RequestException $e) {
+            if (isset($this->logger)) {
+                $this->logger->error('YooChoose Post notification error: ' . $e->getMessage());
+            }
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function unhideLocation($locationId)
+    {
+        $location = $this->locationService->loadLocation($locationId);
+        $content = $this->contentService->loadContent($location->contentId);
+
+        $children = $this->locationService->loadLocationChildren($location)->locations;
+        foreach ($children as $child) {
+            $this->unhideLocation($child->id);
+        }
+
+        if (!in_array($this->getContentIdentifier($content->id), $this->options['included-content-types'])) {
+            return;
+        }
+
+        if (isset($this->logger)) {
+            $this->logger->info("Notifying YooChoose: unhide($content->id)");
+        }
+
+        try {
+            $this->notify(array(array(
+                'action' => 'update',
+                'uri' => $this->getContentUri($content->id),
+                'contentTypeId' => $this->getContentTypeId($content->id),
+            )));
+        } catch (RequestException $e) {
+            if (isset($this->logger)) {
+                $this->logger->error('YooChoose Post notification error: ' . $e->getMessage());
+            }
+        }
+    }
+
+    /**
      * Returns ContentType identifier based on $contentId.
      *
      * @param int|mixed $contentId
@@ -178,12 +276,12 @@ class YooChooseNotifier implements RecommendationClient
      */
     private function getContentTypeIdentifier($contentId)
     {
-        $contentTypeService = $this->repository->getContentTypeService();
-        $contentService = $this->repository->getContentService();
+        $contentTypeService = $this->contentTypeService;
+        $contentService = $this->contentService;
 
         $contentType = $this->repository->sudo(function () use ($contentId, $contentTypeService, $contentService) {
-            $contentType = $contentTypeService->loadContentType(
-                $contentService
+            $contentType = $this->contentTypeService->loadContentType(
+                $this->contentService
                     ->loadContent($contentId)
                     ->contentInfo
                     ->contentTypeId
@@ -204,11 +302,10 @@ class YooChooseNotifier implements RecommendationClient
      */
     protected function getContentTypeId($contentId)
     {
-        $contentService = $this->repository->getContentService();
         $contentTypeId = null;
 
         try {
-            $contentTypeId = $contentService->loadContentInfo($contentId)->contentTypeId;
+            $contentTypeId = $this->contentService->loadContentInfo($contentId)->contentTypeId;
         } catch (Exception $e) {
         }
 

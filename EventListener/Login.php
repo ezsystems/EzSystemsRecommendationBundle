@@ -66,14 +66,12 @@ class Login
         $this->options['customerId'] = $value;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function onSecurityInteractiveLogin(InteractiveLoginEvent $event)
     {
-        if ($this->authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY') || // user has just logged in
-            $this->authorizationChecker->isGranted('IS_AUTHENTICATED_REMEMBERED')) { // user has logged in using remember_me cookie
-
+        if (
+            $this->authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY') // user has just logged in
+            || $this->authorizationChecker->isGranted('IS_AUTHENTICATED_REMEMBERED') // user has logged in using remember_me cookie
+        ) {
             $notificationUri = sprintf($this->getNotificationEndpoint() . '%s/%s/%s',
                 'login',
                 $this->session->get('yc-session-id'),

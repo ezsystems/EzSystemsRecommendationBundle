@@ -18,6 +18,6 @@ class HideLocation extends Base
             return;
         }
 
-        $this->client->updateContent($signal->contentId);
+        $this->client->hideLocation($signal->locationId);
     }
 }

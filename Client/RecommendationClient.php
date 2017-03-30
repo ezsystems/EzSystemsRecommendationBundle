@@ -20,4 +20,19 @@ interface RecommendationClient
      * @param mixed $contentId
      */
     public function deleteContent($contentId);
+
+    /**
+     * Notifies YooChoose about location hiding.
+     *
+     * @param int $locationId
+     * @param bool $isChild Indicates children hiding (not emitted signal)
+     */
+    public function hideLocation($locationId, $isChild = false);
+
+    /**
+     * Notifies YooChoose about location unhiding.
+     *
+     * @param int $locationId
+     */
+    public function unhideLocation($locationId);
 }

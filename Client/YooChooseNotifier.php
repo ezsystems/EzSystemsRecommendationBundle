@@ -203,7 +203,7 @@ class YooChooseNotifier implements RecommendationClient
             $this->hideLocation($child->id, true);
         }
 
-        if (!in_array($this->getContentIdentifier($content->id), $this->options['included-content-types'])) {
+        if (!in_array($this->getContentTypeIdentifier($content->id), $this->options['included-content-types'])) {
             return;
         }
 
@@ -246,7 +246,7 @@ class YooChooseNotifier implements RecommendationClient
             $this->unhideLocation($child->id);
         }
 
-        if (!in_array($this->getContentIdentifier($content->id), $this->options['included-content-types'])) {
+        if (!in_array($this->getContentTypeIdentifier($content->id), $this->options['included-content-types'])) {
             return;
         }
 

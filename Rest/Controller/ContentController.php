@@ -5,6 +5,7 @@
  */
 namespace EzSystems\RecommendationBundle\Rest\Controller;
 
+use eZ\Publish\Core\Base\Exceptions\UnauthorizedException;
 use eZ\Publish\Core\MVC\ConfigResolverInterface;
 use eZ\Publish\API\Repository\Values\Content\Content;
 use eZ\Publish\API\Repository\Values\Content\Query;
@@ -150,7 +151,7 @@ class ContentController extends BaseController
 
         $contentItems = $this->searchService->findContent($query)->searchHits;
 
-        $content = $this->prepareContent($contentItems, $request);
+        $content = $this->prepareContent(array($contentItems), $request);
 
         return new ContentDataValue($content, [
             'responseType' => 'http',
@@ -252,9 +253,13 @@ class ContentController extends BaseController
         );
 
         if (null === $author) {
-            $ownerId = empty($contentValue->contentInfo->ownerId) ? $this->defaultAuthorId : $contentValue->contentInfo->ownerId;
-            $userContentInfo = $this->contentService->loadContentInfo($ownerId);
-            $author = $userContentInfo->name;
+            try {
+                $ownerId = empty($contentValue->contentInfo->ownerId) ? $this->defaultAuthorId : $contentValue->contentInfo->ownerId;
+                $userContentInfo = $this->contentService->loadContentInfo($ownerId);
+                $author = $userContentInfo->name;
+            } catch (UnauthorizedException $e) {
+                $author = '';
+            }
         }
 
         return (string) $author;

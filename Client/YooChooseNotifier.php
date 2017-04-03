@@ -164,7 +164,7 @@ class YooChooseNotifier implements RecommendationClient
         $this->log(sprintf('Notifying YooChoose: updateContent(%s)', $content->id));
 
         $notification = array();
-        foreach ($this->getLangs($contentId, $versionNo) as $lang) {
+        foreach ($this->getLangs($content, $versionNo) as $lang) {
             $notification[] = $this->getNotificationContent(self::ACTION_UPDATE, $content, $lang);
         }
 
@@ -193,8 +193,13 @@ class YooChooseNotifier implements RecommendationClient
 
         $this->log(sprintf('Notifying YooChoose: delete(%s)', $content->id));
 
+        $notification = array();
+        foreach ($this->getLangs($content) as $lang) {
+            $notification[] = $this->getNotificationContent(self::ACTION_DELETE, $content, $lang);
+        }
+
         try {
-            $this->notify(array($this->getNotificationContent(self::ACTION_DELETE, $content)));
+            $this->notify($notification);
         } catch (RequestException $e) {
             $this->log(sprintf('YooChoose Post notification error: %s', $e->getMessage()), 'error');
         }
@@ -228,8 +233,13 @@ class YooChooseNotifier implements RecommendationClient
 
         $this->log(sprintf('Notifying YooChoose: hide(%s)', $content->id));
 
+        $notification = array();
+        foreach ($this->getLangs($content) as $lang) {
+            $notification[] = $this->getNotificationContent(self::ACTION_DELETE, $content, $lang);
+        }
+
         try {
-            $this->notify(array($this->getNotificationContent(self::ACTION_DELETE, $content)));
+            $this->notify($notification);
         } catch (RequestException $e) {
             $this->log(sprintf('YooChoose Post notification error: %s', $e->getMessage()), 'error');
         }
@@ -254,8 +264,13 @@ class YooChooseNotifier implements RecommendationClient
 
         $this->log(sprintf('Notifying YooChoose: unhide(%s)', $content->id));
 
+        $notification = array();
+        foreach ($this->getLangs($content) as $lang) {
+            $notification[] = $this->getNotificationContent(self::ACTION_UPDATE, $content, $lang);
+        }
+
         try {
-            $this->notify(array($this->getNotificationContent(self::ACTION_UPDATE, $content)));
+            $this->notify($notification);
         } catch (RequestException $e) {
             $this->log(sprintf('YooChoose Post notification error: %s', $e->getMessage()), 'error');
         }
@@ -270,13 +285,19 @@ class YooChooseNotifier implements RecommendationClient
      */
     protected function getNotificationContent($action, Content $content, $lang = null)
     {
-        return array(
+        $return =  array(
             'action' => $action,
             'format' => 'EZ',
             'uri' => $this->getContentUri($content, $lang),
+            'itemId' => $content->id,
             'contentTypeId' => $content->contentInfo->contentTypeId,
-            'lang' => $lang,
         );
+
+        if (null !== $lang) {
+            $return['lang'] = $lang;
+        }
+
+        return $return;
     }
 
     /**

@@ -11,8 +11,9 @@ interface RecommendationClient
      * Notifies YooChoose about content update with specified $contentId.
      *
      * @param mixed $contentId
+     * @param mixed $versionId
      */
-    public function updateContent($contentId);
+    public function updateContent($contentId, $versionId = null);
 
     /**
      * Notifies YooChoose about content deletion with specified $contentId.

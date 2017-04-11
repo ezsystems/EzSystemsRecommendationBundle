@@ -2,6 +2,7 @@
     "name": "ezsystems/recommendation-bundle",
     "description": "Integration of the YooChoose recommender engine into eZ Publish Platform",
     "license": "GPL-2.0",
+    "type": "ezplatform-bundle",
     "authors": [
         {
             "name": "eZ Systems",
@@ -15,7 +16,8 @@
     },
     "require-dev": {
         "ezsystems/ezpublish-kernel": "~6.0.0 | ~5.1",
-        "phpunit/phpunit": "~4.7"
+        "phpunit/phpunit": "~4.7",
+        "friendsofphp/php-cs-fixer": "^2.1"
     },
     "autoload": {
         "psr-4": {

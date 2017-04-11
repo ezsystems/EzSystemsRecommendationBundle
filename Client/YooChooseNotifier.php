@@ -9,6 +9,7 @@ use Exception;
 use eZ\Publish\API\Repository\ContentService;
 use eZ\Publish\API\Repository\ContentTypeService;
 use eZ\Publish\API\Repository\LocationService;
+use Guzzle\Http\Message\Response;
 use GuzzleHttp\ClientInterface as GuzzleClient;
 use GuzzleHttp\Exception\RequestException;
 use InvalidArgumentException;
@@ -405,9 +406,11 @@ class YooChooseNotifier implements RecommendationClient
             )
         );
 
-        if (isset($this->logger)) {
-            $this->logger->debug('Got asynchronously ' . $promise->getState() . ' from YooChoose notification POST');
-        }
+        $promise->wait();
+
+        $promise->then(function (Response $response) {
+            $this->log(sprintf('Got asynchronously %s from YooChoose notification POST', $response->getStatusCode()), 'debug');
+        });
     }
 
     /**

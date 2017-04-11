@@ -76,6 +76,6 @@ class ExportController extends Controller
         $user = $server->get('PHP_AUTH_USER');
         $pass = crypt($server->get('PHP_AUTH_PW'), md5($server->get('PHP_AUTH_PW')));
 
-        return ($user == $auth['user'] && $pass == $auth['pass']);
+        return $user == $auth['user'] && $pass == $auth['pass'];
     }
 }

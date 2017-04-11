@@ -22,7 +22,7 @@ use eZ\Publish\API\Repository\Exceptions\NotFoundException;
  */
 class YooChooseNotifier implements RecommendationClient
 {
-    /** @var string */
+    /** @var array */
     protected $options;
 
     /** @var \GuzzleHttp\ClientInterface */
@@ -131,12 +131,10 @@ class YooChooseNotifier implements RecommendationClient
     {
         try {
             if (!in_array($this->getContentTypeIdentifier($contentId), $this->options['included-content-types'])) {
-
                 // this Content is not intended to be submitted because ContentType was excluded
                 return;
             }
         } catch (NotFoundException $e) {
-
             // this is most likely a internal draft, or otherwise invalid, ignoring
             return;
         }
@@ -164,12 +162,10 @@ class YooChooseNotifier implements RecommendationClient
     {
         try {
             if (!in_array($this->getContentTypeIdentifier($contentId), $this->options['included-content-types'])) {
-
                 // this Content is not intended to be submitted because ContentType was excluded
                 return;
             }
         } catch (NotFoundException $e) {
-
             // this is most likely a internal draft, or otherwise invalid, ignoring
             return;
         }

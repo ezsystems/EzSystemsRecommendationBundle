@@ -39,25 +39,25 @@ services:
 
   # The configured eZ Publish Platform legacy search engine - enable lines below only if you're using legacy bridge.
 
-  # ez_recommendation.legacy.search_engine:
-  #     class: ezpSearchEngine
-  #     factory_class: EzSystems\RecommendationBundle\eZ\Publish\LegacySearch\LegacySearchFactory
-  #     factory_method: build
-  #     arguments: ["@ezpublish_legacy.kernel"]
-
-  # ez_recommendation.legacy.recommendation_search_engine:
-  #     class: EzSystems\RecommendationBundle\eZ\Publish\LegacySearch\RecommendationLegacySearchEngine
-  #     arguments:
-  #         - "@ez_recommendation.client.yoochoose_notifier"
-  #         - "@ez_recommendation.legacy.search_engine"
-
-  # ez_recommendation.legacy.search_configuration_mapper:
-  #     class: EzSystems\RecommendationBundle\eZ\Publish\LegacySearch\ConfigurationMapper
-  #     arguments:
-  #         - "@ez_recommendation.legacy.recommendation_search_engine"
-  #         - "@ezpublish.siteaccess"
-  #     tags:
-  #         - { name: kernel.event_subscriber }
+#    ez_recommendation.legacy.search_engine:
+#        class: ezpSearchEngine
+#        factory_class: EzSystems\RecommendationBundle\eZ\Publish\LegacySearch\LegacySearchFactory
+#        factory_method: build
+#        arguments: ["@ezpublish_legacy.kernel"]
+#
+#    ez_recommendation.legacy.recommendation_search_engine:
+#        class: EzSystems\RecommendationBundle\eZ\Publish\LegacySearch\RecommendationLegacySearchEngine
+#        arguments:
+#            - "@ez_recommendation.client.yoochoose_notifier"
+#            - "@ez_recommendation.legacy.search_engine"
+#
+#    ez_recommendation.legacy.search_configuration_mapper:
+#        class: EzSystems\RecommendationBundle\eZ\Publish\LegacySearch\ConfigurationMapper
+#        arguments:
+#            - "@ez_recommendation.legacy.recommendation_search_engine"
+#            - "@ezpublish.siteaccess"
+#        tags:
+#            - { name: kernel.event_subscriber }
 
     ez_recommendation.twig.extension:
         class: "%ez_recommendation.twig.extension.class%"
@@ -153,6 +153,7 @@ services:
             - '@ezpublish.config.resolver.core'
             - '@ezpublish.image_alias.imagine.alias_generator'
             - '@ezpublish.fieldtype.ezrichtext.converter.output.xhtml5.core'
+            - "@?ezpublish.fieldtype.ezxmltext.converter.html5"
 
     ez_recommendation.rest.visitor.generator:
         class: "%ez_recommendation.rest.visitor.generator.class%"
@@ -175,4 +176,3 @@ services:
             - [setApiEndpoint, ["%ez_recommendation.api_endpoint%"]]
         tags:
             - { name: ez_recommendation.rest.response_type, type: export }
-

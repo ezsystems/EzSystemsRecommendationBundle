@@ -111,6 +111,12 @@ class RecommendationLegacySearchEngine implements ezpSearchEngine
 
     public function updateNodeVisibility($nodeID, $action)
     {
+        if ($action == 'hide') {
+            $this->recommendationClient->hideLocation($nodeID);
+        } elseif ($action == 'show') {
+            $this->recommendationClient->unhideLocation($nodeID);
+        }
+
         if (method_exists($this->legacySearchEngine, 'updateNodeVisibility')) {
             return $this->legacySearchEngine->updateNodeVisibility($nodeID, $action);
         }

@@ -19,6 +19,7 @@
         this.limit = config.limit || 0;
         this.language = config.language || '';
         this.fields = config.fields || [];
+        this.filters = config.filters || '';
         this.contentType = config.contentType || '';
         this.outputTypeId = config.outputTypeId || '';
         this.contextItems = config.contextItems || '';
@@ -76,7 +77,8 @@
             '&outputtypeid=', this.outputTypeId,
             '&categorypath=', encodeURIComponent(this.categoryPath),
             '&lang=', this.language,
-            attributes
+            attributes,
+            this.filters
         ];
 
         xmlhttp.open('GET', requestQueryString.join(''), true);

@@ -206,6 +206,7 @@ class RecommendationTwigExtension extends Twig_Extension
      * @param string $contentType
      * @param string $template
      * @param array $fields
+     * @param array $params
      *
      * @return string
      *
@@ -218,10 +219,19 @@ class RecommendationTwigExtension extends Twig_Extension
         $limit,
         $contentType,
         $template,
-        array $fields
+        array $fields,
+        array $params = array()
     ) {
         if (empty($fields)) {
             throw new InvalidArgumentException('Missing recommendation fields, at least one field is required');
+        }
+
+        $filters = '';
+        if (isset($params['filters'])) {
+            foreach ($params['filters'] as $key => $filter) {
+                $filter = is_array($filter) ? implode(',', $filter) : $filter;
+                $filters .= sprintf('&%s=%s', $key, $filter);
+            }
         }
 
         return $twigEnvironment->render(
@@ -233,6 +243,7 @@ class RecommendationTwigExtension extends Twig_Extension
                 'limit' => $limit,
                 'templateId' => uniqid(),
                 'fields' => $fields,
+                'filters' => $filters,
                 'endpointUrl' => $this->getEndPointUrl(),
                 'feedbackUrl' => $this->getFeedbackUrl($this->getContentTypeId($contentType)),
                 'contentType' => $this->getContentTypeId($this->getContentIdentifier($contentId)),

@@ -5,6 +5,7 @@
  */
 namespace EzSystems\RecommendationBundle\EventListener;
 
+use eZ\Publish\API\Repository\UserService;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
 use Symfony\Component\HttpFoundation\Session\Session;
@@ -29,6 +30,9 @@ class Login
     /** @var \GuzzleHttp\ClientInterface */
     private $guzzleClient;
 
+    /** @var \eZ\Publish\API\Repository\UserService */
+    private $userService;
+
     /** @var \Psr\Log\LoggerInterface|null */
     private $logger;
 
@@ -39,6 +43,7 @@ class Login
      * @param \Symfony\Component\HttpFoundation\Session\Session $session
      * @param \GuzzleHttp\ClientInterface $guzzleClient
      * @param array $options
+     * @param \eZ\Publish\API\Repository\UserService $userService
      * @param \Psr\Log\LoggerInterface $logger
      */
     public function __construct(
@@ -46,12 +51,14 @@ class Login
         Session $session,
         GuzzleClient $guzzleClient,
         $options = array(),
+        UserService $userService,
         LoggerInterface $logger = null
     ) {
         $this->authorizationChecker = $authorizationChecker;
         $this->session = $session;
         $this->guzzleClient = $guzzleClient;
         $this->options = $options;
+        $this->userService = $userService;
         $this->logger = $logger;
     }
 
@@ -74,8 +81,8 @@ class Login
         ) {
             $notificationUri = sprintf($this->getNotificationEndpoint() . '%s/%s/%s',
                 'login',
-                $this->session->get('yc-session-id'),
-                $event->getAuthenticationToken()->getUsername()
+                $event->getRequest()->cookies->get('yc-session-id'),
+                $this->userService->loadUserByLogin($event->getAuthenticationToken()->getUsername())->id
             );
 
             if (isset($this->logger)) {

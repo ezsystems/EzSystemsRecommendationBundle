@@ -116,7 +116,7 @@ You can select advanced options for YOOCHOOSE backend using the following settin
 ez_recommendation:
     api_endpoint: 'https://admin.yoochoose.net'
     recommender:
-        api_endpoint: 'http://reco.yoochoose.net'
+        api_endpoint: '//reco.yoochoose.net'
         consume_timeout: 20
     tracking:
         api_endpoint: 'http://event.yoochoose.net'

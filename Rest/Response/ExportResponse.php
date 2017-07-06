@@ -92,9 +92,9 @@ class ExportResponse extends Response
         $guzzle = new Client(array(
             'base_uri' => $options['webHook'],
         ));
-
+        $securedDir = $this->secureDir($chunkDirPath);
         $events = array();
-
+        
         foreach ($urls as $contentTypeId => $urlList) {
             $events[] = array(
                 'action' => 'FULL',
@@ -102,7 +102,7 @@ class ExportResponse extends Response
                 'contentTypeId' => $contentTypeId,
                 'lang' => $options['lang'],
                 'uri' => $urlList,
-                'credentials' => $this->secureDir($chunkDirPath),
+                'credentials' => $securedDir,
             );
         }
 

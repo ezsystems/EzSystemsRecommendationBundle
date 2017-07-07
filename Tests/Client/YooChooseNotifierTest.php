@@ -5,10 +5,9 @@
  */
 namespace EzSystems\RecommendationBundle\Tests\Client;
 
+use Guzzle\Http\Message\Response;
 use PHPUnit_Framework_TestCase;
-use GuzzleHttp\Message\Response;
 use GuzzleHttp\Promise\Promise;
-use eZ\Publish\Core\Repository\Values\Content\Content;
 use eZ\Publish\Core\Repository\Values\ContentType\ContentType;
 use eZ\Publish\API\Repository\Values\Content\ContentInfo;
 use EzSystems\RecommendationBundle\Client\YooChooseNotifier;
@@ -38,11 +37,13 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
      */
     public function setUp()
     {
-        $this->guzzleClientMock = $this->getMock('GuzzleHttp\ClientInterface');
-
+        $this->guzzleClientMock = $this->getMockBuilder('GuzzleHttp\ClientInterface')->getMock();
         $this->notifier = new YooChooseNotifier(
             $this->guzzleClientMock,
             $this->getRepositoryServiceMock(self::CONTENT_TYPE_ID),
+            $this->getContentServiceMock(self::CONTENT_TYPE_ID),
+            $this->getMockBuilder('eZ\Publish\API\Repository\LocationService')->getMock(),
+            $this->getMockBuilder('eZ\Publish\API\Repository\ContentTypeService')->getMock(),
             array(
                 'customer-id' => self::CUSTOMER_ID,
                 'license-key' => self::LICENSE_KEY,
@@ -181,7 +182,7 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
      */
     protected function getContentServiceMock($contentTypeId)
     {
-        $contentServiceMock = $this->getMock('eZ\Publish\API\Repository\ContentService');
+        $contentServiceMock = $this->getMockBuilder('eZ\Publish\API\Repository\ContentService')->getMock();
 
         $contentServiceMock
             ->expects($this->any())
@@ -202,14 +203,7 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
      */
     protected function getRepositoryServiceMock($identifier)
     {
-        $repositoryInterfaceServiceMock = $this->getMock('eZ\Publish\API\Repository\Repository');
-        $signalDispatcherServiceMock = $this->getMock('eZ\Publish\Core\SignalSlot\SignalDispatcher');
-
-        $repositoryServiceMock = $this->getMock(
-            'eZ\Publish\Core\SignalSlot\Repository',
-            array('sudo', 'getContentService', 'getContentTypeService'),
-            array($repositoryInterfaceServiceMock, $signalDispatcherServiceMock)
-        );
+        $repositoryServiceMock = $this->getMockBuilder('eZ\Publish\Core\SignalSlot\Repository')->disableOriginalConstructor()->getMock();
 
         $repositoryServiceMock
             ->expects($this->any())

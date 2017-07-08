@@ -1,5 +1,10 @@
 # Recommendation Bundle
 
+[![Build Status](https://img.shields.io/travis/ezsystems/EzSystemsRecommendationBundle.svg?style=flat-square)](https://travis-ci.org/ezsystems/EzSystemsRecommendationBundle)
+[![Downloads](https://img.shields.io/packagist/dt/ezsystems/recommendation-bundle.svg?style=flat-square)](https://packagist.org/packages/ezsystems/recommendation-bundle)
+[![Latest release](https://img.shields.io/github/release/ezsystems/EzSystemsRecommendationBundle.svg?style=flat-square)](https://github.com/ezsystems/EzSystemsRecommendationBundle/releases)
+[![License](https://img.shields.io/packagist/l/ezsystems/recommendation-bundle.svg?style=flat-square)](LICENSE)
+
 [![SensioLabsInsight](https://insight.sensiolabs.com/projects/1a1934d8-2677-4ae0-be94-6c1d3f541b38/big.png)](https://insight.sensiolabs.com/projects/1a1934d8-2677-4ae0-be94-6c1d3f541b38)
 
 This bundle extends the functionality of eZ with a recommendation engine, powered by [YOOCHOOSE](https://yoochoose.com/).  It allows you to track the way visitors use your website and suggests recommended content to them based on their behavior.

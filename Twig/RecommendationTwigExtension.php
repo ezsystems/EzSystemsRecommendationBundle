@@ -312,7 +312,15 @@ class RecommendationTwigExtension extends Twig_Extension
             $this->authorizationChecker->isGranted('IS_AUTHENTICATED_REMEMBERED')) { // user has logged in using remember_me cookie
             return $this->tokenStorage->getToken()->getUsername();
         } else {
-            return $this->session->get('yc-session-id');
+            if (!$this->session->isStarted()) {
+                $this->session->start();
+            }
+
+            if (!$this->requestStack->getMasterRequest()->cookies->has('yc-session-id')) {
+                $this->requestStack->getMasterRequest()->cookies->set('yc-session-id', $this->session->getId());
+            }
+
+            return $this->requestStack->getMasterRequest()->cookies->get('yc-session-id');
         }
     }
 }

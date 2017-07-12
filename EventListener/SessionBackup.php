@@ -29,8 +29,8 @@ class SessionBackup
             return;
         }
 
-        if (!$session->has('yc-session-id')) {
-            $session->set('yc-session-id', $session->getId());
+        if (!$event->getRequest()->cookies->has('yc-session-id')) {
+            $event->getRequest()->cookies->set('yc-session-id', $session->getId());
         }
     }
 }

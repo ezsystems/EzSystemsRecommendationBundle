@@ -79,6 +79,10 @@ class Login
             $this->authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY') // user has just logged in
             || $this->authorizationChecker->isGranted('IS_AUTHENTICATED_REMEMBERED') // user has logged in using remember_me cookie
         ) {
+            if (!$event->getRequest()->cookies->has('yc-session-id')) {
+                $event->getRequest()->cookies->set('yc-session-id', $this->session->getId());
+            }
+
             $notificationUri = sprintf($this->getNotificationEndpoint() . '%s/%s/%s',
                 'login',
                 $event->getRequest()->cookies->get('yc-session-id'),

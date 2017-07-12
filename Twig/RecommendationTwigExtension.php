@@ -5,6 +5,7 @@
  */
 namespace EzSystems\RecommendationBundle\Twig;
 
+use eZ\Publish\API\Repository\UserService;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\HttpFoundation\Session\Session;
@@ -35,6 +36,9 @@ class RecommendationTwigExtension extends Twig_Extension
     /** @var \eZ\Publish\API\Repository\LocationService */
     protected $locationService;
 
+    /** @var \eZ\Publish\API\Repository\UserService */
+    protected $userService;
+
     /** @var \eZ\Publish\Core\MVC\Symfony\Locale\LocaleConverter */
     protected $localeConverter;
 
@@ -57,6 +61,7 @@ class RecommendationTwigExtension extends Twig_Extension
      * @param \eZ\Publish\API\Repository\ContentTypeService $contentTypeService
      * @param \eZ\Publish\API\Repository\ContentService $contentService
      * @param \eZ\Publish\API\Repository\LocationService $locationService
+     * @param \eZ\Publish\API\Repository\UserService $userService
      * @param \eZ\Publish\Core\MVC\Symfony\Locale\LocaleConverter $localeConverter
      * @param \Symfony\Component\Security\Core\Authorization\AuthorizationChecker
      * @param \Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage
@@ -68,6 +73,7 @@ class RecommendationTwigExtension extends Twig_Extension
         ContentTypeService $contentTypeService,
         ContentService $contentService,
         LocationService $locationService,
+        UserService $userService,
         LocaleConverter $localeConverter,
         AuthorizationChecker $authorizationChecker,
         TokenStorage $tokenStorage,
@@ -78,11 +84,27 @@ class RecommendationTwigExtension extends Twig_Extension
         $this->contentTypeService = $contentTypeService;
         $this->contentService = $contentService;
         $this->locationService = $locationService;
+        $this->userService = $userService;
         $this->localeConverter = $localeConverter;
         $this->authorizationChecker = $authorizationChecker;
         $this->tokenStorage = $tokenStorage;
         $this->session = $session;
-        $this->options = $options;
+        $this->options = $this->parseOptions($options);
+    }
+
+    /**
+     * @param array $options
+     *
+     * @return array
+     */
+    protected function parseOptions(array $options)
+    {
+        $request = $this->requestStack->getCurrentRequest();
+        if (!empty($request) && $request->isSecure()) {
+            $options['recommenderEndPoint'] = str_replace('http://', 'https://', $options['recommenderEndPoint']);
+        }
+
+        return $options;
     }
 
     /**
@@ -276,7 +298,7 @@ class RecommendationTwigExtension extends Twig_Extension
      */
     protected function getEndPointUrl()
     {
-        return sprintf('%s/api/%d/%s/',
+        return sprintf('%s/api/v2/%d/%s/',
             $this->options['recommenderEndPoint'],
             $this->options['customerId'],
             $this->getCurrentUserId()
@@ -310,17 +332,17 @@ class RecommendationTwigExtension extends Twig_Extension
     {
         if ($this->authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY') || // user has just logged in
             $this->authorizationChecker->isGranted('IS_AUTHENTICATED_REMEMBERED')) { // user has logged in using remember_me cookie
-            return $this->tokenStorage->getToken()->getUsername();
+            return $this->userService->loadUserByLogin($this->tokenStorage->getToken()->getUsername())->id;
         } else {
             if (!$this->session->isStarted()) {
                 $this->session->start();
             }
-
-            if (!$this->requestStack->getMasterRequest()->cookies->has('yc-session-id')) {
-                $this->requestStack->getMasterRequest()->cookies->set('yc-session-id', $this->session->getId());
+            $request = $this->requestStack->getMasterRequest();
+            if (!$request->cookies->has('yc-session-id')) {
+                $request->cookies->set('yc-session-id', $this->session->getId());
             }
 
-            return $this->requestStack->getMasterRequest()->cookies->get('yc-session-id');
+            return $request->cookies->get('yc-session-id');
         }
     }
 }

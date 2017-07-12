@@ -52,7 +52,7 @@
             if (xmlhttp.readyState === 4) {
                 if (xmlhttp.status === 200) {
                     jsonResponse = JSON.parse(xmlhttp.response);
-                    responseCallback(jsonResponse.recommendationResponseList, this);
+                    responseCallback(jsonResponse.recommendationItems, this);
                 } else if (xmlhttp.status === 401) {
                     errorCallback(this.unauthorizedMessage);
                 } else if (xmlhttp.status === 500) {

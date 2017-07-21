@@ -17,18 +17,18 @@ services:
     ez_recommendation.client.yoochoose_notifier:
         class: "%ez_recommendation.client.yoochoose_notifier.class%"
         arguments:
-            - @ez_recommendation.client.yoochoose_notifier.guzzle_client
-            - @ezpublish.api.repository
-            - @ezpublish.api.service.content
-            - @ezpublish.api.service.location
-            - @ezpublish.api.service.content_type
+            - '@ez_recommendation.client.yoochoose_notifier.guzzle_client'
+            - '@ezpublish.api.repository'
+            - '@ezpublish.api.service.content'
+            - '@ezpublish.api.service.location'
+            - '@ezpublish.api.service.content_type'
             - {api-endpoint: "%ez_recommendation.api_endpoint%"}
             - "@?logger"
         calls:
-            - [setCustomerId, [$yoochoose.customer_id;ez_recommendation$]]
-            - [setLicenseKey, [$yoochoose.license_key;ez_recommendation$]]
-            - [setServerUri, [$server_uri;ez_recommendation$]]
-            - [setIncludedContentTypes, [$recommender.included_content_types;ez_recommendation$]]
+            - [setCustomerId, ['$yoochoose.customer_id;ez_recommendation$']]
+            - [setLicenseKey, ['$yoochoose.license_key;ez_recommendation$']]
+            - [setServerUri, ['$server_uri;ez_recommendation$']]
+            - [setIncludedContentTypes, ['$recommender.included_content_types;ez_recommendation$']]
         tags:
             - { name: monolog.logger, channel: ez_recommendation }
 
@@ -77,8 +77,8 @@ services:
               trackingScriptUrl: "%ez_recommendation.tracking.script_url%"
               trackingEndPoint: "%ez_recommendation.tracking.api_endpoint%"
         calls:
-            - [setIncludedContentTypes, [$recommender.included_content_types;ez_recommendation$]]
-            - [setCustomerId, [$yoochoose.customer_id;ez_recommendation$]]
+            - [setIncludedContentTypes, ['$recommender.included_content_types;ez_recommendation$']]
+            - [setCustomerId, ['$yoochoose.customer_id;ez_recommendation$']]
         tags:
             - { name: twig.extension }
 
@@ -92,7 +92,7 @@ services:
             - '@ezpublish.api.service.user'
             - "@?logger"
         calls:
-            - [setCustomerId, [$yoochoose.customer_id;ez_recommendation$]]
+            - [setCustomerId, ['$yoochoose.customer_id;ez_recommendation$']]
         tags:
             - { name: kernel.event_listener, event: security.interactive_login }
             - { name: monolog.logger, channel: ez_recommendation }
@@ -121,9 +121,9 @@ services:
             - '@ezpublish.config.resolver'
         parent: ezpublish_rest.controller.base
         calls:
-            - [setSiteAccess, [@ezpublish.siteaccess]]
-            - [setCustomerId, [$yoochoose.customer_id;ez_recommendation$]]
-            - [setLicenseKey, [$yoochoose.license_key;ez_recommendation$]]
+            - [setSiteAccess, ['@ezpublish.siteaccess']]
+            - [setCustomerId, ['$yoochoose.customer_id;ez_recommendation$']]
+            - [setLicenseKey, ['$yoochoose.license_key;ez_recommendation$']]
 
     ez_recommendation.rest.controller.export:
         class: "%ez_recommendation.rest.controller.export.class%"

@@ -15,6 +15,7 @@
                     outputTypeId: '{{ outputTypeId }}',
                     contextItems: '{{ contentId }}',
                     categoryPath: '{{ categoryPath }}',
+                    filters: '{{ filters is defined ? filters : '' }}',
                     fields: [{% for entry in fields %}'{{ entry }}', {% endfor %}],
                     errorMessage: '{{ 'Error occurred while loading recommendations'|trans }}',
                     notSupportedMessage: '{{ 'Cannot display recommendations, your browser is not supported'|trans }}',

@@ -42,10 +42,13 @@
             var attr = [];
             for (var attrIdx in recommendations[responseIdx].attributes) {
                 if (recommendations[responseIdx].attributes.hasOwnProperty(attrIdx)) {
-                    attr[recommendations[responseIdx].attributes[attrIdx].name] = recommendations[responseIdx].attributes[attrIdx].value;
+                    attr[recommendations[responseIdx].attributes[attrIdx].key] = recommendations[responseIdx].attributes[attrIdx].values.length
+                        ? recommendations[responseIdx].attributes[attrIdx].values[0]
+                        : '';
                 }
             }
             recommendations[responseIdx].attr = attr;
+            recommendations[responseIdx].clickRecommended = recommendations[responseIdx].links.clickRecommended;
             itemId.push(recommendations[responseIdx].itemId);
         }
 

@@ -8,7 +8,7 @@
                 <article class="class-article">
                     <div class="col-md-2">
                         <div class="attribute-image">
-                            <a href="{{attr.ez_url}}" onclick="return eZ.RecommendationRestClient.ping('{{clickRecommended}}')">
+                            <a href="{{attr.uri}}" onclick="return eZ.RecommendationRestClient.ping('{{clickRecommended}}')">
                                 <img src="{{attr.image}}" alt="{{attr.title}}" title="{{attr.title}}" height="62" width="170" />
                             </a>
                         </div>
@@ -17,12 +17,8 @@
                     <div class="col-md-8">
                         <div class="attribute-header">
                             <h2>
-                                <a href="{{attr.ez_url}}" class="teaser-link" onclick="return eZ.RecommendationRestClient.ping('{{clickRecommended}}')">{{attr.title}}</a>
+                                <a href="{{attr.uri}}" class="teaser-link" onclick="return eZ.RecommendationRestClient.ping('{{clickRecommended}}')">{{attr.title}}</a>
                             </h2>
-                        </div>
-
-                        <div class="attribute-byline">
-                            <span class="date">{{toLocaleString attr.ez_publishedDate}}</span> - <span class="author">{{attr.author}}</span>
                         </div>
 
                         <div class="attribute-short">
@@ -44,5 +40,6 @@
     'scenario': scenario,
     'limit': limit,
     'contentType': contentType,
-    'contentId': contentId
+    'contentId': contentId,
+    'filters': filters
 } %}

@@ -19,6 +19,7 @@
         this.limit = config.limit || 0;
         this.language = config.language || '';
         this.fields = config.fields || [];
+        this.filters = config.filters || '';
         this.contentType = config.contentType || '';
         this.outputTypeId = config.outputTypeId || '';
         this.contextItems = config.contextItems || '';
@@ -52,7 +53,7 @@
             if (xmlhttp.readyState === 4) {
                 if (xmlhttp.status === 200) {
                     jsonResponse = JSON.parse(xmlhttp.response);
-                    responseCallback(jsonResponse.recommendationResponseList, this);
+                    responseCallback(jsonResponse.recommendationItems, this);
                 } else if (xmlhttp.status === 401) {
                     errorCallback(this.unauthorizedMessage);
                 } else if (xmlhttp.status === 500) {
@@ -76,7 +77,8 @@
             '&outputtypeid=', this.outputTypeId,
             '&categorypath=', encodeURIComponent(this.categoryPath),
             '&lang=', this.language,
-            attributes
+            attributes,
+            this.filters
         ];
 
         xmlhttp.open('GET', requestQueryString.join(''), true);

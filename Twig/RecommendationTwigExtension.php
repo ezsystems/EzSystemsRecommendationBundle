@@ -99,7 +99,8 @@ class RecommendationTwigExtension extends Twig_Extension
      */
     protected function parseOptions(array $options)
     {
-        if (!empty($this->requestStack->getCurrentRequest()) && $this->requestStack->getCurrentRequest()->isSecure()) {
+        $request = $this->requestStack->getCurrentRequest();
+        if (!empty($request) && $request->isSecure()) {
             $options['recommenderEndPoint'] = str_replace('http://', 'https://', $options['recommenderEndPoint']);
         }
 
@@ -227,6 +228,7 @@ class RecommendationTwigExtension extends Twig_Extension
      * @param string $contentType
      * @param string $template
      * @param array $fields
+     * @param array $params
      *
      * @return string
      *
@@ -239,10 +241,19 @@ class RecommendationTwigExtension extends Twig_Extension
         $limit,
         $contentType,
         $template,
-        array $fields
+        array $fields,
+        array $params = array()
     ) {
         if (empty($fields)) {
             throw new InvalidArgumentException('Missing recommendation fields, at least one field is required');
+        }
+
+        $filters = '';
+        if (isset($params['filters'])) {
+            foreach ($params['filters'] as $key => $filter) {
+                $filter = is_array($filter) ? implode(',', $filter) : $filter;
+                $filters .= sprintf('&%s=%s', $key, $filter);
+            }
         }
 
         return $twigEnvironment->render(
@@ -254,6 +265,7 @@ class RecommendationTwigExtension extends Twig_Extension
                 'limit' => $limit,
                 'templateId' => uniqid(),
                 'fields' => $fields,
+                'filters' => $filters,
                 'endpointUrl' => $this->getEndPointUrl(),
                 'feedbackUrl' => $this->getFeedbackUrl($this->getContentTypeId($contentType)),
                 'contentType' => $this->getContentTypeId($this->getContentIdentifier($contentId)),
@@ -297,7 +309,7 @@ class RecommendationTwigExtension extends Twig_Extension
      */
     protected function getEndPointUrl()
     {
-        return sprintf('%s/api/%d/%s/',
+        return sprintf('%s/api/v2/%d/%s/',
             $this->options['recommenderEndPoint'],
             $this->options['customerId'],
             $this->getCurrentUserId()
@@ -336,11 +348,12 @@ class RecommendationTwigExtension extends Twig_Extension
             if (!$this->session->isStarted()) {
                 $this->session->start();
             }
-            if (!$this->requestStack->getMasterRequest()->cookies->has('yc-session-id')) {
-                $this->requestStack->getMasterRequest()->cookies->set('yc-session-id', $this->session->getId());
+            $request = $this->requestStack->getMasterRequest();
+            if (!$request->cookies->has('yc-session-id')) {
+                $request->cookies->set('yc-session-id', $this->session->getId());
             }
 
-            return $this->requestStack->getMasterRequest()->cookies->get('yc-session-id');
+            return $request->cookies->get('yc-session-id');
         }
     }
 }

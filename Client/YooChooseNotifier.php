@@ -406,7 +406,7 @@ class YooChooseNotifier implements RecommendationClient
             )
         );
 
-        $promise->wait();
+        $promise->wait(false);
 
         $promise->then(function (Response $response) {
             $this->log(sprintf('Got asynchronously %s from YooChoose notification POST', $response->getStatusCode()), 'debug');

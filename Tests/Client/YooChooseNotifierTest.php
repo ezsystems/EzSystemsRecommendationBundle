@@ -5,9 +5,10 @@
  */
 namespace EzSystems\RecommendationBundle\Tests\Client;
 
-use Guzzle\Http\Message\Response;
 use PHPUnit_Framework_TestCase;
 use GuzzleHttp\Promise\Promise;
+use GuzzleHttp\Psr7\Response;
+use eZ\Publish\Core\Repository\Values\Content\Content;
 use eZ\Publish\Core\Repository\Values\ContentType\ContentType;
 use eZ\Publish\API\Repository\Values\Content\ContentInfo;
 use EzSystems\RecommendationBundle\Client\YooChooseNotifier;
@@ -37,13 +38,14 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
      */
     public function setUp()
     {
-        $this->guzzleClientMock = $this->getMockBuilder('GuzzleHttp\ClientInterface')->getMock();
+        $this->guzzleClientMock = $this->getMock('GuzzleHttp\ClientInterface');
+
         $this->notifier = new YooChooseNotifier(
             $this->guzzleClientMock,
             $this->getRepositoryServiceMock(self::CONTENT_TYPE_ID),
             $this->getContentServiceMock(self::CONTENT_TYPE_ID),
-            $this->getMockBuilder('eZ\Publish\API\Repository\LocationService')->getMock(),
-            $this->getMockBuilder('eZ\Publish\API\Repository\ContentTypeService')->getMock(),
+            $this->getLocationServiceMock(self::CONTENT_TYPE_ID),
+            $this->getContentTypeServiceMock(self::CONTENT_TYPE_ID),
             array(
                 'customer-id' => self::CUSTOMER_ID,
                 'license-key' => self::LICENSE_KEY,
@@ -157,8 +159,12 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
                         $action, $contentId, $contentTypeId, $serverUri, $customerId, $licenseKey
                     ))
                 )
-                ->will($this->returnValue(new Response(202)));
+                ->will($this->returnValue(new \GuzzleHttp\Message\Response(202)));
         } else {
+            $promise = new Promise(function () use (&$promise) {
+                $promise->resolve(new Response(202));
+            });
+
             $this->guzzleClientMock
                 ->expects($this->once())
                 ->method('requestAsync')
@@ -169,12 +175,12 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
                         $action, $contentId, $contentTypeId, $serverUri, $customerId, $licenseKey
                     ))
                 )
-                ->will($this->returnValue(new Promise()));
+                ->will($this->returnValue($promise));
         }
     }
 
     /**
-     * Returns ContentTypeService mock object.
+     * Returns ContentService mock object.
      *
      * @param int $contentTypeId
      *
@@ -182,7 +188,7 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
      */
     protected function getContentServiceMock($contentTypeId)
     {
-        $contentServiceMock = $this->getMockBuilder('eZ\Publish\API\Repository\ContentService')->getMock();
+        $contentServiceMock = $this->getMock('eZ\Publish\API\Repository\ContentService');
 
         $contentServiceMock
             ->expects($this->any())
@@ -195,6 +201,47 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * Returns LocationService mock object.
+     *
+     * @param int $locationId
+     *
+     * @return \eZ\Publish\API\Repository\LocationService|\PHPUnit_Framework_MockObject_MockObject
+     */
+    protected function getLocationServiceMock($locationId)
+    {
+        $locationServiceMock = $this->getMock('eZ\Publish\API\Repository\LocationService');
+
+        $locationServiceMock
+            ->expects($this->any())
+            ->method('loadLocation')
+            ->will($this->returnValue(null));
+
+        return $locationServiceMock;
+    }
+
+    /**
+     * Returns ContentTypeService mock object.
+     *
+     * @param int $contentTypeId
+     *
+     * @return \eZ\Publish\API\Repository\ContentTypeService|\PHPUnit_Framework_MockObject_MockObject
+     */
+    protected function getContentTypeServiceMock($contentTypeId)
+    {
+        $locationServiceMock = $this->getMock('eZ\Publish\API\Repository\ContentTypeService');
+
+        $locationServiceMock
+            ->expects($this->any())
+            ->method('loadContentType')
+            ->will($this->returnValue(new ContentType(array(
+                'fieldDefinitions' => array(),
+                'identifier' => $contentTypeId,
+            ))));
+
+        return $locationServiceMock;
+    }
+
+    /**
      * Returns Repository mock object.
      *
      * @param int $identifier
@@ -203,7 +250,14 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
      */
     protected function getRepositoryServiceMock($identifier)
     {
-        $repositoryServiceMock = $this->getMockBuilder('eZ\Publish\Core\SignalSlot\Repository')->disableOriginalConstructor()->getMock();
+        $repositoryInterfaceServiceMock = $this->getMock('eZ\Publish\API\Repository\Repository');
+        $signalDispatcherServiceMock = $this->getMock('eZ\Publish\Core\SignalSlot\SignalDispatcher');
+
+        $repositoryServiceMock = $this->getMock(
+            'eZ\Publish\Core\SignalSlot\Repository',
+            array('sudo', 'getContentService', 'getContentTypeService'),
+            array($repositoryInterfaceServiceMock, $signalDispatcherServiceMock)
+        );
 
         $repositoryServiceMock
             ->expects($this->any())

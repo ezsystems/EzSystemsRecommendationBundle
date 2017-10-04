@@ -9,10 +9,10 @@ use Exception;
 use eZ\Publish\API\Repository\ContentService;
 use eZ\Publish\API\Repository\ContentTypeService;
 use eZ\Publish\API\Repository\LocationService;
-use Guzzle\Http\Message\Response;
 use GuzzleHttp\ClientInterface as GuzzleClient;
 use GuzzleHttp\Exception\RequestException;
 use InvalidArgumentException;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use eZ\Publish\Core\SignalSlot\Repository;
@@ -408,8 +408,10 @@ class YooChooseNotifier implements RecommendationClient
 
         $promise->wait();
 
-        $promise->then(function (Response $response) {
-            $this->log(sprintf('Got asynchronously %s from YooChoose notification POST', $response->getStatusCode()), 'debug');
+        $promise->then(function (ResponseInterface $response) {
+            if (isset($this->logger)) {
+                $this->logger->debug(sprintf('Got asynchronously %s from YooChoose notification POST', $response->getStatusCode()));
+            }
         });
     }
 

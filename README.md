@@ -13,7 +13,7 @@ See [YOOCHOOSE documentation](https://yoochoose.com/Personalization-Solution/Doc
 
 ## Requirements
 
-- PHP 5.4.4 *or higher PHP 5.x version*
+- PHP 5.4.4 *or higher*
 - Symfony 2.7 *or higher Symfony 2.x version*
 - eZ Publish v5.4.1+ or eZ Platform/Enterprise v1.0+, with the REST API configured to use sessions and publicly open to the YOOCHOOSE servers.
 - A YOOCHOOSE subscription
@@ -25,7 +25,7 @@ This bundle is independent from the `ezrecommendation` extension used in eZ Publ
 1\. Run the following from your eZ Publish / eZ Platform installation root *(here with most recent 1.x release)*:
 
 ```bash
-composer require --no-update ezsystems/recommendation-bundle:^1.0.0
+composer require --no-update ezsystems/recommendation-bundle:^2.0
 composer update --prefer-dist
 ```
 

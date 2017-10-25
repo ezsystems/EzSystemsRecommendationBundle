@@ -50,6 +50,27 @@ class EzSystemsRecommendationExtension extends Extension
             $container->setParameter('ez_recommendation.siteaccess_config', $config['system']);
         }
 
+        if (isset($config['export']['users_authentication']['method'])) {
+            $container->setParameter(
+                'ez_recommendation.export.users_authentication.method',
+                $config['export']['users_authentication']['method']
+            );
+        }
+
+        if (isset($config['export']['users_authentication']['login'])) {
+            $container->setParameter(
+                'ez_recommendation.export.users_authentication.login',
+                $config['export']['users_authentication']['login']
+            );
+        }
+
+        if (isset($config['export']['users_authentication']['password'])) {
+            $container->setParameter(
+                'ez_recommendation.export.users_authentication.password',
+                $config['export']['users_authentication']['password']
+            );
+        }
+
         $processor = new ConfigurationProcessor($container, 'ez_recommendation');
         $processor->mapConfig($config, new ConfigurationMapper());
     }

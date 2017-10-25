@@ -7,7 +7,6 @@
  */
 namespace EzSystems\RecommendationBundle\Rest\Content;
 
-use eZ\Publish\Core\Base\Exceptions\NotFoundException;
 use eZ\Publish\Core\Base\Exceptions\UnauthorizedException;
 use eZ\Publish\Core\MVC\ConfigResolverInterface;
 use eZ\Publish\API\Repository\Values\Content\Query;
@@ -113,27 +112,6 @@ class Content
         $this->siteAccess = $siteAccess;
     }
 
-    /**
-     * @param null|int $mandatorId
-     *
-     * @return string
-     *
-     * @throws NotFoundException
-     */
-    public function getSiteAccess($mandatorId = 0)
-    {
-        if (0 == $mandatorId) {
-            return $this->siteAccess->name;
-        }
-        foreach ($this->siteAccessConfig as $name => $config) {
-            if (isset($config['yoochoose']['customer_id']) && $config['yoochoose']['customer_id'] == $mandatorId) {
-                return $name;
-            }
-        }
-
-        throw new NotFoundException('No config for mandator found', $mandatorId);
-    }
-
     public function setSiteAccessConfig($config)
     {
         $this->siteAccessConfig = $config;
@@ -198,6 +176,7 @@ class Content
         $query->query = new Criterion\LogicalAnd($criteria);
 
         $contentItems = $this->searchService->findContent($query)->searchHits;
+
         $content = $this->prepareContentTypes(array($contentItems), $options);
 
         return new ContentDataValue($content, array(
@@ -263,7 +242,7 @@ class Content
                 'fields' => array(),
             );
 
-            $fields = $this->prepareFields($contentType, $options['requestedFields']);
+            $fields = $this->prepareFields($contentType, $options['fields']);
             if (!empty($fields)) {
                 foreach ($fields as $field) {
                     $field = $this->value->getConfiguredFieldIdentifier($field, $contentType);
@@ -286,8 +265,12 @@ class Content
      */
     protected function prepareFields(ApiContentType $contentType, $fields = null)
     {
-        if (null !== $fields) {
-            return explode(',', $fields);
+        if ($fields !== null) {
+            if (strpos($fields, ',') !== false) {
+                return explode(',', $fields);
+            }
+
+            return array($fields);
         }
 
         $fields = array();

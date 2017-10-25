@@ -1,24 +1,6 @@
-parameters:
-    ez_recommendation.client.yoochoose_notifier.class: EzSystems\RecommendationBundle\Client\YooChooseNotifier
-    ez_recommendation.twig.extension.class: EzSystems\RecommendationBundle\Twig\RecommendationTwigExtension
-    ez_recommendation.event_listener.login.class: EzSystems\RecommendationBundle\EventListener\Login
-    ez_recommendation.event_listener.session_backup.class: EzSystems\RecommendationBundle\EventListener\SessionBackup
-    ez_recommendation.value_object_visitor.content_data.class: EzSystems\RecommendationBundle\Rest\ValueObjectVisitor\ContentData
-    ez_recommendation.field.relation_mapper.class: EzSystems\RecommendationBundle\Rest\Field\RelationMapper
-
-    ez_recommendation.rest.content.class: EzSystems\RecommendationBundle\Rest\Content\Content
-    ez_recommendation.rest.contenttype.class: EzSystems\RecommendationBundle\Rest\Content\ContentType
-    ez_recommendation.rest.controller.content.class: EzSystems\RecommendationBundle\Rest\Controller\ContentController
-    ez_recommendation.rest.controller.contenttype.class: EzSystems\RecommendationBundle\Rest\Controller\ContentTypeController
-    ez_recommendation.rest.controller.export.class: EzSystems\RecommendationBundle\Rest\Controller\ExportController
-    ez_recommendation.rest.response.class: EzSystems\RecommendationBundle\Rest\Response\Response
-    ez_recommendation.rest.response.http.class: EzSystems\RecommendationBundle\Rest\Response\HttpResponse
-    ez_recommendation.rest.response.export.class: EzSystems\RecommendationBundle\Rest\Response\ExportResponse
-    ez_recommendation.rest.visitor.generator.class: EzSystems\RecommendationBundle\Rest\ValueObjectVisitor\ContentListElementGenerator
-
 services:
     ez_recommendation.client.yoochoose_notifier:
-        class: '%ez_recommendation.client.yoochoose_notifier.class%'
+        class: 'EzSystems\RecommendationBundle\Client\YooChooseNotifier'
         arguments:
             - '@ez_recommendation.client.yoochoose_notifier.guzzle_client'
             - '@ezpublish.api.repository'
@@ -63,7 +45,7 @@ services:
 #            - { name: kernel.event_subscriber }
 
     ez_recommendation.twig.extension:
-        class: '%ez_recommendation.twig.extension.class%'
+        class: 'EzSystems\RecommendationBundle\Twig\RecommendationTwigExtension'
         public: true
         arguments:
             - '@request_stack'
@@ -86,7 +68,7 @@ services:
             - { name: twig.extension }
 
     ez_recommendation.event_listener.login:
-        class: '%ez_recommendation.event_listener.login.class%'
+        class: 'EzSystems\RecommendationBundle\EventListener\Login'
         arguments:
             - '@security.authorization_checker'
             - '@session'
@@ -101,23 +83,52 @@ services:
             - { name: monolog.logger, channel: ez_recommendation }
 
     ez_recommendation.event_listener.session_backup:
-        class: '%ez_recommendation.event_listener.session_backup.class%'
+        class: 'EzSystems\RecommendationBundle\EventListener\SessionBackup'
         tags:
             - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest }
 
     ez_recommendation.value_object_visitor.content_data:
         parent: ezpublish_rest.output.value_object_visitor.base
-        class: '%ez_recommendation.value_object_visitor.content_data.class%'
+        class: 'EzSystems\RecommendationBundle\Rest\ValueObjectVisitor\ContentData'
         tags:
             - { name: ezpublish_rest.output.value_object_visitor, type: EzSystems\RecommendationBundle\Rest\Values\ContentData }
 
+    ez_recommendation.export_authenticator:
+        class: 'EzSystems\RecommendationBundle\Authentication\ExportAuthenticator'
+        arguments:
+            - '@request_stack'
+            - '%kernel.root_dir%'
+            - '%ez_recommendation.export.users_authentication.method%'
+            - '%ez_recommendation.export.users_authentication.login%'
+            - '%ez_recommendation.export.users_authentication.password%'
+
+    ez_recommendation.export_notifier:
+        class: 'EzSystems\RecommendationBundle\Client\ExportNotifier'
+        arguments:
+            - '@logger'
+            - '%kernel.root_dir%'
+        tags:
+            - { name: monolog.logger, channel: ez_recommendation }
+
+    ez_recommendation.siteaccess_helper:
+        class: 'EzSystems\RecommendationBundle\Helper\SiteAccess'
+        arguments:
+            - '@ezpublish.config.resolver'
+            - '@ezpublish.siteaccess'
+            - '%ez_recommendation.siteaccess_config%'
+
+    ez_recommendation.filesystem_helper:
+        class: 'EzSystems\RecommendationBundle\Helper\FileSystem'
+        arguments:
+            - '@ez_recommendation.export_authenticator'
+
     ez_recommendation.field.relation_mapper:
-        class: '%ez_recommendation.field.relation_mapper.class%'
+        class: 'EzSystems\RecommendationBundle\Rest\Field\RelationMapper'
         arguments:
             - '%ez_recommendation.relations%'
 
     ez_recommendation.rest.content:
-        class: '%ez_recommendation.rest.content.class%'
+        class: 'EzSystems\RecommendationBundle\Rest\Content\Content'
         arguments:
             - '@ezpublish.urlalias_router'
             - '@ezpublish.api.service.content'
@@ -136,30 +147,44 @@ services:
             - [setSiteAccessConfig, ['%ez_recommendation.siteaccess_config%']]
 
     ez_recommendation.rest.contenttype:
-        class: '%ez_recommendation.rest.contenttype.class%'
+        class: 'EzSystems\RecommendationBundle\Rest\Content\ContentType'
         parent: 'ez_recommendation.rest.content'
+        calls:
+            - [setLogger, ['@?logger']]
+            - [setContentListElementGenerator, ['@ez_recommendation.rest.visitor.generator']]
+            - [setExportNotifier, ['@ez_recommendation.export_notifier']]
+            - [setSiteAccessHelper, ['@ez_recommendation.siteaccess_helper']]
+            - [setFileSystemHelper, ['@ez_recommendation.filesystem_helper']]
+        tags:
+            - { name: monolog.logger, channel: ez_recommendation }
 
     ez_recommendation.rest.controller.content:
-        class: '%ez_recommendation.rest.controller.content.class%'
+        class: 'EzSystems\RecommendationBundle\Rest\Controller\ContentController'
         arguments:
             - '@ez_recommendation.rest.contenttype'
-            - '@ezpublish_rest.output.value_object_visitor.dispatcher'
+            - '@ez_recommendation.export_authenticator'
         parent: ezpublish_rest.controller.base
 
     ez_recommendation.rest.controller.contenttype:
-        class: '%ez_recommendation.rest.controller.contenttype.class%'
+        class: 'EzSystems\RecommendationBundle\Rest\Controller\ContentTypeController'
         parent: ez_recommendation.rest.controller.content
+        arguments:
+            - '@ez_recommendation.rest.contenttype'
+            - '@ez_recommendation.export_authenticator'
 
     ez_recommendation.rest.controller.export:
-        class: '%ez_recommendation.rest.controller.export.class%'
+        class: 'EzSystems\RecommendationBundle\Rest\Controller\ExportController'
         arguments:
-            - '@kernel'
-            - '%ez_recommendation.export.users_authentication.method%'
-            - '%ez_recommendation.export.users_authentication.login%'
-            - '%ez_recommendation.export.users_authentication.password%'
+            - '@ez_recommendation.rest.contenttype'
+            - '@ez_recommendation.export_authenticator'
+            - '@?logger'
+            - '%kernel.root_dir%'
+            - '%kernel.environment%'
+        tags:
+            - { name: monolog.logger, channel: ez_recommendation }
 
     ez_recommendation.rest.field.value:
-        class: EzSystems\RecommendationBundle\Rest\Field\Value
+        class: 'EzSystems\RecommendationBundle\Rest\Field\Value'
         arguments:
             - '@ezpublish.api.service.content'
             - '@ezpublish.api.service.content_type'
@@ -169,7 +194,7 @@ services:
             - '@?logger'
 
     ez_recommendation.rest.field.type_value:
-        class: EzSystems\RecommendationBundle\Rest\Field\TypeValue
+        class: 'EzSystems\RecommendationBundle\Rest\Field\TypeValue'
         arguments:
             - '@request_stack'
             - '@ezpublish.config.resolver.core'
@@ -178,7 +203,7 @@ services:
             - "@?ezpublish.fieldtype.ezxmltext.converter.html5"
 
     ez_recommendation.rest.visitor.generator:
-        class: '%ez_recommendation.rest.visitor.generator.class%'
+        class: 'EzSystems\RecommendationBundle\Rest\ValueObjectVisitor\ContentListElementGenerator'
 
     ez_recommendation.rest.response:
         abstract: true
@@ -189,15 +214,7 @@ services:
             - '%ez_recommendation.export.users_authentication.password%'
 
     ez_recommendation.rest.response.http:
-        class: '%ez_recommendation.rest.response.http.class%'
+        class: 'EzSystems\RecommendationBundle\Rest\Response\HttpResponse'
         parent: ez_recommendation.rest.response
         tags:
             - { name: ez_recommendation.rest.response_type, type: http }
-
-    ez_recommendation.rest.response.export:
-        class: '%ez_recommendation.rest.response.export.class%'
-        parent: ez_recommendation.rest.response
-        calls:
-            - [setApiEndpoint, ['%ez_recommendation.api_endpoint%']]
-        tags:
-            - { name: ez_recommendation.rest.response_type, type: export }

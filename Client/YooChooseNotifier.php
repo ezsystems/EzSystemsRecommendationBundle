@@ -9,13 +9,12 @@ use eZ\Publish\API\Repository\ContentService;
 use eZ\Publish\API\Repository\ContentTypeService;
 use eZ\Publish\API\Repository\LocationService;
 use eZ\Publish\API\Repository\Values\Content\Content;
+use eZ\Publish\API\Repository\Exceptions\NotFoundException;
+use eZ\Publish\Core\SignalSlot\Repository;
 use GuzzleHttp\ClientInterface as GuzzleClient;
 use GuzzleHttp\Exception\RequestException;
-use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use eZ\Publish\Core\SignalSlot\Repository;
-use eZ\Publish\API\Repository\Exceptions\NotFoundException;
 
 /**
  * A recommendation client that sends notifications to a YooChoose server.
@@ -153,11 +152,11 @@ class YooChooseNotifier implements RecommendationClient
 
         try {
             if (!in_array($this->getContentTypeIdentifier($content), $this->options['included-content-types'])) {
-                return;
+                return false;
             }
         } catch (NotFoundException $e) {
             // this is most likely a internal draft, or otherwise invalid, ignoring
-            return;
+            return false;
         }
 
         $this->log(sprintf('Notifying YooChoose: updateContent(%s)', $content->id));
@@ -169,9 +168,13 @@ class YooChooseNotifier implements RecommendationClient
 
         try {
             $this->notify($notification);
+
+            return true;
         } catch (RequestException $e) {
-            $this->log(sprintf('YooChoose Post notification error: %s', $e->getMessage()), 'error');
+            $this->log(sprintf('YooChoose Post notification error for updateContent: %s', $e->getMessage()), 'error');
         }
+
+        return false;
     }
 
     /**
@@ -183,14 +186,14 @@ class YooChooseNotifier implements RecommendationClient
 
         try {
             if (!in_array($this->getContentTypeIdentifier($content), $this->options['included-content-types'])) {
-                return;
+                return false;
             }
         } catch (NotFoundException $e) {
             // this is most likely a internal draft, or otherwise invalid, ignoring
-            return;
+            return false;
         }
 
-        $this->log(sprintf('Notifying YooChoose: delete(%s)', $content->id));
+        $this->log(sprintf('Notifying YooChoose: deleteContent(%s)', $content->id));
 
         $notification = array();
         foreach ($this->getLangs($content) as $lang) {
@@ -199,9 +202,13 @@ class YooChooseNotifier implements RecommendationClient
 
         try {
             $this->notify($notification);
+
+            return true;
         } catch (RequestException $e) {
-            $this->log(sprintf('YooChoose Post notification error: %s', $e->getMessage()), 'error');
+            $this->log(sprintf('YooChoose Post notification error for deleteContent: %s', $e->getMessage()), 'error');
         }
+
+        return false;
     }
 
     /**
@@ -210,22 +217,24 @@ class YooChooseNotifier implements RecommendationClient
     public function hideLocation($locationId, $isChild = false)
     {
         $location = $this->locationService->loadLocation($locationId);
-        $content = $this->contentService->loadContent($location->contentId);
-
         $children = $this->locationService->loadLocationChildren($location)->locations;
+
         foreach ($children as $child) {
             $this->hideLocation($child->id, true);
         }
 
+        $content = $this->contentService->loadContent($location->contentId);
+
         if (!in_array($this->getContentTypeIdentifier($content), $this->options['included-content-types'])) {
-            return;
+            return false;
         }
 
         if (!$isChild) {
+            // do not send the notification if one of the locations is still visible, to prevent deleting content
             $contentLocations = $this->locationService->loadLocations($content->contentInfo);
             foreach ($contentLocations as $contentLocation) {
                 if (!$contentLocation->hidden) {
-                    return;
+                    return false;
                 }
             }
         }
@@ -239,9 +248,13 @@ class YooChooseNotifier implements RecommendationClient
 
         try {
             $this->notify($notification);
+
+            return true;
         } catch (RequestException $e) {
-            $this->log(sprintf('YooChoose Post notification error: %s', $e->getMessage()), 'error');
+            $this->log(sprintf('YooChoose Post notification error for hideLocation: %s', $e->getMessage()), 'error');
         }
+
+        return false;
     }
 
     /**
@@ -250,15 +263,16 @@ class YooChooseNotifier implements RecommendationClient
     public function unhideLocation($locationId)
     {
         $location = $this->locationService->loadLocation($locationId);
-        $content = $this->contentService->loadContent($location->contentId);
-
         $children = $this->locationService->loadLocationChildren($location)->locations;
+
         foreach ($children as $child) {
             $this->unhideLocation($child->id);
         }
 
+        $content = $this->contentService->loadContent($location->contentId);
+
         if (!in_array($this->getContentTypeIdentifier($content), $this->options['included-content-types'])) {
-            return;
+            return false;
         }
 
         $this->log(sprintf('Notifying YooChoose: unhide(%s)', $content->id));
@@ -270,9 +284,13 @@ class YooChooseNotifier implements RecommendationClient
 
         try {
             $this->notify($notification);
+
+            return true;
         } catch (RequestException $e) {
-            $this->log(sprintf('YooChoose Post notification error: %s', $e->getMessage()), 'error');
+            $this->log(sprintf('YooChoose Post notification error for unhideLocation: %s', $e->getMessage()), 'error');
         }
+
+        return false;
     }
 
     /**
@@ -379,66 +397,46 @@ class YooChooseNotifier implements RecommendationClient
     {
         $this->log(sprintf('POST notification to YooChoose: %s', json_encode($events, true)), 'debug');
 
+        $data = array(
+            'json' => array(
+                'transaction' => null,
+                'events' => $events,
+            ),
+            'auth' => array(
+                $this->options['customer-id'],
+                $this->options['license-key'],
+            ),
+        );
+
         if (method_exists($this->guzzle, 'post')) {
-            $this->notifyGuzzle5($events);
+            $this->notifyGuzzle5($data);
         } else {
-            $this->notifyGuzzle6($events);
+            $this->notifyGuzzle6($data);
         }
     }
 
     /**
      * Notifies the YooChoose API using Guzzle 5 (for PHP 5.4 support).
      *
-     * @param array $events
+     * @param array $data
      */
-    private function notifyGuzzle5(array $events)
+    private function notifyGuzzle5(array $data)
     {
-        $response = $this->guzzle->post(
-            $this->getNotificationEndpoint(),
-            array(
-                'json' => array(
-                    'transaction' => null,
-                    'events' => $events,
-                ),
-                'auth' => array(
-                    $this->options['customer-id'],
-                    $this->options['license-key'],
-                ),
-            )
-        );
+        $response = $this->guzzle->post($this->getNotificationEndpoint(), $data);
 
-        $this->log(sprintf('Got %s from YooChoose notification POST', $response->getStatusCode()), 'debug');
+        $this->log(sprintf('Got %s from YooChoose notification POST (guzzle v5)', $response->getStatusCode()), 'debug');
     }
 
     /**
      * Notifies the YooChoose API using Guzzle 6 asynchronously.
      *
-     * @param array $events
+     * @param array $data
      */
-    private function notifyGuzzle6(array $events)
+    private function notifyGuzzle6(array $data)
     {
-        $promise = $this->guzzle->requestAsync(
-            'POST',
-            $this->getNotificationEndpoint(),
-            array(
-                'json' => array(
-                    'transaction' => null,
-                    'events' => $events,
-                ),
-                'auth' => array(
-                    $this->options['customer-id'],
-                    $this->options['license-key'],
-                ),
-            )
-        );
+        $response = $this->guzzle->request('POST', $this->getNotificationEndpoint(), $data);
 
-        $promise->wait(false);
-
-        $promise->then(function (ResponseInterface $response) {
-            if (isset($this->logger)) {
-                $this->logger->debug(sprintf('Got asynchronously %s from YooChoose notification POST', $response->getStatusCode()));
-            }
-        });
+        $this->log(sprintf('Got %s from YooChoose notification POST (guzzle v6)', $response->getStatusCode()), 'debug');
     }
 
     /**

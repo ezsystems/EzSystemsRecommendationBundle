@@ -8,7 +8,6 @@ namespace EzSystems\RecommendationBundle\Tests\Client;
 use PHPUnit_Framework_TestCase;
 use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Psr7\Response;
-use eZ\Publish\Core\Repository\Values\Content\Content;
 use eZ\Publish\Core\Repository\Values\ContentType\ContentType;
 use eZ\Publish\API\Repository\Values\Content\ContentInfo;
 use EzSystems\RecommendationBundle\Client\YooChooseNotifier;
@@ -250,14 +249,10 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
      */
     protected function getRepositoryServiceMock($identifier)
     {
-        $repositoryInterfaceServiceMock = $this->getMock('eZ\Publish\API\Repository\Repository');
-        $signalDispatcherServiceMock = $this->getMock('eZ\Publish\Core\SignalSlot\SignalDispatcher');
-
-        $repositoryServiceMock = $this->getMock(
-            'eZ\Publish\Core\SignalSlot\Repository',
-            array('sudo', 'getContentService', 'getContentTypeService'),
-            array($repositoryInterfaceServiceMock, $signalDispatcherServiceMock)
-        );
+        $repositoryServiceMock = $this
+            ->getMockBuilder('\eZ\Publish\Core\SignalSlot\Repository')
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $repositoryServiceMock
             ->expects($this->any())

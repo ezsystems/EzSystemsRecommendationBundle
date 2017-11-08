@@ -27,6 +27,8 @@ before_script:
   - echo 'memory_limit = -1' >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
   # If set update symfony version
   - if [ "$SYMFONY_VERSION" != "" ]; then composer require --no-update symfony/symfony=$SYMFONY_VERSION; fi;
+  # Remove php-cs-fixer as it is currently not needed on Travis
+  - composer remove --dev --no-update friendsofphp/php-cs-fixer
   # Install packages using composer
   - composer install --prefer-dist
   # Detecting timezone issues by testing on random timezone

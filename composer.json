@@ -10,19 +10,22 @@
         }
     ],
     "require": {
+        "ezsystems/ezpublish-kernel": "~5.1 || ^6.7",
         "guzzlehttp/guzzle": "~5.0|~6.0",
         "components/handlebars.js": "~3.0.0",
-        "symfony/symfony": "^2.7.7"
+        "symfony/symfony": "^2.7.7 || ^3.3"
     },
     "require-dev": {
-        "ezsystems/ezpublish-kernel": "~6.0.0 | ~5.1",
         "phpunit/phpunit": "~4.7",
-        "friendsofphp/php-cs-fixer": "^2.1"
+        "friendsofphp/php-cs-fixer": "~2.7.1"
     },
     "autoload": {
         "psr-4": {
             "EzSystems\\RecommendationBundle\\": ""
         }
+    },
+    "scripts": {
+        "fix-cs": "@php ./vendor/bin/php-cs-fixer fix -v --show-progress=estimating"
     },
     "extra": {
         "branch-alias": {

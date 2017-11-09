@@ -6,6 +6,7 @@
 namespace EzSystems\RecommendationBundle\EventListener;
 
 use eZ\Publish\API\Repository\UserService;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
 use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
 use Symfony\Component\HttpFoundation\Session\Session;
@@ -75,34 +76,35 @@ class Login
 
     public function onSecurityInteractiveLogin(InteractiveLoginEvent $event)
     {
-        if (
-            $this->authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY') // user has just logged in
-            || $this->authorizationChecker->isGranted('IS_AUTHENTICATED_REMEMBERED') // user has logged in using remember_me cookie
+        if (!$this->authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY') // user has just logged in
+            || !$this->authorizationChecker->isGranted('IS_AUTHENTICATED_REMEMBERED') // user has logged in using remember_me cookie
         ) {
-            if (!$event->getRequest()->cookies->has('yc-session-id')) {
-                $event->getRequest()->cookies->set('yc-session-id', $this->session->getId());
-            }
+            return;
+        }
 
-            $notificationUri = sprintf($this->getNotificationEndpoint() . '%s/%s/%s',
-                'login',
-                $event->getRequest()->cookies->get('yc-session-id'),
-                $this->userService->loadUserByLogin($event->getAuthenticationToken()->getUsername())->id
-            );
+        if (!$event->getRequest()->cookies->has('yc-session-id')) {
+            $event->getRequest()->cookies->set('yc-session-id', $this->session->getId());
+        }
+
+        $notificationUri = sprintf($this->getNotificationEndpoint() . '%s/%s/%s',
+            'login',
+            $event->getRequest()->cookies->get('yc-session-id'),
+            $this->getUser($event->getAuthenticationToken())
+        );
+
+        if (isset($this->logger)) {
+            $this->logger->debug(sprintf('Send login event notification to YooChoose: %s', $notificationUri));
+        }
+
+        try {
+            $response = $this->guzzleClient->get($notificationUri);
 
             if (isset($this->logger)) {
-                $this->logger->debug(sprintf('Send login event notification to YooChoose: %s', $notificationUri));
+                $this->logger->debug(sprintf('Got %s from YooChoose login event notification', $response->getStatusCode()));
             }
-
-            try {
-                $response = $this->guzzleClient->get($notificationUri);
-
-                if (isset($this->logger)) {
-                    $this->logger->debug(sprintf('Got %s from YooChoose login event notification', $response->getStatusCode()));
-                }
-            } catch (RequestException $e) {
-                if (isset($this->logger)) {
-                    $this->logger->error(sprintf('YooChoose login event notification error: %s', $e->getMessage()));
-                }
+        } catch (RequestException $e) {
+            if (isset($this->logger)) {
+                $this->logger->error(sprintf('YooChoose login event notification error: %s', $e->getMessage()));
             }
         }
     }
@@ -119,5 +121,25 @@ class Login
             $this->options['trackingEndPoint'],
             $this->options['customerId']
         );
+    }
+
+    /**
+     * Returns current username or ApiUser id.
+     *
+     * @param TokenInterface $authenticationToken
+     *
+     * @return int|string
+     */
+    private function getUser(TokenInterface $authenticationToken)
+    {
+        $user = $authenticationToken->getUser();
+
+        if (is_string($user)) {
+            return $user;
+        } elseif (method_exists($user, 'getAPIUser')) {
+            return $user->getAPIUser()->id;
+        }
+
+        return $authenticationToken->getUsername();
     }
 }

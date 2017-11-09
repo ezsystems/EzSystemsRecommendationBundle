@@ -94,7 +94,7 @@ services:
         calls:
             - [setCustomerId, ['$yoochoose.customer_id;ez_recommendation$']]
         tags:
-            - { name: kernel.event_listener, event: security.interactive_login }
+            - { name: kernel.event_listener, event: security.interactive_login, priority: 255 }
             - { name: monolog.logger, channel: ez_recommendation }
 
     ez_recommendation.event_listener.session_backup:

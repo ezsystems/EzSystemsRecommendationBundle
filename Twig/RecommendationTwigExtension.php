@@ -341,19 +341,31 @@ class RecommendationTwigExtension extends Twig_Extension
      */
     private function getCurrentUserId()
     {
-        if ($this->authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY') || // user has just logged in
-            $this->authorizationChecker->isGranted('IS_AUTHENTICATED_REMEMBERED')) { // user has logged in using remember_me cookie
-            return $this->userService->loadUserByLogin($this->tokenStorage->getToken()->getUsername())->id;
-        } else {
-            if (!$this->session->isStarted()) {
-                $this->session->start();
-            }
-            $request = $this->requestStack->getMasterRequest();
-            if (!$request->cookies->has('yc-session-id')) {
-                $request->cookies->set('yc-session-id', $this->session->getId());
+        if ($this->authorizationChecker->isGranted('IS_AUTHENTICATED_FULLY') // user has just logged in
+            || $this->authorizationChecker->isGranted('IS_AUTHENTICATED_REMEMBERED') // user has logged in using remember_me cookie
+        ) {
+            $authenticationToken = $this->tokenStorage->getToken();
+            $user = $authenticationToken->getUser();
+
+            if (is_string($user)) {
+                return $user;
+            } elseif (method_exists($user, 'getAPIUser')) {
+                return $user->getAPIUser()->id;
             }
 
-            return $request->cookies->get('yc-session-id');
+            return $authenticationToken->getUsername();
         }
+
+        if (!$this->session->isStarted()) {
+            $this->session->start();
+        }
+
+        $request = $this->requestStack->getMasterRequest();
+
+        if (!$request->cookies->has('yc-session-id')) {
+            $request->cookies->set('yc-session-id', $this->session->getId());
+        }
+
+        return $request->cookies->get('yc-session-id');
     }
 }

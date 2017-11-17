@@ -18,6 +18,6 @@ class DeleteVersion extends Base
             return;
         }
 
-        $this->client->updateContent($signal->contentId);
+        $this->client->updateContent($signal->contentId, $signal->versionNo);
     }
 }

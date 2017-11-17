@@ -1,20 +1,27 @@
 recommendationBundle_getContent:
-    path: /ez_recommendation/v1/content/{contentIdList}/{responseType}
+    path: /ez_recommendation/v1/content/{contentIdList}
     defaults:
         _controller: ez_recommendation.rest.controller.content:getContent
-        responseType: http
     methods: [GET]
+    prefix: '%ezpublish_rest.path_prefix%'
 
 recommendationBundle_getContentTypes:
-    path: /ez_recommendation/v1/contenttypes/{contentTypeIdList}/{responseType}
+    path: /ez_recommendation/v1/contenttypes/{contentTypeIdList}
     defaults:
         _controller: ez_recommendation.rest.controller.contenttype:getContentType
-        responseType: http
     methods: [GET]
+    prefix: '%ezpublish_rest.path_prefix%'
 
 recommendationBundle_downloadExportedContent:
     path: /ez_recommendation/v1/exportDownload/{filePath}
     defaults:
         _controller: ez_recommendation.rest.controller.export:downloadAction
     requirements:
-        filePath: "[0-9/]+"
+        filePath: '[a-zA-Z0-9\_\-\/]+'
+
+recommendationBundle_runExport:
+    path: /ez_recommendation/v1/runExport/{contentTypeIdList}
+    defaults:
+        _controller: ez_recommendation.rest.controller.export:exportContentType
+    methods: [GET]
+    prefix: '%ezpublish_rest.path_prefix%'

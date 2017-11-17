@@ -46,6 +46,30 @@ class EzSystemsRecommendationExtension extends Extension
         if (isset($config['tracking']['api_endpoint'])) {
             $container->setParameter('ez_recommendation.tracking.api_endpoint', $config['tracking']['api_endpoint']);
         }
+        if (isset($config['system'])) {
+            $container->setParameter('ez_recommendation.siteaccess_config', $config['system']);
+        }
+
+        if (isset($config['export']['users_authentication']['method'])) {
+            $container->setParameter(
+                'ez_recommendation.export.users_authentication.method',
+                $config['export']['users_authentication']['method']
+            );
+        }
+
+        if (isset($config['export']['users_authentication']['login'])) {
+            $container->setParameter(
+                'ez_recommendation.export.users_authentication.login',
+                $config['export']['users_authentication']['login']
+            );
+        }
+
+        if (isset($config['export']['users_authentication']['password'])) {
+            $container->setParameter(
+                'ez_recommendation.export.users_authentication.password',
+                $config['export']['users_authentication']['password']
+            );
+        }
 
         $processor = new ConfigurationProcessor($container, 'ez_recommendation');
         $processor->mapConfig($config, new ConfigurationMapper());

@@ -1,15 +1,13 @@
 recommendationBundle_getContent:
-    path: /ez_recommendation/v1/content/{contentIdList}/{responseType}
+    path: /ez_recommendation/v1/content/{contentIdList}
     defaults:
         _controller: ez_recommendation.rest.controller.content:getContent
-        responseType: http
     methods: [GET]
 
 recommendationBundle_getContentTypes:
-    path: /ez_recommendation/v1/contenttypes/{contentTypeIdList}/{responseType}
+    path: /ez_recommendation/v1/contenttypes/{contentTypeIdList}
     defaults:
         _controller: ez_recommendation.rest.controller.contenttype:getContentType
-        responseType: http
     methods: [GET]
 
 recommendationBundle_downloadExportedContent:

@@ -17,7 +17,6 @@ use eZ\Publish\API\Repository\ContentService;
 use eZ\Publish\API\Repository\LocationService;
 use eZ\Publish\API\Repository\ContentTypeService;
 use eZ\Publish\API\Repository\SearchService;
-use EzSystems\RecommendationBundle\Rest\Exception\UnsupportedResponseTypeException;
 use EzSystems\RecommendationBundle\Rest\Field\Value as FieldValue;
 use EzSystems\RecommendationBundle\Rest\Values\ContentData as ContentDataValue;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface as UrlGenerator;
@@ -51,12 +50,6 @@ class ContentController extends BaseController
 
     /** @var \eZ\Publish\Core\MVC\Symfony\SiteAccess */
     protected $siteAccess;
-
-    /** @var int */
-    protected $customerId;
-
-    /** @var string */
-    protected $licenseKey;
 
     /** @var int $defaultAuthorId */
     protected $defaultAuthorId;
@@ -100,39 +93,18 @@ class ContentController extends BaseController
     }
 
     /**
-     * @param int $value
-     */
-    public function setCustomerId($value)
-    {
-        $this->customerId = $value;
-    }
-
-    /**
-     * @param string $value
-     */
-    public function setLicenseKey($value)
-    {
-        $this->licenseKey = $value;
-    }
-
-    /**
      * Prepares content for ContentDataValue class.
      *
      * @param string $contentIdList
-     * @param string $responseType
      * @param \Symfony\Component\HttpFoundation\Request $request
      *
      * @return \EzSystems\RecommendationBundle\Rest\Values\ContentData
      *
      * @throws \eZ\Publish\API\Repository\Exceptions\NotFoundException if the content, version with the given id and languages or content type does not exist
      * @throws \eZ\Publish\API\Repository\Exceptions\UnauthorizedException If the user has no access to read content and in case of un-published content: read versions
-     * @throws \EzSystems\RecommendationBundle\Rest\Exception\UnsupportedResponseTypeException
      */
-    public function getContent($contentIdList, $responseType, Request $request)
+    public function getContent($contentIdList, Request $request)
     {
-        if ($responseType != 'http') {
-            throw new UnsupportedResponseTypeException('Only http response is available for single content');
-        }
         $contentIds = explode(',', $contentIdList);
         $lang = $request->get('lang');
 
@@ -153,12 +125,7 @@ class ContentController extends BaseController
 
         $content = $this->prepareContent(array($contentItems), $request);
 
-        return new ContentDataValue($content, [
-            'responseType' => 'http',
-            'documentRoot' => $request->server->get('DOCUMENT_ROOT'),
-            'host' => $request->getSchemeAndHttpHost(),
-            'customerId' => $this->customerId,
-        ]);
+        return new ContentDataValue($content);
     }
 
     /**

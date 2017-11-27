@@ -9,6 +9,7 @@ use eZ\Publish\Core\REST\Common\Output\ValueObjectVisitor;
 use eZ\Publish\Core\REST\Common\Output\Generator;
 use eZ\Publish\Core\REST\Common\Output\Visitor;
 use EzSystems\RecommendationBundle\Rest\Exception\ResponseClassNotImplementedException;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
  * ContentData converter for REST output.
@@ -34,6 +35,13 @@ class ContentData extends ValueObjectVisitor
      */
     public function visit(Visitor $visitor, Generator $generator, $data)
     {
+        $resolver = new OptionsResolver();
+        $resolver->setDefaults([
+            'responseType' => 'http',
+        ]);
+
+        $data->options = $resolver->resolve($data->options);
+
         $visitor->setHeader('Content-Type', $generator->getMediaType('ContentList'));
 
         if (empty($data->contents)) {

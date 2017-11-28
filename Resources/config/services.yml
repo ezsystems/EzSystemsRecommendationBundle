@@ -150,7 +150,6 @@ services:
     ez_recommendation.rest.field.type_value:
         class: EzSystems\RecommendationBundle\Rest\Field\TypeValue
         arguments:
-            - '@request_stack'
             - '@ezpublish.config.resolver.core'
             - '@ezpublish.image_alias.imagine.alias_generator'
             - '@ezpublish.fieldtype.ezrichtext.converter.output.xhtml5.core'

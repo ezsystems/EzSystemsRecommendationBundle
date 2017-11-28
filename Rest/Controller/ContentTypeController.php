@@ -54,6 +54,7 @@ class ContentTypeController extends ContentController
         $offset = $page * $pageSize - $pageSize;
         $path = $request->get('path');
         $hidden = $request->get('hidden');
+        $lang = $request->get('lang');
         $contentItems = array();
 
         foreach ($contentTypeIds as $contentTypeId) {
@@ -76,7 +77,10 @@ class ContentTypeController extends ContentController
             $query->limit = $pageSize;
             $query->offset = $offset;
 
-            $contentItems[$contentTypeId] = $this->searchService->findContent($query)->searchHits;
+            $contentItems[$contentTypeId] = $this->searchService->findContent(
+                $query,
+                (!empty($lang) ? array('languages' => array($lang)) : array())
+            )->searchHits;
         }
 
         return $this->prepareContent($contentItems, $request);

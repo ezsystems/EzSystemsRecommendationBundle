@@ -121,7 +121,10 @@ class ContentController extends BaseController
         $query = new Query();
         $query->query = new Criterion\LogicalAnd($criteria);
 
-        $contentItems = $this->searchService->findContent($query)->searchHits;
+        $contentItems = $this->searchService->findContent(
+            $query,
+            (!empty($lang) ? array('languages' => array($lang)) : array())
+        )->searchHits;
 
         $content = $this->prepareContent(array($contentItems), $request);
 

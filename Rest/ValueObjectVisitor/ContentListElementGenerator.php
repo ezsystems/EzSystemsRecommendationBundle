@@ -59,18 +59,11 @@ class ContentListElementGenerator
             $generator->endAttribute('href');
             $generator->endObjectElement('locations');
 
-            $generator->startList('fields');
-
             foreach ($content['fields'] as $field) {
-                $generator->startHashElement('fields');
-                $generator->startValueElement('key', $field['key']);
-                $generator->endValueElement('key');
-                $generator->startValueElement('value', $field['value']);
-                $generator->endValueElement('value');
-                $generator->endHashElement('fields');
+                $generator->startValueElement($field['key'], $field['value']);
+                $generator->endValueElement($field['key']);
             }
 
-            $generator->endList('fields');
             $generator->endObjectElement('content');
         }
 

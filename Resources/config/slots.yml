@@ -30,7 +30,7 @@ services:
             - "@ezpublish.api.persistence_handler"
 
     ez_recommendation.ez_slot.publish_version:
-        parent: ez_recommendation.ez_slot.base
+        parent: ez_recommendation.ez_slot.persistence_aware_base
         class: "%ez_recommendation.ez_slot.publish_version.class%"
         tags:
             - {name: ezpublish.api.slot, signal: ContentService\PublishVersionSignal}

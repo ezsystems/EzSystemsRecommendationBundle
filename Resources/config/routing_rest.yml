@@ -16,3 +16,10 @@ recommendationBundle_downloadExportedContent:
         _controller: ez_recommendation.rest.controller.export:downloadAction
     requirements:
         filePath: '[a-zA-Z0-9\_\-\/]+'
+
+recommendationBundle_runExport:
+    path: /ez_recommendation/v1/runExport/{contentTypeIdList}
+    defaults:
+        _controller: ez_recommendation.rest.controller.export:runExportAction
+    methods: [GET]
+    prefix: '%ezpublish_rest.path_prefix%'

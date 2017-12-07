@@ -111,6 +111,16 @@ class FileSystem
     }
 
     /**
+     * Checks if directory is locked.
+     */
+    public function isLocked()
+    {
+        $dir = $this->getDir();
+
+        return $this->filesystem->exists($dir . '.lock');
+    }
+
+    /**
      * Securing the directory regarding the authentication method.
      *
      * @param string $chunkDir

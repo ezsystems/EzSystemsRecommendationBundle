@@ -121,6 +121,12 @@ services:
         class: "%ez_recommendation.rest.controller.export.class%"
         arguments:
             - '@ez_recommendation.filesystem_helper'
+            - '@logger'
+            - '%kernel.root_dir%'
+            - '%kernel.environment%'
+        tags:
+            - { name: monolog.logger, channel: ez_recommendation }
+
 
     ez_recommendation.field.relation_mapper:
         class: "%ez_recommendation.field.relation_mapper.class%"

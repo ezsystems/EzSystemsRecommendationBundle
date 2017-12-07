@@ -10,7 +10,6 @@ parameters:
     ez_recommendation.field.relation_mapper.class: EzSystems\RecommendationBundle\Rest\Field\RelationMapper
     ez_recommendation.rest.response.class: EzSystems\RecommendationBundle\Rest\Response\Response
     ez_recommendation.rest.response.http.class: EzSystems\RecommendationBundle\Rest\Response\HttpResponse
-    ez_recommendation.rest.response.export.class: EzSystems\RecommendationBundle\Rest\Response\ExportResponse
     ez_recommendation.rest.visitor.generator.class: EzSystems\RecommendationBundle\Rest\ValueObjectVisitor\ContentListElementGenerator
 
 services:
@@ -111,22 +110,17 @@ services:
     ez_recommendation.rest.controller.content:
         class: "%ez_recommendation.rest.controller.content.class%"
         arguments:
-            - "@ezpublish.urlalias_router"
-            - "@ezpublish.api.service.content"
-            - "@ezpublish.api.service.location"
-            - "@ezpublish.api.service.content_type"
-            - "@ezpublish.api.service.search"
-            - "@ez_recommendation.rest.field.value"
-            - "%ez_recommendation.default.author_id%"
+            - '@ezpublish.api.service.location'
+            - '@ezpublish.api.service.search'
             - '@ezpublish.config.resolver'
+            - '@ez_recommendation.rest.content'
+            - '@ez_recommendation.siteaccess_helper'
         parent: ezpublish_rest.controller.base
-        calls:
-            - [setSiteAccess, ['@ezpublish.siteaccess']]
 
     ez_recommendation.rest.controller.export:
         class: "%ez_recommendation.rest.controller.export.class%"
         arguments:
-            - "@kernel"
+            - '@ez_recommendation.filesystem_helper'
 
     ez_recommendation.field.relation_mapper:
         class: "%ez_recommendation.field.relation_mapper.class%"
@@ -168,3 +162,25 @@ services:
         parent: ez_recommendation.rest.response
         tags:
             - { name: ez_recommendation.rest.response_type, type: http }
+
+    ez_recommendation.filesystem_helper:
+        class: 'EzSystems\RecommendationBundle\Helper\FileSystem'
+        arguments:
+            - '@filesystem'
+            - '%ez_recommendation.export.document_root%'
+
+    ez_recommendation.siteaccess_helper:
+        class: 'EzSystems\RecommendationBundle\Helper\SiteAccess'
+        arguments:
+            - '@ezpublish.config.resolver'
+            - '@ezpublish.siteaccess'
+
+    ez_recommendation.rest.content:
+        class: 'EzSystems\RecommendationBundle\Rest\Content\Content'
+        arguments:
+            - '@ezpublish.api.service.content'
+            - '@ezpublish.api.service.content_type'
+            - '@ezpublish.api.service.location'
+            - '@ezpublish.urlalias_router'
+            - '@ez_recommendation.rest.field.value'
+            - '%ez_recommendation.default.author_id%'

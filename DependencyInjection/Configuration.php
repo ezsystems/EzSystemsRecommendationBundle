@@ -80,6 +80,13 @@ class Configuration extends SiteAccessConfiguration
                     ->info('YooChoose end-point URI address')
                     ->example('https://admin.yoochoose.net')
                 ->end()
+                ->arrayNode('export')
+                    ->children()
+                        ->scalarNode('document_root')
+                            ->defaultValue('%kernel.root_dir%/../web/var/export/')
+                        ->end()
+                    ->end()
+                ->end()
             ->end();
 
         return $treeBuilder;

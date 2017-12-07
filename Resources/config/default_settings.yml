@@ -13,3 +13,5 @@ parameters:
 
     ez_recommendation.relations: []
     ez_recommendation.field_identifiers: []
+
+    ez_recommendation.export.document_root: '%kernel.root_dir%/../web/var/export/'

@@ -47,6 +47,13 @@ class EzSystemsRecommendationExtension extends Extension
             $container->setParameter('ez_recommendation.tracking.api_endpoint', $config['tracking']['api_endpoint']);
         }
 
+        if (isset($config['export']['document_root'])) {
+            $container->setParameter(
+                'ez_recommendation.export.document_root',
+                $config['export']['document_root']
+            );
+        }
+
         $processor = new ConfigurationProcessor($container, 'ez_recommendation');
         $processor->mapConfig($config, new ConfigurationMapper());
     }

@@ -10,6 +10,7 @@ namespace EzSystems\RecommendationBundle\Rest\Controller;
 use eZ\Publish\API\Repository\Values\Content\Query;
 use eZ\Publish\API\Repository\Values\Content\Query\Criterion;
 use eZ\Publish\Core\REST\Server\Exceptions\BadRequestException;
+use EzSystems\RecommendationBundle\Helper\Text;
 use EzSystems\RecommendationBundle\Rest\Values\ContentData as ContentDataValue;
 use Symfony\Component\HttpFoundation\Request;
 use InvalidArgumentException;
@@ -27,16 +28,16 @@ class ContentTypeController extends ContentController
      * @param string $contentTypeIdList
      * @param \Symfony\Component\HttpFoundation\Request $request
      *
-     * @return \EzSystems\RecommendationBundle\Rest\Values\ContentData ContentDataValue
+     * @return ContentDataValue
      *
      * @throws \eZ\Publish\API\Repository\Exceptions\NotFoundException if the content, version with the given id and languages or content type does not exist
      * @throws \eZ\Publish\API\Repository\Exceptions\UnauthorizedException If the user has no access to read content and in case of un-published content: read versions
      * @throws \eZ\Publish\Core\REST\Server\Exceptions\BadRequestException If incorrect $contentTypeIdList value is given
      */
-    public function getContentType($contentTypeIdList, Request $request)
+    public function getContentTypeAction($contentTypeIdList, Request $request)
     {
         try {
-            $contentTypeIds = $this->getIdListFromString($contentTypeIdList);
+            $contentTypeIds = Text::getIdListFromString($contentTypeIdList);
         } catch (InvalidArgumentException $e) {
             throw new BadRequestException('Bad Request', 400);
         }
@@ -56,7 +57,7 @@ class ContentTypeController extends ContentController
      */
     protected function prepareContentByContentTypeIds($contentTypeIds, Request $request)
     {
-        $options = $this->parseParameters($request, ['page_size', 'page', 'path', 'hidden', 'lang', 'sa', 'image']);
+        $options = $this->parseParameters($request->query, ['page_size', 'page', 'path', 'hidden', 'lang', 'sa', 'image']);
 
         $pageSize = (int)$options->get('page_size', self::PAGE_SIZE);
         $page = (int)$options->get('page', 1);
@@ -64,10 +65,11 @@ class ContentTypeController extends ContentController
         $path = $options->get('path');
         $hidden = $options->get('hidden');
         $lang = $options->get('lang');
-        $siteAccess = $options->get('sa', $this->siteAccess->name);
+        $siteAccess = $options->get('sa');
 
-        $rootLocationId = $this->configResolver->getParameter('content.tree_root.location_id', null, $siteAccess);
-        $rootLocationPathString = $this->locationService->loadLocation($rootLocationId)->pathString;
+        $rootLocationPathString = $this->locationService->loadLocation(
+            $this->siteAccessHelper->getRootLocationBySiteAccessName($siteAccess)
+        )->pathString;
 
         $contentItems = array();
 
@@ -95,6 +97,8 @@ class ContentTypeController extends ContentController
             )->searchHits;
         }
 
-        return $this->prepareContent($contentItems, $request);
+        $contentOptions = $this->parseParameters($request->query, ['lang', 'fields', 'image']);
+
+        return $this->content->prepareContent($contentItems, $contentOptions);
     }
 }

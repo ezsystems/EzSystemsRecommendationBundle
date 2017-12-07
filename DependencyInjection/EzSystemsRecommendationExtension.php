@@ -47,6 +47,10 @@ class EzSystemsRecommendationExtension extends Extension
             $container->setParameter('ez_recommendation.tracking.api_endpoint', $config['tracking']['api_endpoint']);
         }
 
+        if (isset($config['system'])) {
+            $container->setParameter('ez_recommendation.siteaccess_config', $config['system']);
+        }
+
         if (isset($config['export']['document_root'])) {
             $container->setParameter(
                 'ez_recommendation.export.document_root',

@@ -174,6 +174,15 @@ services:
         arguments:
             - '@ezpublish.config.resolver'
             - '@ezpublish.siteaccess'
+            - '%ez_recommendation.siteaccess_config%'
+
+    ez_recommendation.export_notifier:
+        class: 'EzSystems\RecommendationBundle\Client\ExportNotifier'
+        arguments:
+            - '@logger'
+            - '%kernel.root_dir%'
+        tags:
+            - { name: monolog.logger, channel: ez_recommendation }
 
     ez_recommendation.rest.content:
         class: 'EzSystems\RecommendationBundle\Rest\Content\Content'
@@ -184,3 +193,28 @@ services:
             - '@ezpublish.urlalias_router'
             - '@ez_recommendation.rest.field.value'
             - '%ez_recommendation.default.author_id%'
+
+    ez_recommendation.exporter:
+        class:  'EzSystems\RecommendationBundle\Export\Exporter'
+        arguments:
+            - '@ezpublish.api.service.search'
+            - '@ezpublish.api.service.content_type'
+            - '@ezpublish.api.service.location'
+            - '@ez_recommendation.filesystem_helper'
+            - '@ez_recommendation.siteaccess_helper'
+            - '@ez_recommendation.export_notifier'
+            - '@ez_recommendation.rest.content'
+            - '@ez_recommendation.rest.visitor.generator'
+            - '@ezpublish_rest.output.generator.json'
+            - '@?logger'
+        tags:
+            - { name: monolog.logger, channel: ez_recommendation }
+
+    ez_recommendation.command.run_export:
+        class: 'EzSystems\RecommendationBundle\Command\ExportCommand'
+        arguments:
+            - '@ez_recommendation.exporter'
+            - '@logger'
+        tags:
+            - { name: console.command }
+            - { name: monolog.logger, channel: ez_recommendation }

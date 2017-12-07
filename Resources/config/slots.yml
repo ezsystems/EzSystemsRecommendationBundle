@@ -78,7 +78,7 @@ services:
             - {name: ezpublish.api.slot, signal: LocationService\MoveSubtreeSignal}
 
     ez_recommendation.ez_slot.trash:
-        parent: ez_recommendation.ez_slot.base
+        parent: ez_recommendation.ez_slot.persistence_aware_base
         class: "%ez_recommendation.ez_slot.trash.class%"
         tags:
             - {name: ezpublish.api.slot, signal: TrashService\TrashSignal}

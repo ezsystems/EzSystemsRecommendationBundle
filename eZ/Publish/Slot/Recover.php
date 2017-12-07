@@ -22,5 +22,14 @@ class Recover extends PersistenceAwareBase
         foreach ($contentIdArray as $contentId) {
             $this->client->updateContent($contentId);
         }
+
+        $relations = $this->persistenceHandler
+            ->contentHandler()
+            ->loadReverseRelations($signal->contentId);
+
+        $this->client->updateContent($signal->contentId);
+        foreach ($relations as $relation) {
+            $this->client->updateContent($relation->destinationContentId);
+        }
     }
 }

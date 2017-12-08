@@ -7,6 +7,7 @@ namespace EzSystems\RecommendationBundle\Export;
 
 use Exception;
 use eZ\Publish\API\Repository\LocationService;
+use EzSystems\RecommendationBundle\Authentication\Authenticator;
 use EzSystems\RecommendationBundle\Rest\Content\Content;
 use LogicException;
 use eZ\Publish\Core\REST\Common\Output\Generator;
@@ -26,13 +27,16 @@ use Symfony\Component\HttpFoundation\ParameterBag;
 class Exporter
 {
     /** @var \eZ\Publish\Api\Repository\SearchService */
-    protected $searchService;
+    private $searchService;
 
     /** @var \eZ\Publish\Api\Repository\ContentTypeService */
-    protected $contentTypeService;
+    private $contentTypeService;
 
     /** @var \eZ\Publish\Api\Repository\LocationService */
-    protected $locationService;
+    private $locationService;
+
+    /** @var \EzSystems\RecommendationBundle\Authentication\Authenticator */
+    private $authenticator;
 
     /** @var \EzSystems\RecommendationBundle\Helper\FileSystem */
     private $fileSystemHelper;
@@ -59,6 +63,7 @@ class Exporter
      * @param \eZ\Publish\Api\Repository\SearchService $searchService
      * @param \eZ\Publish\Api\Repository\ContentTypeService $contentTypeService
      * @param \eZ\Publish\Api\Repository\LocationService $locationService
+     * @param \EzSystems\RecommendationBundle\Authentication\Authenticator $authenticator
      * @param \EzSystems\RecommendationBundle\Helper\FileSystem $fileSystemHelper
      * @param \EzSystems\RecommendationBundle\Helper\SiteAccess $siteAccessHelper
      * @param \EzSystems\RecommendationBundle\Client\ExportNotifier $exportNotifier
@@ -71,6 +76,7 @@ class Exporter
         SearchService $searchService,
         ContentTypeService $contentTypeService,
         LocationService $locationService,
+        Authenticator $authenticator,
         FileSystem $fileSystemHelper,
         SiteAccess $siteAccessHelper,
         ExportNotifier $exportNotifier,
@@ -82,6 +88,7 @@ class Exporter
         $this->searchService = $searchService;
         $this->contentTypeService = $contentTypeService;
         $this->locationService = $locationService;
+        $this->authenticator = $authenticator;
         $this->fileSystemHelper = $fileSystemHelper;
         $this->siteAccessHelper = $siteAccessHelper;
         $this->exportNotifier = $exportNotifier;
@@ -112,7 +119,7 @@ class Exporter
             $urls = $this->generateFiles($languages, $chunkDir, $options);
             $this->fileSystemHelper->unlock();
 
-            $credentials = ['method' => 'basic'];
+            $credentials = $this->authenticator->getCredentials();
             $securedDirCredentials = $this->fileSystemHelper->secureDir($chunkDir, $credentials);
 
             $response = $this->exportNotifier->sendRecommendationResponse($urls, $options, $securedDirCredentials);

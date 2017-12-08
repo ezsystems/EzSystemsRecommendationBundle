@@ -9,10 +9,12 @@ namespace EzSystems\RecommendationBundle\Rest\Controller;
 
 use eZ\Publish\API\Repository\Values\Content\Query;
 use eZ\Publish\API\Repository\Values\Content\Query\Criterion;
+use eZ\Publish\Core\REST\Server\Exceptions\AuthenticationFailedException;
 use eZ\Publish\Core\REST\Server\Exceptions\BadRequestException;
 use EzSystems\RecommendationBundle\Helper\Text;
 use EzSystems\RecommendationBundle\Rest\Values\ContentData as ContentDataValue;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use InvalidArgumentException;
 
 /**
@@ -33,13 +35,18 @@ class ContentTypeController extends ContentController
      * @throws \eZ\Publish\API\Repository\Exceptions\NotFoundException if the content, version with the given id and languages or content type does not exist
      * @throws \eZ\Publish\API\Repository\Exceptions\UnauthorizedException If the user has no access to read content and in case of un-published content: read versions
      * @throws \eZ\Publish\Core\REST\Server\Exceptions\BadRequestException If incorrect $contentTypeIdList value is given
+     * @throws \eZ\Publish\Core\REST\Server\Exceptions\AuthenticationFailedException If credentials are wrong
      */
     public function getContentTypeAction($contentTypeIdList, Request $request)
     {
+        if (!$this->authenticator->authenticate()) {
+            throw new AuthenticationFailedException('Access denied: wrong credentials', Response::HTTP_UNAUTHORIZED);
+        }
+
         try {
             $contentTypeIds = Text::getIdListFromString($contentTypeIdList);
         } catch (InvalidArgumentException $e) {
-            throw new BadRequestException('Bad Request', 400);
+            throw new BadRequestException('Bad Request', Response::HTTP_BAD_REQUEST);
         }
 
         $content = $this->prepareContentByContentTypeIds($contentTypeIds, $request);

@@ -113,6 +113,7 @@ services:
             - '@ezpublish.api.service.location'
             - '@ezpublish.api.service.search'
             - '@ezpublish.config.resolver'
+            - '@ez_recommendation.export_authenticator'
             - '@ez_recommendation.rest.content'
             - '@ez_recommendation.siteaccess_helper'
         parent: ezpublish_rest.controller.base
@@ -120,6 +121,7 @@ services:
     ez_recommendation.rest.controller.export:
         class: "%ez_recommendation.rest.controller.export.class%"
         arguments:
+            - '@ez_recommendation.export_authenticator'
             - '@ez_recommendation.filesystem_helper'
             - '@logger'
             - '%kernel.root_dir%'
@@ -200,12 +202,22 @@ services:
             - '@ez_recommendation.rest.field.value'
             - '%ez_recommendation.default.author_id%'
 
+    ez_recommendation.export_authenticator:
+        class: 'EzSystems\RecommendationBundle\Authentication\ExportAuthenticator'
+        arguments:
+            - '@request_stack'
+            - '@ez_recommendation.filesystem_helper'
+            - '%ez_recommendation.export.users_authentication.method%'
+            - '%ez_recommendation.export.users_authentication.login%'
+            - '%ez_recommendation.export.users_authentication.password%'
+
     ez_recommendation.exporter:
         class:  'EzSystems\RecommendationBundle\Export\Exporter'
         arguments:
             - '@ezpublish.api.service.search'
             - '@ezpublish.api.service.content_type'
             - '@ezpublish.api.service.location'
+            - '@ez_recommendation.export_authenticator'
             - '@ez_recommendation.filesystem_helper'
             - '@ez_recommendation.siteaccess_helper'
             - '@ez_recommendation.export_notifier'

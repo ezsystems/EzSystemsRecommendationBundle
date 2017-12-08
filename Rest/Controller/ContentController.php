@@ -11,13 +11,16 @@ use eZ\Publish\API\Repository\SearchService;
 use eZ\Publish\API\Repository\Values\Content\Query;
 use eZ\Publish\API\Repository\Values\Content\Query\Criterion;
 use eZ\Publish\Core\REST\Server\Controller as BaseController;
+use eZ\Publish\Core\REST\Server\Exceptions\AuthenticationFailedException;
 use eZ\Publish\Core\REST\Server\Exceptions\BadRequestException;
+use EzSystems\RecommendationBundle\Authentication\Authenticator;
 use EzSystems\RecommendationBundle\Helper\Text;
 use EzSystems\RecommendationBundle\Helper\SiteAccess;
 use EzSystems\RecommendationBundle\Rest\Content\Content;
 use EzSystems\RecommendationBundle\Rest\Values\ContentData as ContentDataValue;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use InvalidArgumentException;
 
 /**
@@ -34,6 +37,9 @@ class ContentController extends BaseController
     /** @var \eZ\Publish\Core\MVC\ConfigResolverInterface */
     protected $configResolver;
 
+    /** @var \EzSystems\RecommendationBundle\Authentication\Authenticator */
+    protected $authenticator;
+
     /** @var \EzSystems\RecommendationBundle\Rest\Content\Content */
     protected $content;
 
@@ -43,20 +49,23 @@ class ContentController extends BaseController
     /**
      * @param \eZ\Publish\API\Repository\LocationService $locationService
      * @param \eZ\Publish\API\Repository\SearchService $searchService
-     * @param \EzSystems\RecommendationBundle\Rest\Content\Content $content
      * @param \eZ\Publish\Core\MVC\ConfigResolverInterface $configResolver
+     * @param \EzSystems\RecommendationBundle\Authentication\Authenticator $authenticator
+     * @param \EzSystems\RecommendationBundle\Rest\Content\Content $content
      * @param \EzSystems\RecommendationBundle\Helper\SiteAccess $siteAccessHelper
      */
     public function __construct(
         LocationService $locationService,
         SearchService $searchService,
         ConfigResolverInterface $configResolver,
+        Authenticator $authenticator,
         Content $content,
         SiteAccess $siteAccessHelper
     ) {
         $this->locationService = $locationService;
         $this->searchService = $searchService;
         $this->configResolver = $configResolver;
+        $this->authenticator = $authenticator;
         $this->content = $content;
         $this->siteAccessHelper = $siteAccessHelper;
     }
@@ -72,13 +81,18 @@ class ContentController extends BaseController
      * @throws \eZ\Publish\API\Repository\Exceptions\NotFoundException if the content, version with the given id and languages or content type does not exist
      * @throws \eZ\Publish\API\Repository\Exceptions\UnauthorizedException If the user has no access to read content and in case of un-published content: read versions
      * @throws \eZ\Publish\Core\REST\Server\Exceptions\BadRequestException If incorrect $contentTypeIdList value is given
+     * @throws \eZ\Publish\Core\REST\Server\Exceptions\AuthenticationFailedException If credentials are wrong
      */
     public function getContentAction($contentIdList, Request $request)
     {
+        if (!$this->authenticator->authenticate()) {
+            throw new AuthenticationFailedException('Access denied: wrong credentials', Response::HTTP_UNAUTHORIZED);
+        }
+
         try {
             $contentIds = Text::getIdListFromString($contentIdList);
         } catch (InvalidArgumentException $e) {
-            throw new BadRequestException('Bad Request', 400);
+            throw new BadRequestException('Bad Request', Response::HTTP_BAD_REQUEST);
         }
 
         $options = $this->parseParameters($request->query, ['lang', 'hidden']);

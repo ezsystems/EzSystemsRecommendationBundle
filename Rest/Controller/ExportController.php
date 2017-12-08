@@ -7,6 +7,7 @@
  */
 namespace EzSystems\RecommendationBundle\Rest\Controller;
 
+use EzSystems\RecommendationBundle\Authentication\Authenticator;
 use EzSystems\RecommendationBundle\Helper\FileSystem;
 use EzSystems\RecommendationBundle\Rest\Exception\ExportInProgressException;
 use Psr\Log\LoggerInterface;
@@ -17,6 +18,9 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ExportController extends Controller
 {
+    /** @var \EzSystems\RecommendationBundle\Authentication\Authenticator */
+    private $authenticator;
+
     /** @var \EzSystems\RecommendationBundle\Helper\FileSystem */
     private $fileSystem;
 
@@ -30,17 +34,20 @@ class ExportController extends Controller
     private $kernelEnvironment;
 
     /**
+     * @param \EzSystems\RecommendationBundle\Authentication\Authenticator $authenticator
      * @param \EzSystems\RecommendationBundle\Helper\FileSystem $fileSystem
      * @param \Psr\Log\LoggerInterface $logger
      * @param string $kernelRootDir
      * @param string $kernelEnvironment
      */
     public function __construct(
+        Authenticator $authenticator,
         FileSystem $fileSystem,
         LoggerInterface $logger,
         $kernelRootDir,
         $kernelEnvironment
     ) {
+        $this->authenticator = $authenticator;
         $this->fileSystem = $fileSystem;
         $this->logger = $logger;
         $this->kernelRootDir = $kernelRootDir;
@@ -58,6 +65,11 @@ class ExportController extends Controller
     public function downloadAction($filePath)
     {
         $response = new Response();
+
+        if (!$this->authenticate($filePath)) {
+            return $response->setStatusCode(Response::HTTP_UNAUTHORIZED);
+        }
+
         $content = $this->fileSystem->load($filePath);
 
         $response->headers->set('Content-Type', 'mime/type');
@@ -69,7 +81,7 @@ class ExportController extends Controller
     }
 
     /**
-     * @param $contentTypeIdList
+     * @param string $contentTypeIdList
      * @param Request $request
      *
      * @return JsonResponse
@@ -79,6 +91,10 @@ class ExportController extends Controller
     public function runExportAction($contentTypeIdList, Request $request)
     {
         $response = new JsonResponse();
+
+        if (!$this->authenticator->authenticate()) {
+            return $response->setStatusCode(Response::HTTP_UNAUTHORIZED);
+        }
 
         $options = $this->parseRequest($request);
         $documentRoot = $options['documentRoot'];
@@ -121,6 +137,20 @@ class ExportController extends Controller
     }
 
     /**
+     * Authenticates the user by file or by configured method.
+     *
+     * @param string $filePath
+     *
+     * @return bool
+     */
+    private function authenticate($filePath)
+    {
+        return $this->authenticator->authenticateByFile($filePath) || $this->authenticator->authenticate();
+    }
+
+    /**
+     * Parses the request values.
+     *
      * @param Request $request
      *
      * @return array

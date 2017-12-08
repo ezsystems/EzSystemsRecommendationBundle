@@ -50,7 +50,27 @@ class SiteAccess
     }
 
     /**
-     * Returns languages based on mandatorId or SiteAccess.
+     * Returns list of rootLocations from siteAccess list.
+     *
+     * @param array $siteAccesses
+     *
+     * @return array
+     */
+    public function getRootLocationsBySiteAccesses(array $siteAccesses)
+    {
+        $rootLocations = [];
+
+        foreach ($siteAccesses as $siteAccess) {
+            $rootLocationId = $this->getRootLocationBySiteAccessName($siteAccess);
+
+            $rootLocations[$rootLocationId] = $rootLocationId;
+        }
+
+        return array_keys($rootLocations);
+    }
+
+    /**
+     * Returns languages based on mandatorId or siteaccess.
      *
      * @param null|int $mandatorId
      * @param null|string $siteAccess
@@ -99,6 +119,27 @@ class SiteAccess
 
         if (empty($siteAccesses)) {
             throw new NotFoundException('configuration for eZ Recommendation', "mandatorId: {$mandatorId}");
+        }
+
+        return $siteAccesses;
+    }
+
+    /**
+     * Returns siteAccesses based on mandatorId, requested siteAccess or default SiteAccess.
+     *
+     * @param null|int $mandatorId
+     * @param null|string $siteAccess
+     *
+     * @return array
+     */
+    public function getSiteAccesses($mandatorId = null, $siteAccess = null)
+    {
+        if ($mandatorId) {
+            $siteAccesses = $this->getSiteaccessesByMandatorId($mandatorId);
+        } elseif ($siteAccess) {
+            $siteAccesses = array($siteAccess);
+        } else {
+            $siteAccesses = array($this->siteAccess->name);
         }
 
         return $siteAccesses;

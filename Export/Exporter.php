@@ -128,9 +128,9 @@ class Exporter
      *
      * @param array $options
      *
-     * @return mixed
+     * @return array
      */
-    private function validate($options)
+    private function validate(array $options)
     {
         if (empty($options['contentTypeIdList'])) {
             throw new LogicException('contentTypeIdList is required');
@@ -183,7 +183,7 @@ class Exporter
                     $chunkPath = $chunkDir . $filename;
                     $options['page'] = $i;
 
-                    $contentItems = $this->getContentItems($options, $contentTypeId);
+                    $contentItems = $this->getContentItems($contentTypeId, $options);
                     $parameters = new ParameterBag($options);
                     $content = $this->content->prepareContent(array($contentTypeId => $contentItems), $parameters);
 
@@ -215,17 +215,7 @@ class Exporter
      */
     private function countContentItemsByContentTypeId($contentTypeId, $options)
     {
-        $criteria = array(
-            new Criterion\ContentTypeId($contentTypeId),
-        );
-
-        if ($options['path']) {
-            $criteria[] = new Criterion\Subtree($options['path']);
-        }
-
-        if (!$options['hidden']) {
-            $criteria[] = new Criterion\Visibility(Criterion\Visibility::VISIBLE);
-        }
+        $criteria = $this->generateCriteria($contentTypeId, $options);
 
         $query = new Query();
         $query->query = new Criterion\LogicalAnd($criteria);
@@ -238,15 +228,37 @@ class Exporter
     }
 
     /**
-     * @param array $options
      * @param int $contentTypeId
+     * @param array $options
      *
      * @return \eZ\Publish\API\Repository\Values\Content\Search\SearchHit[]
      */
-    private function getContentItems($options, $contentTypeId)
+    private function getContentItems($contentTypeId, array $options)
     {
         $offset = $options['page'] * $options['pageSize'] - $options['pageSize'];
+        $criteria = $this->generateCriteria($contentTypeId, $options);
 
+        $query = new Query();
+        $query->query = new Criterion\LogicalAnd($criteria);
+        $query->limit = (int)$options['pageSize'];
+        $query->offset = $offset;
+
+        return $this->searchService->findContent(
+            $query,
+            (!empty($options['lang']) ? array('languages' => array($options['lang'])) : array())
+        )->searchHits;
+    }
+
+    /**
+     * Generates criteria for search query.
+     *
+     * @param int $contentTypeId
+     * @param array $options
+     *
+     * @return array
+     */
+    private function generateCriteria($contentTypeId, array $options)
+    {
         $criteria = array(
             new Criterion\ContentTypeId($contentTypeId),
         );
@@ -259,15 +271,29 @@ class Exporter
             $criteria[] = new Criterion\Visibility(Criterion\Visibility::VISIBLE);
         }
 
-        $query = new Query();
-        $query->query = new Criterion\LogicalAnd($criteria);
-        $query->limit = (int)$options['pageSize'];
-        $query->offset = $offset;
+        $criteria[] = $this->generateSubtreeCriteria($options);
 
-        return $this->searchService->findContent(
-            $query,
-            (!empty($options['lang']) ? array('languages' => array($options['lang'])) : array())
-        )->searchHits;
+        return $criteria;
+    }
+
+    /**
+     * Generates Criterions based on mandatorId or requested siteAccess.
+     *
+     * @param array $options
+     *
+     * @return Criterion\LogicalOr
+     */
+    private function generateSubtreeCriteria(array $options)
+    {
+        $siteAccesses = $this->siteAccessHelper->getSiteAccesses($options['mandatorId'], $options['siteAccess']);
+
+        $subtreeCriteria = [];
+        $rootLocations = $this->siteAccessHelper->getRootLocationsBySiteAccesses($siteAccesses);
+        foreach ($rootLocations as $rootLocationId) {
+            $subtreeCriteria[] = new Criterion\Subtree($this->locationService->loadLocation($rootLocationId)->pathString);
+        }
+
+        return new Criterion\LogicalOr($subtreeCriteria);
     }
 
     /**

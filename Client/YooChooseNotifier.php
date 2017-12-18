@@ -5,31 +5,32 @@
  */
 namespace EzSystems\RecommendationBundle\Client;
 
-use Exception;
 use eZ\Publish\API\Repository\ContentService;
 use eZ\Publish\API\Repository\ContentTypeService;
+use eZ\Publish\API\Repository\Values\Content\Content;
+use eZ\Publish\API\Repository\Exceptions\NotFoundException;
 use eZ\Publish\API\Repository\LocationService;
+use eZ\Publish\Core\SignalSlot\Repository;
 use GuzzleHttp\ClientInterface as GuzzleClient;
 use GuzzleHttp\Exception\RequestException;
-use InvalidArgumentException;
-use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use eZ\Publish\Core\SignalSlot\Repository;
-use eZ\Publish\API\Repository\Exceptions\NotFoundException;
 
 /**
- * A recommendation client that sends notifications to a YooChoose server.
+ * A recommendation client that sends notifications to a recommendation service.
  */
 class YooChooseNotifier implements RecommendationClient
 {
+    const ACTION_UPDATE = 'UPDATE';
+    const ACTION_DELETE = 'DELETE';
+
     /** @var array */
     protected $options;
 
     /** @var \GuzzleHttp\ClientInterface */
     private $guzzle;
 
-    /** @var \Psr\Log\LoggerInterface|null */
+    /** @var \Psr\Log\LoggerInterface */
     private $logger;
 
     /** @var \eZ\Publish\Core\SignalSlot\Repository */
@@ -45,8 +46,6 @@ class YooChooseNotifier implements RecommendationClient
     private $contentTypeService;
 
     /**
-     * Constructs a YooChooseNotifier Recommendation Client.
-     *
      * @param \GuzzleHttp\ClientInterface $guzzle
      * @param \eZ\Publish\Core\SignalSlot\Repository $repository
      * @param \eZ\Publish\API\Repository\ContentService $contentService
@@ -54,11 +53,11 @@ class YooChooseNotifier implements RecommendationClient
      * @param \eZ\Publish\API\Repository\ContentTypeService $contentTypeService
      * @param array $options
      *     Keys (all required):
-     *     - customer-id: the YooChoose customer ID, e.g. 12345
-     *     - license-key: YooChoose license key, e.g. 1234-5678-9012-3456-7890
-     *     - api-endpoint: YooChoose http api endpoint
+     *     - customer-id: the Recommendation Service customer ID, e.g. 12345
+     *     - license-key: Recommendation Service license key, e.g. 1234-5678-9012-3456-7890
+     *     - api-endpoint: Recommendation Service http api endpoint
      *     - server-uri: the site's REST API base URI (without the prefix), e.g. http://api.example.com
-     * @param \Psr\Log\LoggerInterface|null $logger
+     * @param \Psr\Log\LoggerInterface $logger
      */
     public function __construct(
         GuzzleClient $guzzle,
@@ -67,7 +66,7 @@ class YooChooseNotifier implements RecommendationClient
         LocationService $locationService,
         ContentTypeService $contentTypeService,
         array $options,
-        LoggerInterface $logger = null
+        LoggerInterface $logger
     ) {
         $resolver = new OptionsResolver();
         $this->configureOptions($resolver);
@@ -128,11 +127,12 @@ class YooChooseNotifier implements RecommendationClient
     /**
      * {@inheritdoc}
      */
-    public function updateContent($contentId)
+    public function updateContent($contentId, $versionNo = null)
     {
+        $content = $this->contentService->loadContent($contentId, null, $versionNo);
+
         try {
-            if (!in_array($this->getContentTypeIdentifier($contentId), $this->options['included-content-types'])) {
-                // this Content is not intended to be submitted because ContentType was excluded
+            if ($this->isContentTypeExcluded($content)) {
                 return;
             }
         } catch (NotFoundException $e) {
@@ -140,19 +140,14 @@ class YooChooseNotifier implements RecommendationClient
             return;
         }
 
-        if (isset($this->logger)) {
-            $this->logger->info("Notifying YooChoose: updateContent($contentId)");
-        }
+        $this->logger->info(sprintf('Notifying Recommendation Service: updateContent(%s)', $content->id));
+
+        $notifications = $this->generateNotifications(self::ACTION_UPDATE, $content, $versionNo);
+
         try {
-            $this->notify(array(array(
-                'action' => 'update',
-                'uri' => $this->getContentUri($contentId),
-                'contentTypeId' => $this->getContentTypeId($contentId),
-            )));
+            $this->notify($notifications);
         } catch (RequestException $e) {
-            if (isset($this->logger)) {
-                $this->logger->error('YooChoose Post notification error: ' . $e->getMessage());
-            }
+            $this->logger->error(sprintf('Recommendation Service Post notification error for updateContent: %s', $e->getMessage()));
         }
     }
 
@@ -161,9 +156,10 @@ class YooChooseNotifier implements RecommendationClient
      */
     public function deleteContent($contentId)
     {
+        $content = $this->contentService->loadContent($contentId);
+
         try {
-            if (!in_array($this->getContentTypeIdentifier($contentId), $this->options['included-content-types'])) {
-                // this Content is not intended to be submitted because ContentType was excluded
+            if ($this->isContentTypeExcluded($content)) {
                 return;
             }
         } catch (NotFoundException $e) {
@@ -171,19 +167,14 @@ class YooChooseNotifier implements RecommendationClient
             return;
         }
 
-        if (isset($this->logger)) {
-            $this->logger->info("Notifying YooChoose: delete($contentId)");
-        }
+        $this->logger->info(sprintf('Notifying Recommendation Service: deleteContent(%s)', $content->id));
+
+        $notifications = $this->generateNotifications(self::ACTION_DELETE, $content);
+
         try {
-            $this->notify(array(array(
-                'action' => 'delete',
-                'uri' => $this->getContentUri($contentId),
-                'contentTypeId' => $this->getContentTypeId($contentId),
-            )));
+            $this->notify($notifications);
         } catch (RequestException $e) {
-            if (isset($this->logger)) {
-                $this->logger->error('YooChoose Post notification error: ' . $e->getMessage());
-            }
+            $this->logger->error(sprintf('Recommendation Service Post notification error for deleteContent: %s', $e->getMessage()));
         }
     }
 
@@ -193,18 +184,20 @@ class YooChooseNotifier implements RecommendationClient
     public function hideLocation($locationId, $isChild = false)
     {
         $location = $this->locationService->loadLocation($locationId);
-        $content = $this->contentService->loadContent($location->contentId);
-
         $children = $this->locationService->loadLocationChildren($location)->locations;
+
         foreach ($children as $child) {
             $this->hideLocation($child->id, true);
         }
 
-        if (!in_array($this->getContentTypeIdentifier($content->id), $this->options['included-content-types'])) {
+        $content = $this->contentService->loadContent($location->contentId);
+
+        if ($this->isContentTypeExcluded($content)) {
             return;
         }
 
         if (!$isChild) {
+            // do not send the notification if one of the locations is still visible, to prevent deleting content
             $contentLocations = $this->locationService->loadLocations($content->contentInfo);
             foreach ($contentLocations as $contentLocation) {
                 if (!$contentLocation->hidden) {
@@ -213,20 +206,14 @@ class YooChooseNotifier implements RecommendationClient
             }
         }
 
-        if (isset($this->logger)) {
-            $this->logger->info("Notifying YooChoose: hide($content->id)");
-        }
+        $this->logger->info(sprintf('Notifying Recommendation Service: hide(%s)', $content->id));
+
+        $notifications = $this->generateNotifications(self::ACTION_DELETE, $content);
 
         try {
-            $this->notify(array(array(
-                'action' => 'delete',
-                'uri' => $this->getContentUri($content->id),
-                'contentTypeId' => $this->getContentTypeId($content->id),
-            )));
+            $this->notify($notifications);
         } catch (RequestException $e) {
-            if (isset($this->logger)) {
-                $this->logger->error('YooChoose Post notification error: ' . $e->getMessage());
-            }
+            $this->logger->error(sprintf('Recommendation Service Post notification error for hideLocation: %s', $e->getMessage()));
         }
     }
 
@@ -236,98 +223,137 @@ class YooChooseNotifier implements RecommendationClient
     public function unhideLocation($locationId)
     {
         $location = $this->locationService->loadLocation($locationId);
-        $content = $this->contentService->loadContent($location->contentId);
-
         $children = $this->locationService->loadLocationChildren($location)->locations;
+
         foreach ($children as $child) {
             $this->unhideLocation($child->id);
         }
 
-        if (!in_array($this->getContentTypeIdentifier($content->id), $this->options['included-content-types'])) {
+        $content = $this->contentService->loadContent($location->contentId);
+
+        if ($this->isContentTypeExcluded($content)) {
             return;
         }
 
-        if (isset($this->logger)) {
-            $this->logger->info("Notifying YooChoose: unhide($content->id)");
-        }
+        $this->logger->info(sprintf('Notifying Recommendation Service: unhide(%s)', $content->id));
+
+        $notifications = $this->generateNotifications(self::ACTION_UPDATE, $content);
 
         try {
-            $this->notify(array(array(
-                'action' => 'update',
-                'uri' => $this->getContentUri($content->id),
-                'contentTypeId' => $this->getContentTypeId($content->id),
-            )));
+            $this->notify($notifications);
         } catch (RequestException $e) {
-            if (isset($this->logger)) {
-                $this->logger->error('YooChoose Post notification error: ' . $e->getMessage());
-            }
+            $this->logger->error(sprintf('Recommendation Service Post notification error for unhideLocation: %s', $e->getMessage()));
         }
     }
 
     /**
-     * Returns ContentType identifier based on $contentId.
-     *
-     * @param int|mixed $contentId
-     *
-     * @return string
+     * @param string $action
+     * @param \eZ\Publish\API\Repository\Values\Content\Content $content
+     * @param int|null $versionNo
+     * @return array
      */
-    private function getContentTypeIdentifier($contentId)
+    private function generateNotifications($action, Content $content, $versionNo = null)
     {
-        $contentTypeService = $this->contentTypeService;
-        $contentService = $this->contentService;
+        $notification = array();
+        foreach ($this->getLanguageCodes($content, $versionNo) as $lang) {
+            $notification[] = $this->getNotificationContent($action, $content, $lang);
+        }
 
-        $contentType = $this->repository->sudo(function () use ($contentId, $contentTypeService, $contentService) {
-            $contentType = $this->contentTypeService->loadContentType(
-                $this->contentService
-                    ->loadContent($contentId)
-                    ->contentInfo
-                    ->contentTypeId
-            );
+        return $notification;
+    }
+
+    /**
+     * @param string $action
+     * @param \eZ\Publish\API\Repository\Values\Content\Content $content
+     * @param string|null $lang
+     *
+     * @return array
+     */
+    protected function getNotificationContent($action, Content $content, $lang = null)
+    {
+        $return = array(
+            'action' => $action,
+            'format' => 'EZ',
+            'uri' => $this->getContentUri($content, $lang),
+            'itemId' => $content->id,
+            'contentTypeId' => $content->contentInfo->contentTypeId,
+        );
+
+        if (null !== $lang) {
+            $return['lang'] = $lang;
+        }
+
+        return $return;
+    }
+
+    /**
+     * Checks if content is excluded from supported content types.
+     *
+     * @param \eZ\Publish\API\Repository\Values\Content\Content $content
+     *
+     * @return bool
+     */
+    private function isContentTypeExcluded(Content $content)
+    {
+        $contentType = $this->repository->sudo(function () use ($content) {
+            $contentType = $this->contentTypeService->loadContentType($content->contentInfo->contentTypeId);
 
             return $contentType;
         });
 
-        return $contentType->identifier;
+        return !in_array($contentType->identifier, $this->options['included-content-types']);
     }
 
     /**
-     * Gets ContentType ID based on $contentId.
+     * Gets languageCodes based on $content.
      *
-     * @param mixed $contentId
+     * @param \eZ\Publish\API\Repository\Values\Content\Content $content
+     * @param int|null $versionNo
      *
-     * @return int|null
+     * @return array
      */
-    protected function getContentTypeId($contentId)
+    protected function getLanguageCodes(Content $content, $versionNo = null)
     {
-        $contentTypeId = null;
+        $version = $this->contentService->loadVersionInfo($content->contentInfo, $versionNo);
 
-        try {
-            $contentTypeId = $this->contentService->loadContentInfo($contentId)->contentTypeId;
-        } catch (Exception $e) {
-        }
-
-        return $contentTypeId;
+        return $version->languageCodes;
     }
 
     /**
      * Generates the REST URI of content $contentId.
      *
-     * @param $contentId
+     * @param \eZ\Publish\API\Repository\Values\Content\Content $content
+     * @param string $lang
      *
      * @return string
      */
-    protected function getContentUri($contentId)
+    protected function getContentUri(Content $content, $lang = null)
     {
         return sprintf(
-            '%s/api/ezp/v2/content/objects/%s',
+            '%s/api/ezp/v2/ez_recommendation/v1/content/%s%s',
             // @todo normalize in configuration
             $this->options['server-uri'],
-            $contentId
+            $content->id,
+            isset($lang) ? '?lang=' . $lang : ''
         );
     }
 
     /**
-     * Notifies the YooChoose API of one or more repository events.
+     * Returns the Recommendation Service notification endpoint.
+     *
+     * @return string
+     */
+    private function getNotificationEndpoint()
+    {
+        return sprintf(
+            '%s/api/%s/items',
+            rtrim($this->options['api-endpoint'], '/'),
+            $this->options['customer-id']
+        );
+    }
+
+    /**
+     * Notifies the Recommendation Service API of one or more repository events.
      *
      * A repository event is defined as an array with three keys:
      * - action: the event name (update, delete)
@@ -341,78 +367,48 @@ class YooChooseNotifier implements RecommendationClient
      */
     protected function notify(array $events)
     {
-        foreach ($events as $event) {
-            if (array_keys($event) != array('action', 'uri', 'contentTypeId')) {
-                throw new InvalidArgumentException('Invalid action keys');
-            }
-        }
+        $this->logger->debug(sprintf('POST notification to Recommendation Service: %s', json_encode($events, true)));
 
-        if (isset($this->logger)) {
-            $this->logger->debug('POST notification to YooChoose:' . json_encode($events, true));
-        }
+        $data = array(
+            'json' => array(
+                'transaction' => null,
+                'events' => $events,
+            ),
+            'auth' => array(
+                $this->options['customer-id'],
+                $this->options['license-key'],
+            ),
+        );
 
         if (method_exists($this->guzzle, 'post')) {
-            $this->notifyGuzzle5($events);
+            $this->notifyGuzzle5($data);
         } else {
-            $this->notifyGuzzle6($events);
+            $this->notifyGuzzle6($data);
         }
     }
 
     /**
-     * Notifies the YooChoose API using Guzzle 5 (for PHP 5.4 support).
+     * Notifies the Recommendation Service API using Guzzle 5 (for PHP 5.4 support).
      *
-     * @param array $events
+     * @param array $data
      */
-    private function notifyGuzzle5(array $events)
+    private function notifyGuzzle5(array $data)
     {
-        $response = $this->guzzle->post(
-            $this->getNotificationEndpoint(),
-            array(
-                'json' => array(
-                    'transaction' => null,
-                    'events' => $events,
-                ),
-                'auth' => array(
-                    $this->options['customer-id'],
-                    $this->options['license-key'],
-                ),
-            )
-        );
+        $response = $this->guzzle->post($this->getNotificationEndpoint(), $data);
 
-        if (isset($this->logger)) {
-            $this->logger->debug('Got ' . $response->getStatusCode() . ' from YooChoose notification POST');
-        }
+        $this->logger->debug(sprintf('Got %s from Recommendation Service notification POST (guzzle v5)', $response->getStatusCode()));
     }
 
     /**
-     * Notifies the YooChoose API using Guzzle 6 asynchronously.
+     * Notifies the Recommendation Service API using Guzzle 6 synchronously.
      *
-     * @param array $events
+     * @param array $data
      */
-    private function notifyGuzzle6(array $events)
+    private function notifyGuzzle6(array $data)
     {
-        $promise = $this->guzzle->requestAsync(
-            'POST',
-            $this->getNotificationEndpoint(),
-            array(
-                'json' => array(
-                    'transaction' => null,
-                    'events' => $events,
-                ),
-                'auth' => array(
-                    $this->options['customer-id'],
-                    $this->options['license-key'],
-                ),
-            )
-        );
+        $response = $this->guzzle->request('POST', $this->getNotificationEndpoint(), $data);
 
-        $promise->wait(false);
-
-        $promise->then(function (ResponseInterface $response) {
-            if (isset($this->logger)) {
-                $this->logger->debug(sprintf('Got asynchronously %s from YooChoose notification POST', $response->getStatusCode()));
-            }
-        });
+        $this->logger->debug(sprintf('Got %s from Recommendation Service notification POST (guzzle v6)', $response->getStatusCode()));
     }
 
     /**
@@ -429,20 +425,6 @@ class YooChooseNotifier implements RecommendationClient
                 'server-uri' => null,
                 'api-endpoint' => null,
             )
-        );
-    }
-
-    /**
-     * Returns the YooChoose notification endpoint.
-     *
-     * @return string
-     */
-    private function getNotificationEndpoint()
-    {
-        return sprintf(
-            '%s/api/v4/publisher/ez/%s/notifications',
-            rtrim($this->options['api-endpoint'], '/'),
-            $this->options['customer-id']
         );
     }
 }

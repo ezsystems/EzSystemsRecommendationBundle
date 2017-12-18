@@ -9,68 +9,66 @@ namespace EzSystems\RecommendationBundle\Rest\Controller;
 
 use eZ\Publish\API\Repository\Values\Content\Query;
 use eZ\Publish\API\Repository\Values\Content\Query\Criterion;
+use eZ\Publish\Core\REST\Server\Exceptions\BadRequestException;
 use EzSystems\RecommendationBundle\Rest\Values\ContentData as ContentDataValue;
 use Symfony\Component\HttpFoundation\Request;
+use InvalidArgumentException;
 
 /**
  * Recommendation REST ContentType controller.
  */
 class ContentTypeController extends ContentController
 {
-    /** @var array */
-    private $pageSizes = [
-        'http' => 10,
-        'export' => 1000,
-    ];
+    const PAGE_SIZE = 10;
 
     /**
      * Prepares content for ContentDataValue class.
      *
      * @param string $contentTypeIdList
-     * @param string $responseType
      * @param \Symfony\Component\HttpFoundation\Request $request
      *
      * @return \EzSystems\RecommendationBundle\Rest\Values\ContentData ContentDataValue
      *
      * @throws \eZ\Publish\API\Repository\Exceptions\NotFoundException if the content, version with the given id and languages or content type does not exist
      * @throws \eZ\Publish\API\Repository\Exceptions\UnauthorizedException If the user has no access to read content and in case of un-published content: read versions
+     * @throws \eZ\Publish\Core\REST\Server\Exceptions\BadRequestException If incorrect $contentTypeIdList value is given
      */
-    public function getContentType($contentTypeIdList, $responseType, Request $request)
+    public function getContentType($contentTypeIdList, Request $request)
     {
-        $contentTypeIds = explode(',', $contentTypeIdList);
+        try {
+            $contentTypeIds = $this->getIdListFromString($contentTypeIdList);
+        } catch (InvalidArgumentException $e) {
+            throw new BadRequestException('Bad Request', 400);
+        }
 
-        $content = $this->prepareContentByContentTypeIds($contentTypeIds, $responseType, $request);
+        $content = $this->prepareContentByContentTypeIds($contentTypeIds, $request);
 
-        return new ContentDataValue($content, [
-            'responseType' => $responseType,
-            'chunkSize' => $request->get('page_size', $this->getDeafultPageSize($responseType)),
-            'documentRoot' => $request->server->get('DOCUMENT_ROOT'),
-            'webHook' => $request->get('webHook'),
-            'transaction' => $request->get('transaction', date('YmdHis', time())),
-            'lang' => $request->get('lang'),
-            'host' => $request->getSchemeAndHttpHost(),
-            'customerId' => $this->customerId,
-            'licenseKey' => $this->licenseKey,
-            'contentTypeIds' => $contentTypeIds,
-        ]);
+        return new ContentDataValue($content);
     }
 
     /**
      * Returns paged content based on ContentType ids.
      *
      * @param array $contentTypeIds
-     * @param string $responseType
      * @param \Symfony\Component\HttpFoundation\Request $request
      *
      * @return array
      */
-    protected function prepareContentByContentTypeIds($contentTypeIds, $responseType, Request $request)
+    protected function prepareContentByContentTypeIds($contentTypeIds, Request $request)
     {
-        $pageSize = (int)$request->get('page_size', $this->getDeafultPageSize($responseType));
-        $page = $request->get('page', 1);
+        $options = $this->parseParameters($request, ['page_size', 'page', 'path', 'hidden', 'lang', 'sa', 'image']);
+
+        $pageSize = (int)$options->get('page_size', self::PAGE_SIZE);
+        $page = (int)$options->get('page', 1);
         $offset = $page * $pageSize - $pageSize;
-        $path = $request->get('path');
-        $hidden = $request->get('hidden');
+        $path = $options->get('path');
+        $hidden = $options->get('hidden');
+        $lang = $options->get('lang');
+        $siteAccess = $options->get('sa', $this->siteAccess->name);
+
+        $rootLocationId = $this->configResolver->getParameter('content.tree_root.location_id', null, $siteAccess);
+        $rootLocationPathString = $this->locationService->loadLocation($rootLocationId)->pathString;
+
         $contentItems = array();
 
         foreach ($contentTypeIds as $contentTypeId) {
@@ -84,35 +82,19 @@ class ContentTypeController extends ContentController
                 $criteria[] = new Criterion\Visibility(Criterion\Visibility::VISIBLE);
             }
 
-            $siteAccess = $request->get('sa', $this->siteAccess->name);
-            $rootLocationId = $this->configResolver->getParameter('content.tree_root.location_id', null, $siteAccess);
-            $criteria[] = new Criterion\Subtree($this->locationService->loadLocation($rootLocationId)->pathString);
+            $criteria[] = new Criterion\Subtree($rootLocationPathString);
 
             $query = new Query();
             $query->query = new Criterion\LogicalAnd($criteria);
+            $query->limit = $pageSize;
+            $query->offset = $offset;
 
-            if ($responseType != 'export') {
-                $query->limit = $pageSize;
-                $query->offset = $offset;
-            }
-
-            $contentItems[$contentTypeId] = $this->searchService->findContent($query)->searchHits;
+            $contentItems[$contentTypeId] = $this->searchService->findContent(
+                $query,
+                (!empty($lang) ? array('languages' => array($lang)) : array())
+            )->searchHits;
         }
 
         return $this->prepareContent($contentItems, $request);
-    }
-
-    /**
-     * @param string $responseType
-     *
-     * @return mixed
-     */
-    private function getDeafultPageSize($responseType)
-    {
-        if (isset($this->pageSizes[$responseType])) {
-            return $this->pageSizes[$responseType];
-        }
-
-        return $this->pageSizes['http'];
     }
 }

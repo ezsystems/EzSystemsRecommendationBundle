@@ -122,8 +122,6 @@ services:
         parent: ezpublish_rest.controller.base
         calls:
             - [setSiteAccess, ['@ezpublish.siteaccess']]
-            - [setCustomerId, ['$yoochoose.customer_id;ez_recommendation$']]
-            - [setLicenseKey, ['$yoochoose.license_key;ez_recommendation$']]
 
     ez_recommendation.rest.controller.export:
         class: "%ez_recommendation.rest.controller.export.class%"
@@ -152,7 +150,6 @@ services:
     ez_recommendation.rest.field.type_value:
         class: EzSystems\RecommendationBundle\Rest\Field\TypeValue
         arguments:
-            - '@request_stack'
             - '@ezpublish.config.resolver.core'
             - '@ezpublish.image_alias.imagine.alias_generator'
             - '@ezpublish.fieldtype.ezrichtext.converter.output.xhtml5.core'
@@ -171,11 +168,3 @@ services:
         parent: ez_recommendation.rest.response
         tags:
             - { name: ez_recommendation.rest.response_type, type: http }
-
-    ez_recommendation.rest.response.export:
-        class: "%ez_recommendation.rest.response.export.class%"
-        parent: ez_recommendation.rest.response
-        calls:
-            - [setApiEndpoint, ["%ez_recommendation.api_endpoint%"]]
-        tags:
-            - { name: ez_recommendation.rest.response_type, type: export }

@@ -13,15 +13,17 @@ use eZ\Publish\API\Repository\Values\Content\Query\Criterion;
 use eZ\Publish\API\Repository\Values\ContentType\ContentType;
 use eZ\Publish\Core\MVC\Symfony\SiteAccess;
 use eZ\Publish\Core\REST\Server\Controller as BaseController;
+use eZ\Publish\Core\REST\Server\Exceptions\BadRequestException;
 use eZ\Publish\API\Repository\ContentService;
 use eZ\Publish\API\Repository\LocationService;
 use eZ\Publish\API\Repository\ContentTypeService;
 use eZ\Publish\API\Repository\SearchService;
-use EzSystems\RecommendationBundle\Rest\Exception\UnsupportedResponseTypeException;
 use EzSystems\RecommendationBundle\Rest\Field\Value as FieldValue;
 use EzSystems\RecommendationBundle\Rest\Values\ContentData as ContentDataValue;
+use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface as UrlGenerator;
 use Symfony\Component\HttpFoundation\Request;
+use InvalidArgumentException;
 
 /**
  * Recommendation REST Content controller.
@@ -51,12 +53,6 @@ class ContentController extends BaseController
 
     /** @var \eZ\Publish\Core\MVC\Symfony\SiteAccess */
     protected $siteAccess;
-
-    /** @var int */
-    protected $customerId;
-
-    /** @var string */
-    protected $licenseKey;
 
     /** @var int $defaultAuthorId */
     protected $defaultAuthorId;
@@ -100,45 +96,32 @@ class ContentController extends BaseController
     }
 
     /**
-     * @param int $value
-     */
-    public function setCustomerId($value)
-    {
-        $this->customerId = $value;
-    }
-
-    /**
-     * @param string $value
-     */
-    public function setLicenseKey($value)
-    {
-        $this->licenseKey = $value;
-    }
-
-    /**
      * Prepares content for ContentDataValue class.
      *
      * @param string $contentIdList
-     * @param string $responseType
      * @param \Symfony\Component\HttpFoundation\Request $request
      *
      * @return \EzSystems\RecommendationBundle\Rest\Values\ContentData
      *
      * @throws \eZ\Publish\API\Repository\Exceptions\NotFoundException if the content, version with the given id and languages or content type does not exist
      * @throws \eZ\Publish\API\Repository\Exceptions\UnauthorizedException If the user has no access to read content and in case of un-published content: read versions
-     * @throws \EzSystems\RecommendationBundle\Rest\Exception\UnsupportedResponseTypeException
+     * @throws \eZ\Publish\Core\REST\Server\Exceptions\BadRequestException If incorrect $contentTypeIdList value is given
      */
-    public function getContent($contentIdList, $responseType, Request $request)
+    public function getContent($contentIdList, Request $request)
     {
-        if ($responseType != 'http') {
-            throw new UnsupportedResponseTypeException('Only http response is available for single content');
+        try {
+            $contentIds = $this->getIdListFromString($contentIdList);
+        } catch (InvalidArgumentException $e) {
+            throw new BadRequestException('Bad Request', 400);
         }
-        $contentIds = explode(',', $contentIdList);
-        $lang = $request->get('lang');
+
+        $options = $this->parseParameters($request, ['lang', 'hidden']);
+
+        $lang = $options->get('lang');
 
         $criteria = array(new Criterion\ContentId($contentIds));
 
-        if (!$request->get('hidden')) {
+        if (!$options->get('hidden')) {
             $criteria[] = new Criterion\Visibility(Criterion\Visibility::VISIBLE);
         }
 
@@ -149,16 +132,44 @@ class ContentController extends BaseController
         $query = new Query();
         $query->query = new Criterion\LogicalAnd($criteria);
 
-        $contentItems = $this->searchService->findContent($query)->searchHits;
+        $contentItems = $this->searchService->findContent(
+            $query,
+            (!empty($lang) ? array('languages' => array($lang)) : array())
+        )->searchHits;
 
         $content = $this->prepareContent(array($contentItems), $request);
 
-        return new ContentDataValue($content, [
-            'responseType' => 'http',
-            'documentRoot' => $request->server->get('DOCUMENT_ROOT'),
-            'host' => $request->getSchemeAndHttpHost(),
-            'customerId' => $this->customerId,
-        ]);
+        return new ContentDataValue($content);
+    }
+
+    /**
+     * Preparing array of integers based on comma separated integers in string or single integer in string.
+     *
+     * @param string $string list of integers separated by comma character
+     *
+     * @return array
+     *
+     * @throws InvalidArgumentException If incorrect $list value is given
+     */
+    protected function getIdListFromString($string)
+    {
+        if (filter_var($string, FILTER_VALIDATE_INT) !== false) {
+            return array($string);
+        }
+
+        if (strpos($string, ',') === false) {
+            throw new InvalidArgumentException('Integers in string should have a separator');
+        }
+
+        $array = explode(',', $string);
+
+        foreach ($array as $item) {
+            if (filter_var($item, FILTER_VALIDATE_INT) === false) {
+                throw new InvalidArgumentException('String should be a list of Integers');
+            }
+        }
+
+        return $array;
     }
 
     /**
@@ -171,16 +182,16 @@ class ContentController extends BaseController
      */
     protected function prepareContent($data, Request $request)
     {
-        $requestLanguage = $request->get('lang');
-        $requestedFields = $request->get('fields');
+        $options = $this->parseParameters($request, ['lang', 'fields', 'image']);
 
         $content = array();
+
         foreach ($data as $contentTypeId => $items) {
             foreach ($items as $contentValue) {
                 $contentValue = $contentValue->valueObject;
                 $contentType = $this->contentTypeService->loadContentType($contentValue->contentInfo->contentTypeId);
                 $location = $this->locationService->loadLocation($contentValue->contentInfo->mainLocationId);
-                $language = (null === $requestLanguage) ? $location->contentInfo->mainLanguageCode : $requestLanguage;
+                $language = $options->get('lang', $location->contentInfo->mainLanguageCode);
                 $this->value->setFieldDefinitionsList($contentType);
 
                 $content[$contentTypeId][$contentValue->id] = array(
@@ -201,11 +212,12 @@ class ContentController extends BaseController
                     'fields' => array(),
                 );
 
-                $fields = $this->prepareFields($contentType, $requestedFields);
+                $fields = $this->prepareFields($contentType, $options->get('fields'));
                 if (!empty($fields)) {
                     foreach ($fields as $field) {
                         $field = $this->value->getConfiguredFieldIdentifier($field, $contentType);
-                        $content[$contentTypeId][$contentValue->id]['fields'][] = $this->value->getFieldValue($contentValue, $field, $language);
+                        $content[$contentTypeId][$contentValue->id]['fields'][$field] =
+                            $this->value->getFieldValue($contentValue, $field, $language, $options->all());
                     }
                 }
             }
@@ -224,8 +236,12 @@ class ContentController extends BaseController
      */
     protected function prepareFields(ContentType $contentType, $fields = null)
     {
-        if (null !== $fields) {
-            return explode(',', $fields);
+        if ($fields !== null) {
+            if (strpos($fields, ',') !== false) {
+                return explode(',', $fields);
+            }
+
+            return array($fields);
         }
 
         $fields = array();
@@ -236,6 +252,26 @@ class ContentController extends BaseController
         }
 
         return $fields;
+    }
+
+    /**
+     * Returns parameters from Request query specified in $allowedParameters.
+     *
+     * @param Request $request
+     * @param array $allowedParameters
+     * @return ParameterBag
+     */
+    protected function parseParameters(Request $request, array $allowedParameters)
+    {
+        $parameters = new ParameterBag();
+
+        foreach ($allowedParameters as $parameter) {
+            if ($value = $request->query->get($parameter)) {
+                $parameters->set($parameter, $value);
+            }
+        }
+
+        return $parameters;
     }
 
     /**

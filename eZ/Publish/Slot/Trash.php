@@ -23,8 +23,6 @@ class Trash extends PersistenceAwareBase
         $relations = $this->persistenceHandler
             ->contentHandler()
             ->loadReverseRelations($signal->contentId);
-
-        $this->client->updateContent($signal->contentId);
         foreach ($relations as $relation) {
             $this->client->updateContent($relation->destinationContentId);
         }

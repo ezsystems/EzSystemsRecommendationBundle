@@ -194,7 +194,11 @@ class Exporter
                     $parameters = new ParameterBag($options);
                     $content = $this->content->prepareContent(array($contentTypeId => $contentItems), $parameters);
 
+                    unset($contentItems);
+
                     $this->generateFile($content, $chunkPath, $options);
+
+                    unset($content);
 
                     $url = sprintf(
                         '%s/api/ezp/v2/ez_recommendation/v1/exportDownload/%s%s',
@@ -326,8 +330,12 @@ class Exporter
 
         $this->contentListElementGenerator->generateElement($this->outputGenerator, $contents);
 
+        unset($contents);
+
         $filePath = $this->fileSystemHelper->getDir() . $chunkPath;
         $this->fileSystemHelper->save($filePath, $this->outputGenerator->endDocument($data));
+
+        unset($data);
 
         $this->logger->info(sprintf('Generating file: %s', $filePath));
     }

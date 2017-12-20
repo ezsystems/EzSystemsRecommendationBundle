@@ -12,6 +12,7 @@ use eZ\Publish\API\Repository\Values\Content\Content;
 use eZ\Publish\API\Repository\Values\Content\Field;
 use eZ\Bundle\EzPublishCoreBundle\FieldType\RichText\Converter\Html5 as RichHtml5;
 use eZ\Publish\Core\FieldType\XmlText\Converter\Html5 as XmlHtml5;
+use LogicException;
 
 class TypeValue
 {
@@ -69,7 +70,13 @@ class TypeValue
      */
     public function ezxmltext(Field $field)
     {
-        return '<![CDATA[' . $this->xmlHtml5Converter->convert($field->value->xml) . ']]>';
+        try {
+            $xml = $this->xmlHtml5Converter->convert($field->value->xml);
+        } catch (LogicException $e) {
+            $xml = $field->value->xml->saveHTML();
+        }
+
+        return '<![CDATA[' . $xml . ']]>';
     }
 
     /**

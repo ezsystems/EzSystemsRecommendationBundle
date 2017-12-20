@@ -45,7 +45,7 @@ class ExportCommand extends ContainerAwareCommand
             ->addOption('customerId', null, InputOption::VALUE_OPTIONAL, 'Your eZ Recommendation customer ID')
             ->addOption('licenseKey', null, InputOption::VALUE_OPTIONAL, 'Your eZ Recommendation license key')
             ->addOption('lang', null, InputOption::VALUE_OPTIONAL, 'List of language codes, eg: eng-GB,fre-FR')
-            ->addOption('pageSize', null, InputOption::VALUE_OPTIONAL, '', 1000)
+            ->addOption('pageSize', null, InputOption::VALUE_OPTIONAL, '', 500)
             ->addOption('page', null, InputOption::VALUE_OPTIONAL, '', 1)
             ->addOption('path', null, InputOption::VALUE_OPTIONAL, 'A string of subtree path, eg: /1/2/')
             ->addOption('hidden', null, InputOption::VALUE_OPTIONAL, 'If set to 0 - Criterion Visibility: VISIBLE will be used', 0)

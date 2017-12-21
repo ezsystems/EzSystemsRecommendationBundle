@@ -40,4 +40,20 @@ class Text
 
         return $array;
     }
+
+    /**
+     * Returns list of elements as array from comma separated string.
+     *
+     * @param string $string
+     *
+     * @return array
+     */
+    public static function getArrayFromString($string)
+    {
+        if (strpos($string, ',') !== false) {
+            return explode(',', $string);
+        }
+
+        return array($string);
+    }
 }

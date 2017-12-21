@@ -161,7 +161,7 @@ class SiteAccess
     /**
      * Returns main languages from siteAccess list.
      *
-     * @param string $siteAccesses
+     * @param array $siteAccesses
      *
      * @return array
      */

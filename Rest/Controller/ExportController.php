@@ -162,7 +162,7 @@ class ExportController extends Controller
         $path = $query->get('path');
         $hidden = (int)$query->get('hidden', 0);
         $image = $query->get('image');
-        $siteAccess = $query->get('siteAccess');
+        $siteAccess = $query->get('siteaccess');
         $webHook = $query->get('webHook');
         $transaction = $query->get('transaction');
         $fields = $query->get('fields');
@@ -207,7 +207,7 @@ class ExportController extends Controller
             'path' => $path,
             'hidden' => $hidden,
             'image' => $image,
-            'siteAccess' => $siteAccess,
+            'siteaccess' => $siteAccess,
             'documentRoot' => $request->server->get('DOCUMENT_ROOT'),
             'host' => $request->getSchemeAndHttpHost(),
             'webHook' => $webHook,

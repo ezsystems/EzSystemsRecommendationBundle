@@ -47,10 +47,10 @@ class ExportCommand extends ContainerAwareCommand
             ->addOption('lang', null, InputOption::VALUE_OPTIONAL, 'List of language codes, eg: eng-GB,fre-FR')
             ->addOption('pageSize', null, InputOption::VALUE_OPTIONAL, '', 500)
             ->addOption('page', null, InputOption::VALUE_OPTIONAL, '', 1)
-            ->addOption('path', null, InputOption::VALUE_OPTIONAL, 'A string of subtree path, eg: /1/2/')
-            ->addOption('hidden', null, InputOption::VALUE_OPTIONAL, 'If set to 0 - Criterion Visibility: VISIBLE will be used', 0)
+            ->addOption('path', null, InputOption::VALUE_OPTIONAL, 'A string of subtree path, eg: /1/2/', false)
+            ->addOption('hidden', null, InputOption::VALUE_OPTIONAL, 'If set to 1 - Criterion Visibility: VISIBLE will be used', 0)
             ->addOption('image', null, InputOption::VALUE_OPTIONAL, 'image_variations used for images')
-            ->addOption('sa', null, InputOption::VALUE_OPTIONAL, 'SiteAccess')
+            ->addOption('siteaccess', null, InputOption::VALUE_OPTIONAL, 'SiteAccess')
             ->addOption('contentTypeIdList', null, InputOption::VALUE_REQUIRED, 'List of Content Types ID')
             ->addOption('fields', null, InputOption::VALUE_OPTIONAL, 'List of the fields, eg: title, description')
             ->addOption(

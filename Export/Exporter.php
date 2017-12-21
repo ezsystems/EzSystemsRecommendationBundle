@@ -9,7 +9,6 @@ use Exception;
 use eZ\Publish\API\Repository\LocationService;
 use EzSystems\RecommendationBundle\Authentication\Authenticator;
 use EzSystems\RecommendationBundle\Rest\Content\Content;
-use LogicException;
 use eZ\Publish\Core\REST\Common\Output\Generator;
 use eZ\Publish\API\Repository\ContentTypeService;
 use eZ\Publish\API\Repository\SearchService;
@@ -23,6 +22,7 @@ use EzSystems\RecommendationBundle\Rest\ValueObjectVisitor\ContentListElementGen
 use EzSystems\RecommendationBundle\Rest\Values\ContentData;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\ParameterBag;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class Exporter
 {
@@ -104,6 +104,7 @@ class Exporter
      * @return \EzSystems\RecommendationBundle\Rest\Values\ContentData|void
      *
      * @throws \EzSystems\RecommendationBundle\Rest\Exception\ExportInProgressException
+     * @throws \Exception
      */
     public function runExport(array $options)
     {
@@ -111,7 +112,8 @@ class Exporter
 
         $options['contentTypeIds'] = Text::getIdListFromString($options['contentTypeIdList']);
         $chunkDir = $this->fileSystemHelper->createChunkDir();
-        $languages = $this->siteAccessHelper->getLanguages($options['mandatorId'], $options['siteAccess']);
+
+        $languages = $this->getLanguages($options);
         $options['languages'] = $languages;
 
         try {
@@ -127,6 +129,8 @@ class Exporter
         } catch (Exception $e) {
             $this->logger->error(sprintf('Error while generating export: %s', $e->getMessage()));
             $this->fileSystemHelper->unlock();
+
+            throw $e;
         }
     }
 
@@ -139,28 +143,41 @@ class Exporter
      */
     private function validate(array $options)
     {
-        if (empty($options['contentTypeIdList'])) {
-            throw new LogicException('contentTypeIdList is required');
+        list($customerId, $licenseKey) = $this->siteAccessHelper->getRecommendationServiceCredentials();
+
+        $options = array_filter($options, function ($val) {
+            return $val !== null;
+        });
+
+        $resolver = new OptionsResolver();
+        $resolver->setRequired(['contentTypeIdList', 'host', 'webHook', 'transaction']);
+        $resolver->setDefined(array_keys($options));
+        $resolver->setDefaults([
+            'transaction' => (new \DateTime())->format('YmdHis') . rand(111, 999),
+            'customerId' => $customerId,
+            'licenseKey' => $licenseKey,
+            'mandatorId' => null,
+            'siteaccess' => null,
+            'lang' => null,
+        ]);
+
+        return $resolver->resolve($options);
+    }
+
+    /**
+     * Returns languages list.
+     *
+     * @param array $options
+     *
+     * @return array
+     */
+    private function getLanguages($options)
+    {
+        if (!empty($options['lang'])) {
+            return Text::getArrayFromString($options['lang']);
         }
 
-        if (empty($options['host'])) {
-            throw new LogicException('host is required');
-        }
-
-        if (empty($options['siteAccess'])) {
-            $options['siteAccess'] = $options['sa'];
-        }
-
-        if (empty($options['transaction'])) {
-            $options['transaction'] = (new \DateTime())->format('YmdHis') . rand(111, 999);
-        }
-
-        if (empty($options['customerId']) || empty($options['licenseKey'])) {
-            list($options['customerId'], $options['licenseKey']) =
-                $this->siteAccessHelper->getRecommendationServiceCredentials();
-        }
-
-        return $options;
+        return $this->siteAccessHelper->getLanguages($options['mandatorId'], $options['siteaccess']);
     }
 
     /**
@@ -177,12 +194,13 @@ class Exporter
         $urls = array();
 
         foreach ($options['contentTypeIds'] as $contentTypeId) {
-            $count = $this->countContentItemsByContentTypeId($contentTypeId, $options);
-
-            $this->logger->info(sprintf('fetching %s items of contentTypeId %s', $count, $contentTypeId));
-
             foreach ($languages as $lang) {
                 $options['lang'] = $lang;
+
+                $count = $this->countContentItemsByContentTypeId($contentTypeId, $options);
+
+                $this->logger->info(sprintf('fetching %s items of contentTypeId %s (language: %s)', $count, $contentTypeId, $lang));
+
                 $contentTypeName = $this->contentTypeService->loadContentType($contentTypeId)->getName($lang);
 
                 for ($i = 1; $i <= ceil($count / $options['pageSize']); ++$i) {
@@ -282,7 +300,7 @@ class Exporter
             $criteria[] = new Criterion\Visibility(Criterion\Visibility::VISIBLE);
         }
 
-        $criteria[] = $this->generateSubtreeCriteria($options);
+        $criteria[] = $this->generateSubtreeCriteria($options['mandatorId'], $options['siteaccess']);
 
         return $criteria;
     }
@@ -290,13 +308,14 @@ class Exporter
     /**
      * Generates Criterions based on mandatorId or requested siteAccess.
      *
-     * @param array $options
+     * @param null|int $mandatorId
+     * @param null|string $siteAccess
      *
      * @return Criterion\LogicalOr
      */
-    private function generateSubtreeCriteria(array $options)
+    private function generateSubtreeCriteria($mandatorId = null, $siteAccess = null)
     {
-        $siteAccesses = $this->siteAccessHelper->getSiteAccesses($options['mandatorId'], $options['siteAccess']);
+        $siteAccesses = $this->siteAccessHelper->getSiteAccesses($mandatorId, $siteAccess);
 
         $subtreeCriteria = [];
         $rootLocations = $this->siteAccessHelper->getRootLocationsBySiteAccesses($siteAccesses);

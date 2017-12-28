@@ -8,6 +8,7 @@
 namespace EzSystems\RecommendationBundle\Rest\Controller;
 
 use EzSystems\RecommendationBundle\Authentication\Authenticator;
+use EzSystems\RecommendationBundle\Helper\ExportProcessRunner;
 use EzSystems\RecommendationBundle\Helper\FileSystem;
 use EzSystems\RecommendationBundle\Rest\Exception\ExportInProgressException;
 use Psr\Log\LoggerInterface;
@@ -24,34 +25,28 @@ class ExportController extends Controller
     /** @var \EzSystems\RecommendationBundle\Helper\FileSystem */
     private $fileSystem;
 
+    /** @var \EzSystems\RecommendationBundle\Helper\ExportProcessRunner */
+    private $exportProcessRunner;
+
     /** @var \Psr\Log\LoggerInterface */
     private $logger;
-
-    /** @var string */
-    private $kernelRootDir;
-
-    /** @var string */
-    private $kernelEnvironment;
 
     /**
      * @param \EzSystems\RecommendationBundle\Authentication\Authenticator $authenticator
      * @param \EzSystems\RecommendationBundle\Helper\FileSystem $fileSystem
+     * @param \EzSystems\RecommendationBundle\Helper\ExportProcessRunner $exportProcessRunner
      * @param \Psr\Log\LoggerInterface $logger
-     * @param string $kernelRootDir
-     * @param string $kernelEnvironment
      */
     public function __construct(
         Authenticator $authenticator,
         FileSystem $fileSystem,
-        LoggerInterface $logger,
-        $kernelRootDir,
-        $kernelEnvironment
+        ExportProcessRunner $exportProcessRunner,
+        LoggerInterface $logger
     ) {
         $this->authenticator = $authenticator;
         $this->fileSystem = $fileSystem;
+        $this->exportProcessRunner = $exportProcessRunner;
         $this->logger = $logger;
-        $this->kernelRootDir = $kernelRootDir;
-        $this->kernelEnvironment = $kernelEnvironment;
     }
 
     /**
@@ -96,39 +91,15 @@ class ExportController extends Controller
             return $response->setStatusCode(Response::HTTP_UNAUTHORIZED);
         }
 
-        $options = $this->parseRequest($request);
-        $documentRoot = $options['documentRoot'];
-        unset($options['documentRoot']);
-
         if ($this->fileSystem->isLocked()) {
             $this->logger->warning('Export is running.');
             throw new ExportInProgressException('Export is running');
         }
 
+        $options = $this->parseRequest($request);
         $options['contentTypeIdList'] = $contentTypeIdList;
 
-        $optionString = '';
-        foreach ($options as $key => $option) {
-            $optionString .= !empty($option) ? ' --' . $key . '=' . $option : '';
-        }
-
-        $cmd = sprintf('%s/console ezreco:runexport %s --env=%s',
-            $this->kernelRootDir,
-            escapeshellcmd($optionString),
-            $this->kernelEnvironment
-        );
-
-        $command = sprintf(
-            '%s -d memory_limit=-1 %s > %s 2>&1 & echo $! > %s',
-            PHP_BINARY,
-            $cmd,
-            $documentRoot . '/var/export/.log',
-            $documentRoot . '/var/export/.pid'
-        );
-
-        $this->logger->info(sprintf('Running command: %s', $command));
-
-        exec($command);
+        $this->exportProcessRunner->run($options);
 
         return $response->setData([sprintf(
             'Export started at %s',

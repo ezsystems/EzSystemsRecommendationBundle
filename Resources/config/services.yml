@@ -123,9 +123,8 @@ services:
         arguments:
             - '@ez_recommendation.export_authenticator'
             - '@ez_recommendation.filesystem_helper'
+            - '@ez_recommendation.export_process_runner_helper'
             - '@logger'
-            - '%kernel.root_dir%'
-            - '%kernel.environment%'
         tags:
             - { name: monolog.logger, channel: ez_recommendation }
 
@@ -183,6 +182,14 @@ services:
             - '@ezpublish.config.resolver'
             - '@ezpublish.siteaccess'
             - '%ez_recommendation.siteaccess_config%'
+
+    ez_recommendation.export_process_runner_helper:
+        class: 'EzSystems\RecommendationBundle\Helper\ExportProcessRunner'
+        arguments:
+            - '@logger'
+            - '%kernel.environment%'
+        tags:
+            - { name: monolog.logger, channel: ez_recommendation }
 
     ez_recommendation.export_notifier:
         class: 'EzSystems\RecommendationBundle\Client\ExportNotifier'

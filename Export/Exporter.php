@@ -194,6 +194,8 @@ class Exporter
         $urls = array();
 
         foreach ($options['contentTypeIds'] as $contentTypeId) {
+            $contentTypeCurrentName = null;
+
             foreach ($languages as $lang) {
                 $options['lang'] = $lang;
 
@@ -202,6 +204,10 @@ class Exporter
                 $this->logger->info(sprintf('fetching %s items of contentTypeId %s (language: %s)', $count, $contentTypeId, $lang));
 
                 $contentTypeName = $this->contentTypeService->loadContentType($contentTypeId)->getName($lang);
+
+                if ($contentTypeName !== null) {
+                    $contentTypeCurrentName = $contentTypeName;
+                }
 
                 for ($i = 1; $i <= ceil($count / $options['pageSize']); ++$i) {
                     $filename = sprintf('%d_%s_%d', $contentTypeId, $lang, $i);
@@ -226,7 +232,7 @@ class Exporter
                     $this->logger->info(sprintf('Generating url: %s', $url));
 
                     $urls[$contentTypeId][$lang]['urlList'][] = $url;
-                    $urls[$contentTypeId][$lang]['contentTypeName'] = $contentTypeName;
+                    $urls[$contentTypeId][$lang]['contentTypeName'] = $contentTypeCurrentName;
                 }
             }
         }

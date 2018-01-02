@@ -14,6 +14,9 @@ use eZ\Publish\API\Repository\Values\ContentType\ContentType as ApiContentType;
 use eZ\Publish\API\Repository\Values\Content\Content as ApiContent;
 use eZ\Publish\Core\Base\Exceptions\UnauthorizedException;
 use EzSystems\RecommendationBundle\Rest\Field\Value;
+use Symfony\Component\Console\Helper\ProgressBar;
+use Symfony\Component\Console\Output\NullOutput;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\Routing\RouterInterface;
 
@@ -66,14 +69,22 @@ class Content
      *
      * @param array $data
      * @param ParameterBag $options
+     * @param OutputInterface|null $output
      *
      * @return array
      */
-    public function prepareContent($data, ParameterBag $options)
+    public function prepareContent($data, ParameterBag $options, OutputInterface $output = null)
     {
+        if ($output === null) {
+            $output = new NullOutput();
+        }
+
         $content = array();
 
         foreach ($data as $contentTypeId => $items) {
+            $progress = new ProgressBar($output, count($items));
+            $progress->start();
+
             foreach ($items as $contentValue) {
                 $contentValue = $contentValue->valueObject;
                 $contentType = $this->contentTypeService->loadContentType($contentValue->contentInfo->contentTypeId);
@@ -107,7 +118,12 @@ class Content
                             $this->value->getFieldValue($contentValue, $field, $language, $options->all());
                     }
                 }
+
+                $progress->advance();
             }
+
+            $progress->finish();
+            $output->writeln('');
         }
 
         return $content;

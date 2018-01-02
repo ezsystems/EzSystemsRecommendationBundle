@@ -70,7 +70,7 @@ class ExportCommand extends ContainerAwareCommand
 
             date_default_timezone_set('UTC');
 
-            $this->exporter->runExport($input->getOptions());
+            $this->exporter->runExport($input->getOptions(), $output);
         } catch (\Exception $e) {
             $this->logger->error($e->getMessage());
             throw $e;

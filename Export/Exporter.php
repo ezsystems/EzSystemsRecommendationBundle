@@ -21,6 +21,7 @@ use EzSystems\RecommendationBundle\Helper\SiteAccess;
 use EzSystems\RecommendationBundle\Rest\ValueObjectVisitor\ContentListElementGenerator;
 use EzSystems\RecommendationBundle\Rest\Values\ContentData;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -100,13 +101,14 @@ class Exporter
 
     /**
      * @param array $options
+     * @param OutputInterface $output
      *
      * @return \EzSystems\RecommendationBundle\Rest\Values\ContentData|void
      *
      * @throws \EzSystems\RecommendationBundle\Rest\Exception\ExportInProgressException
      * @throws \Exception
      */
-    public function runExport(array $options)
+    public function runExport(array $options, OutputInterface $output)
     {
         $options = $this->validate($options);
 
@@ -118,7 +120,7 @@ class Exporter
 
         try {
             $this->fileSystemHelper->lock();
-            $urls = $this->generateFiles($languages, $chunkDir, $options);
+            $urls = $this->generateFiles($languages, $chunkDir, $options, $output);
             $this->fileSystemHelper->unlock();
 
             $credentials = $this->authenticator->getCredentials();
@@ -126,6 +128,7 @@ class Exporter
 
             $response = $this->exportNotifier->sendRecommendationResponse($urls, $options, $securedDirCredentials);
             $this->logger->info(sprintf('eZ Recommendation Response: %s', $response));
+            $output->writeln('Done');
         } catch (Exception $e) {
             $this->logger->error(sprintf('Error while generating export: %s', $e->getMessage()));
             $this->fileSystemHelper->unlock();
@@ -186,12 +189,15 @@ class Exporter
      * @param array $languages
      * @param string $chunkDir
      * @param array $options
+     * @param OutputInterface $output
      *
      * @return array
      */
-    private function generateFiles($languages, $chunkDir, array $options)
+    private function generateFiles($languages, $chunkDir, array $options, OutputInterface $output)
     {
         $urls = array();
+
+        $output->writeln(sprintf('Exporting %s content types', count($options['contentTypeIds'])));
 
         foreach ($options['contentTypeIds'] as $contentTypeId) {
             $contentTypeCurrentName = null;
@@ -201,7 +207,9 @@ class Exporter
 
                 $count = $this->countContentItemsByContentTypeId($contentTypeId, $options);
 
-                $this->logger->info(sprintf('fetching %s items of contentTypeId %s (language: %s)', $count, $contentTypeId, $lang));
+                $info = sprintf('Fetching %s items of contentTypeId %s (language: %s)', $count, $contentTypeId, $lang);
+                $output->writeln($info);
+                $this->logger->info($info);
 
                 $contentTypeName = $this->contentTypeService->loadContentType($contentTypeId)->getName($lang);
 
@@ -214,11 +222,34 @@ class Exporter
                     $chunkPath = $chunkDir . $filename;
                     $options['page'] = $i;
 
+                    $output->writeln(sprintf(
+                        'Fetching content from database for contentTypeId: %s, language: %s, chunk: #%s',
+                        $contentTypeId,
+                        $lang,
+                        $i
+                    ));
+
                     $contentItems = $this->getContentItems($contentTypeId, $options);
                     $parameters = new ParameterBag($options);
-                    $content = $this->content->prepareContent(array($contentTypeId => $contentItems), $parameters);
+
+                    $output->writeln(sprintf(
+                        'Preparing content for contentTypeId: %s, language: %s, amount: %s, chunk: #%s',
+                        $contentTypeId,
+                        $lang,
+                        count($contentItems),
+                        $i
+                    ));
+
+                    $content = $this->content->prepareContent(array($contentTypeId => $contentItems), $parameters, $output);
 
                     unset($contentItems);
+
+                    $output->writeln(sprintf(
+                        'Generating file for contentTypeId: %s, language: %s, chunk: #%s',
+                        $contentTypeId,
+                        $lang,
+                        $i
+                    ));
 
                     $this->generateFile($content, $chunkPath, $options);
 
@@ -229,7 +260,9 @@ class Exporter
                         $options['host'], $chunkDir, $filename
                     );
 
-                    $this->logger->info(sprintf('Generating url: %s', $url));
+                    $info = sprintf('Generating url: %s', $url);
+                    $output->writeln($info);
+                    $this->logger->info($info);
 
                     $urls[$contentTypeId][$lang]['urlList'][] = $url;
                     $urls[$contentTypeId][$lang]['contentTypeName'] = $contentTypeCurrentName;

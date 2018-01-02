@@ -147,6 +147,8 @@ services:
             - {fieldIdentifiers: "%ez_recommendation.field_identifiers%"}
             - "@ez_recommendation.field.relation_mapper"
             - "@?logger"
+        tags:
+            - { name: monolog.logger, channel: ez_recommendation }
 
     ez_recommendation.rest.field.type_value:
         class: EzSystems\RecommendationBundle\Rest\Field\TypeValue

@@ -18,9 +18,20 @@ class Recover extends PersistenceAwareBase
             return;
         }
 
-        $contentIdArray = $this->persistenceHandler->locationHandler()->loadSubtreeIds($signal->newLocationId);
+        $contentIdArray = $this->persistenceHandler
+            ->locationHandler()
+            ->loadSubtreeIds($signal->newLocationId);
+
+        $relations = $this->persistenceHandler
+            ->contentHandler()
+            ->loadReverseRelations($signal->contentId);
+
         foreach ($contentIdArray as $contentId) {
             $this->client->updateContent($contentId);
+        }
+
+        foreach ($relations as $relation) {
+            $this->client->updateContent($relation->destinationContentId);
         }
     }
 }

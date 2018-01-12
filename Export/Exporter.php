@@ -146,7 +146,12 @@ class Exporter
      */
     private function validate(array $options)
     {
-        list($customerId, $licenseKey) = $this->siteAccessHelper->getRecommendationServiceCredentials();
+        if (array_key_exists('mandatorId', $options)) {
+            $options['mandatorId'] = (int) $options['mandatorId'];
+        }
+
+        list($customerId, $licenseKey) =
+            $this->siteAccessHelper->getRecommendationServiceCredentials($options['mandatorId'], $options['siteaccess']);
 
         $options = array_filter($options, function ($val) {
             return $val !== null;

@@ -184,6 +184,7 @@ services:
             - '@ezpublish.config.resolver'
             - '@ezpublish.siteaccess'
             - '%ez_recommendation.siteaccess_config%'
+            - '%ezpublish.siteaccess.default%'
 
     ez_recommendation.export_process_runner_helper:
         class: 'EzSystems\RecommendationBundle\Helper\ExportProcessRunner'

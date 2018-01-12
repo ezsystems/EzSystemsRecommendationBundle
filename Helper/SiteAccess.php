@@ -14,23 +14,30 @@ use LogicException;
 
 class SiteAccess
 {
+    const DEFAULT_SITEACCESS_NAME = 'default';
+
     /** @var \eZ\Publish\Core\MVC\ConfigResolverInterface */
     private $configResolver;
 
     /** @var \eZ\Publish\Core\MVC\Symfony\SiteAccess */
     private $siteAccess;
 
-    /** @var array $siteAccessConfig */
+    /** @var array */
     private $siteAccessConfig;
+
+    /** @var string */
+    private $defaultSiteAccessName;
 
     public function __construct(
         ConfigResolverInterface $configResolver,
         CurrentSiteAccess $siteAccess,
-        $siteAccessConfig
+        $siteAccessConfig,
+        $defaultSiteAccessName
     ) {
         $this->configResolver = $configResolver;
         $this->siteAccess = $siteAccess;
         $this->siteAccessConfig = $siteAccessConfig;
+        $this->defaultSiteAccessName = $defaultSiteAccessName;
     }
 
     /**
@@ -114,6 +121,11 @@ class SiteAccess
         foreach ($this->siteAccessConfig as $name => $config) {
             if (isset($config['yoochoose']['customer_id']) && $config['yoochoose']['customer_id'] == $mandatorId) {
                 $siteAccesses[$name] = $name;
+
+                if ($name === self::DEFAULT_SITEACCESS_NAME && $this->defaultSiteAccessName !== self::DEFAULT_SITEACCESS_NAME) {
+                    // default siteAccess name is changed and configuration should be adjusted
+                    $siteAccesses[$this->defaultSiteAccessName] = $this->defaultSiteAccessName;
+                }
             }
         }
 
@@ -146,14 +158,24 @@ class SiteAccess
     }
 
     /**
-     * Returns Recommendation Service credentials based on current siteAccess.
+     * Returns Recommendation Service credentials based on current siteAccess or mandatorId.
+     *
+     * @param null|int $mandatorId
+     * @param null|string $siteAccess
      *
      * @return array
      */
-    public function getRecommendationServiceCredentials()
+    public function getRecommendationServiceCredentials($mandatorId = null, $siteAccess = null)
     {
-        $customerId = $this->configResolver->getParameter('yoochoose.customer_id', 'ez_recommendation', $this->siteAccess->name);
-        $licenceKey = $this->configResolver->getParameter('yoochoose.license_key', 'ez_recommendation', $this->siteAccess->name);
+        if ($mandatorId) {
+            $siteAccesses = $this->getSiteAccessesByMandatorId($mandatorId);
+            $siteAccess = end($siteAccesses);
+        } elseif ($siteAccess == null) {
+            $siteAccess = $this->siteAccess->name;
+        }
+
+        $customerId = $this->configResolver->getParameter('yoochoose.customer_id', 'ez_recommendation', $siteAccess);
+        $licenceKey = $this->configResolver->getParameter('yoochoose.license_key', 'ez_recommendation', $siteAccess);
 
         return [$customerId, $licenceKey];
     }
@@ -172,7 +194,10 @@ class SiteAccess
         foreach ($siteAccesses as $siteAccess) {
             $languageList = $this->configResolver->getParameter('languages', '', $siteAccess);
             $mainLanguage = reset($languageList);
-            $languages[$mainLanguage] = $mainLanguage;
+
+            if ($mainLanguage) {
+                $languages[$mainLanguage] = $mainLanguage;
+            }
         }
 
         return array_keys($languages);

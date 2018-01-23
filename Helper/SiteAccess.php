@@ -14,7 +14,7 @@ use LogicException;
 
 class SiteAccess
 {
-    const DEFAULT_SITEACCESS_NAME = 'default';
+    const SYSTEM_DEFAULT_SITEACCESS_NAME = 'default';
 
     /** @var \eZ\Publish\Core\MVC\ConfigResolverInterface */
     private $configResolver;
@@ -32,7 +32,7 @@ class SiteAccess
         ConfigResolverInterface $configResolver,
         CurrentSiteAccess $siteAccess,
         $siteAccessConfig,
-        $defaultSiteAccessName
+        $defaultSiteAccessName = self::SYSTEM_DEFAULT_SITEACCESS_NAME
     ) {
         $this->configResolver = $configResolver;
         $this->siteAccess = $siteAccess;
@@ -118,14 +118,19 @@ class SiteAccess
 
         $siteAccesses = array();
 
-        foreach ($this->siteAccessConfig as $name => $config) {
-            if (isset($config['yoochoose']['customer_id']) && $config['yoochoose']['customer_id'] == $mandatorId) {
-                $siteAccesses[$name] = $name;
+        foreach ($this->siteAccessConfig as $siteAccessName => $config) {
+            if (!isset($config['yoochoose']['customer_id']) || (int)$config['yoochoose']['customer_id'] !== $mandatorId) {
+                continue;
+            }
 
-                if ($name === self::DEFAULT_SITEACCESS_NAME && $this->defaultSiteAccessName !== self::DEFAULT_SITEACCESS_NAME) {
-                    // default siteAccess name is changed and configuration should be adjusted
-                    $siteAccesses[$this->defaultSiteAccessName] = $this->defaultSiteAccessName;
-                }
+            $siteAccesses[$siteAccessName] = $siteAccessName;
+
+            if ($this->isDefaultSiteAccessChanged()
+                && $this->isSiteAccessSameAsSystemDefault($siteAccessName)
+                && $this->isMandatorIdConfigured($mandatorId)
+            ) {
+                // default siteAccess name is changed and configuration should be adjusted
+                $siteAccesses[$this->defaultSiteAccessName] = $this->defaultSiteAccessName;
             }
         }
 
@@ -133,7 +138,42 @@ class SiteAccess
             throw new NotFoundException('configuration for eZ Recommendation', "mandatorId: {$mandatorId}");
         }
 
-        return $siteAccesses;
+        return array_values($siteAccesses);
+    }
+
+    /**
+     * Checks if default siteAccess is changed.
+     *
+     * @return bool
+     */
+    private function isDefaultSiteAccessChanged()
+    {
+        return $this->defaultSiteAccessName !== self::SYSTEM_DEFAULT_SITEACCESS_NAME;
+    }
+
+    /**
+     * Checks if siteAccessName is the same as system default siteAccess name.
+     *
+     * @param string $siteAccessName
+     *
+     * @return bool
+     */
+    private function isSiteAccessSameAsSystemDefault($siteAccessName)
+    {
+        return $siteAccessName === self::SYSTEM_DEFAULT_SITEACCESS_NAME;
+    }
+
+    /**
+     * Checks if mandatorId is configured with default siteAccess.
+     *
+     * @param int $mandatorId
+     *
+     * @return bool
+     */
+    private function isMandatorIdConfigured($mandatorId)
+    {
+        return in_array($this->defaultSiteAccessName, $this->siteAccessConfig)
+            && $this->siteAccessConfig[$this->defaultSiteAccessName]['yoochoose']['customer_id'] == $mandatorId;
     }
 
     /**
@@ -167,11 +207,11 @@ class SiteAccess
      */
     public function getRecommendationServiceCredentials($mandatorId = null, $siteAccess = null)
     {
-        if ($mandatorId) {
-            $siteAccesses = $this->getSiteAccessesByMandatorId($mandatorId);
-            $siteAccess = end($siteAccesses);
-        } elseif ($siteAccess == null) {
-            $siteAccess = $this->siteAccess->name;
+        $siteAccesses = $this->getSiteAccesses($mandatorId, $siteAccess);
+        $siteAccess = end($siteAccesses);
+
+        if ($siteAccess === self::SYSTEM_DEFAULT_SITEACCESS_NAME) {
+            $siteAccess = null;
         }
 
         $customerId = $this->configResolver->getParameter('yoochoose.customer_id', 'ez_recommendation', $siteAccess);
@@ -192,7 +232,11 @@ class SiteAccess
         $languages = array();
 
         foreach ($siteAccesses as $siteAccess) {
-            $languageList = $this->configResolver->getParameter('languages', '', $siteAccess);
+            $languageList = $this->configResolver->getParameter(
+                'languages',
+                '',
+                $siteAccess !== 'default' ? $siteAccess : null
+            );
             $mainLanguage = reset($languageList);
 
             if ($mainLanguage) {

@@ -26,19 +26,16 @@ class Text
             return array($string);
         }
 
-        if (strpos($string, ',') === false) {
-            throw new InvalidArgumentException('Integers in string should have a separator');
-        }
+        return array_map(
+            function ($id) {
+                if (false === filter_var($id, FILTER_VALIDATE_INT)) {
+                    throw new InvalidArgumentException('String should be a list of Integers');
+                }
 
-        $array = explode(',', $string);
-
-        foreach ($array as $item) {
-            if (filter_var($item, FILTER_VALIDATE_INT) === false) {
-                throw new InvalidArgumentException('String should be a list of Integers');
-            }
-        }
-
-        return $array;
+                return (int) $id;
+            },
+            explode(',', $string)
+        );
     }
 
     /**

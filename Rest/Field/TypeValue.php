@@ -7,10 +7,10 @@ namespace EzSystems\RecommendationBundle\Rest\Field;
 
 use eZ\Bundle\EzPublishCoreBundle\DependencyInjection\Configuration\ConfigResolver;
 use eZ\Bundle\EzPublishCoreBundle\Imagine\AliasGenerator as ImageVariationService;
+use eZ\Publish\Core\FieldType\RichText\Converter as RichTextConverterInterface;
 use eZ\Publish\Core\MVC\Exception\SourceImageNotFoundException;
 use eZ\Publish\API\Repository\Values\Content\Content;
 use eZ\Publish\API\Repository\Values\Content\Field;
-use eZ\Bundle\EzPublishCoreBundle\FieldType\RichText\Converter\Html5 as RichHtml5;
 use eZ\Publish\Core\FieldType\XmlText\Converter\Html5 as XmlHtml5;
 use LogicException;
 
@@ -22,7 +22,7 @@ class TypeValue
     /** @var \eZ\Bundle\EzPublishCoreBundle\Imagine\AliasGenerator */
     protected $imageVariationService;
 
-    /** @var \eZ\Bundle\EzPublishCoreBundle\FieldType\RichText\Converter\Html5 */
+    /** @var \eZ\Publish\Core\FieldType\RichText\Converter */
     private $richHtml5Converter;
 
     /** @var \eZ\Publish\Core\FieldType\XmlText\Converter\Html5 */
@@ -31,13 +31,13 @@ class TypeValue
     /**
      * @param \eZ\Bundle\EzPublishCoreBundle\DependencyInjection\Configuration\ConfigResolver $configResolver
      * @param \eZ\Bundle\EzPublishCoreBundle\Imagine\AliasGenerator $imageVariationService
-     * @param \eZ\Bundle\EzPublishCoreBundle\FieldType\RichText\Converter\Html5 $richHtml5Converter
+     * @param \eZ\Publish\Core\FieldType\RichText\Converter $richHtml5Converter
      * @param \eZ\Publish\Core\FieldType\XmlText\Converter\Html5 $xmlHtml5Converter
      */
     public function __construct(
         ConfigResolver $configResolver,
         ImageVariationService $imageVariationService,
-        RichHtml5 $richHtml5Converter,
+        RichTextConverterInterface $richHtml5Converter,
         XmlHtml5 $xmlHtml5Converter = null
     ) {
         $this->configResolver = $configResolver;

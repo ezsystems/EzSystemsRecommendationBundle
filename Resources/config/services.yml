@@ -155,7 +155,7 @@ services:
         arguments:
             - '@ezpublish.config.resolver.core'
             - '@ezpublish.image_alias.imagine.alias_generator'
-            - '@ezpublish.fieldtype.ezrichtext.converter.output.xhtml5.core'
+            - '@ezpublish.fieldType.ezrichtext.converter.output.xhtml5'
             - "@?ezpublish.fieldtype.ezxmltext.converter.html5"
 
     ez_recommendation.rest.visitor.generator:

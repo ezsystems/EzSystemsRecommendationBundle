@@ -12,6 +12,9 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Core\Authentication\Token\AnonymousToken;
 
 class ExportCommand extends ContainerAwareCommand
 {
@@ -68,6 +71,7 @@ class ExportCommand extends ContainerAwareCommand
     {
         try {
             $input->validate();
+            $this->prepare();
 
             date_default_timezone_set('UTC');
 
@@ -76,5 +80,24 @@ class ExportCommand extends ContainerAwareCommand
             $this->logger->error($e->getMessage());
             throw $e;
         }
+    }
+
+    /**
+     * Prepares Request and Token for CLI environment, required by RichTextConverter to render embeded content.
+     * Avoid 'The token storage contains no authentication token'
+     * and 'Rendering a fragment can only be done when handling a Request' exceptions.
+     */
+    private function prepare()
+    {
+        $session = new Session();
+        $session->start();
+
+        $request = Request::createFromGlobals();
+        $request->setSession($session);
+
+        $this->getContainer()->get('request_stack')->push($request);
+        $this->getContainer()->get('security.token_storage')->setToken(
+            new AnonymousToken('anonymous', 'anonymous', ['ROLE_ADMINISTRATOR'])
+        );
     }
 }

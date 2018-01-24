@@ -100,9 +100,7 @@ class ExportAuthenticator implements Authenticator
             return false;
         }
 
-        $passFile = $this->fileSystem->getDir()
-            . substr($filePath, 0, strrpos($filePath, '/'))
-            . '/.htpasswd';
+        $passFile = substr($filePath, 0, strrpos($filePath, '/')) . '/.htpasswd';
 
         try {
             $fileContent = $this->fileSystem->load($passFile);

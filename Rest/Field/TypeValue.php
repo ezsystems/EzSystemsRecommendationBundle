@@ -119,9 +119,16 @@ class TypeValue
         }
 
         try {
-            $imageVariation = $this->imageVariationService->getVariation($field, $content->versionInfo, $variation);
+            $uri = $this
+                ->imageVariationService
+                ->getVariation($field, $content->versionInfo, $variation)
+                ->uri;
 
-            return parse_url($imageVariation->uri, PHP_URL_PATH);
+            if (strpos($uri, 'http://:0') !== false) {
+                $uri = str_replace('http://:0', 'http://0', $uri);
+            }
+
+            return parse_url($uri, PHP_URL_PATH);
         } catch (SourceImageNotFoundException $exception) {
             return '';
         }

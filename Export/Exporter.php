@@ -26,6 +26,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
+/**
+ * Generates and export content to Recommendation Server.
+ */
 class Exporter
 {
     /** @var \eZ\Publish\Api\Repository\SearchService */

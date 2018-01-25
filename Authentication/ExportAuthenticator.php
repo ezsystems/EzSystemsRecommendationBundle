@@ -10,6 +10,9 @@ use eZ\Publish\Core\REST\Common\Exceptions\NotFoundException;
 use EzSystems\RecommendationBundle\Helper\FileSystem;
 use Symfony\Component\HttpFoundation\RequestStack;
 
+/**
+ * Authenticator for export feature, mainly used for basic auth based authentication.
+ */
 class ExportAuthenticator implements Authenticator
 {
     /** @var \Symfony\Component\HttpFoundation\RequestStack */

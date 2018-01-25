@@ -8,6 +8,9 @@ namespace EzSystems\RecommendationBundle\Helper;
 
 use InvalidArgumentException;
 
+/**
+ * Provides utility to manipulate strings.
+ */
 class Text
 {
     /**

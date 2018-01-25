@@ -8,18 +8,29 @@ namespace EzSystems\RecommendationBundle\Command;
 
 use EzSystems\RecommendationBundle\Export\Exporter;
 use Psr\Log\LoggerInterface;
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\AnonymousToken;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
-class ExportCommand extends ContainerAwareCommand
+/**
+ * Generates and export content to Recommendation Server for a given command options.
+ */
+class ExportCommand extends Command
 {
     /** @var \EzSystems\RecommendationBundle\Export\Exporter */
     private $exporter;
+
+    /** @var \Symfony\Component\HttpFoundation\RequestStack */
+    private $requestStack;
+
+    /** @var \Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface */
+    private $tokenStorage;
 
     /** @var \Psr\Log\LoggerInterface */
     private $logger;
@@ -30,11 +41,15 @@ class ExportCommand extends ContainerAwareCommand
      */
     public function __construct(
         Exporter $exporter,
+        RequestStack $requestStack,
+        TokenStorageInterface $tokenStorage,
         LoggerInterface $logger
     ) {
         parent::__construct();
 
         $this->exporter = $exporter;
+        $this->requestStack = $requestStack;
+        $this->tokenStorage = $tokenStorage;
         $this->logger = $logger;
     }
 
@@ -95,8 +110,8 @@ class ExportCommand extends ContainerAwareCommand
         $request = Request::createFromGlobals();
         $request->setSession($session);
 
-        $this->getContainer()->get('request_stack')->push($request);
-        $this->getContainer()->get('security.token_storage')->setToken(
+        $this->requestStack->push($request);
+        $this->tokenStorage->setToken(
             new AnonymousToken('anonymous', 'anonymous', ['ROLE_ADMINISTRATOR'])
         );
     }

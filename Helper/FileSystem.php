@@ -9,6 +9,9 @@ namespace EzSystems\RecommendationBundle\Helper;
 use eZ\Publish\Core\REST\Common\Exceptions\NotFoundException;
 use Symfony\Component\Filesystem\Filesystem as BaseFilesystem;
 
+/**
+ * Provides utility to manipulate the file system for export purposes.
+ */
 class FileSystem
 {
     /** @var \Symfony\Component\Filesystem\Filesystem */

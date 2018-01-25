@@ -242,6 +242,8 @@ services:
         class: 'EzSystems\RecommendationBundle\Command\ExportCommand'
         arguments:
             - '@ez_recommendation.exporter'
+            - '@request_stack'
+            - '@security.token_storage'
             - '@logger'
         tags:
             - { name: console.command }

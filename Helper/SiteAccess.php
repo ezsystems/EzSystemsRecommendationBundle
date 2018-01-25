@@ -11,6 +11,9 @@ use eZ\Publish\Core\MVC\ConfigResolverInterface;
 use eZ\Publish\Core\MVC\Symfony\SiteAccess as CurrentSiteAccess;
 use LogicException;
 
+/**
+ * Provides utility to manipulate siteAccess.
+ */
 class SiteAccess
 {
     const SYSTEM_DEFAULT_SITEACCESS_NAME = 'default';
@@ -226,7 +229,7 @@ class SiteAccess
      *
      * @return array
      */
-    private function getMainLanguagesBySiteAccesses($siteAccesses)
+    private function getMainLanguagesBySiteAccesses(array $siteAccesses)
     {
         $languages = array();
 

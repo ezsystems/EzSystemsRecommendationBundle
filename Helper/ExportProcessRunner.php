@@ -11,10 +11,16 @@ use Symfony\Component\Process\Process;
 use Symfony\Component\Process\ProcessBuilder;
 use Psr\Log\LoggerInterface;
 
+/**
+ * Runs export command as separate process.
+ */
 class ExportProcessRunner
 {
     /** @var \Psr\Log\LoggerInterface */
     private $logger;
+
+    /** @var string */
+    private $phpPath;
 
     /** @var string */
     private $kernelEnvironment;
@@ -81,19 +87,18 @@ class ExportProcessRunner
      */
     private function getPhpPath()
     {
-        static $phpPath;
-
-        if (null !== $phpPath) {
-            return $phpPath;
+        if ($this->phpPath) {
+            return $this->phpPath;
         }
+
         $phpFinder = new PhpExecutableFinder();
-        $phpPath = $phpFinder->find();
-        if (!$phpPath) {
+        $this->phpPath = $phpFinder->find();
+        if (!$this->phpPath) {
             throw new \RuntimeException(
                 'The php executable could not be found, it\'s needed for executing parable sub processes, so add it to your PATH environment variable and try again'
             );
         }
 
-        return $phpPath;
+        return $this->phpPath;
     }
 }

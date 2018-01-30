@@ -7,11 +7,12 @@ namespace EzSystems\RecommendationBundle\Rest\Field;
 
 use eZ\Bundle\EzPublishCoreBundle\DependencyInjection\Configuration\ConfigResolver;
 use eZ\Bundle\EzPublishCoreBundle\Imagine\AliasGenerator as ImageVariationService;
+use eZ\Publish\Core\FieldType\RichText\Converter as RichTextConverterInterface;
 use eZ\Publish\Core\MVC\Exception\SourceImageNotFoundException;
 use eZ\Publish\API\Repository\Values\Content\Content;
 use eZ\Publish\API\Repository\Values\Content\Field;
-use eZ\Bundle\EzPublishCoreBundle\FieldType\RichText\Converter\Html5 as RichHtml5;
 use eZ\Publish\Core\FieldType\XmlText\Converter\Html5 as XmlHtml5;
+use LogicException;
 
 class TypeValue
 {
@@ -21,7 +22,7 @@ class TypeValue
     /** @var \eZ\Bundle\EzPublishCoreBundle\Imagine\AliasGenerator */
     protected $imageVariationService;
 
-    /** @var \eZ\Bundle\EzPublishCoreBundle\FieldType\RichText\Converter\Html5 */
+    /** @var \eZ\Publish\Core\FieldType\RichText\Converter */
     private $richHtml5Converter;
 
     /** @var \eZ\Publish\Core\FieldType\XmlText\Converter\Html5 */
@@ -30,13 +31,13 @@ class TypeValue
     /**
      * @param \eZ\Bundle\EzPublishCoreBundle\DependencyInjection\Configuration\ConfigResolver $configResolver
      * @param \eZ\Bundle\EzPublishCoreBundle\Imagine\AliasGenerator $imageVariationService
-     * @param \eZ\Bundle\EzPublishCoreBundle\FieldType\RichText\Converter\Html5 $richHtml5Converter
+     * @param \eZ\Publish\Core\FieldType\RichText\Converter $richHtml5Converter
      * @param \eZ\Publish\Core\FieldType\XmlText\Converter\Html5 $xmlHtml5Converter
      */
     public function __construct(
         ConfigResolver $configResolver,
         ImageVariationService $imageVariationService,
-        RichHtml5 $richHtml5Converter,
+        RichTextConverterInterface $richHtml5Converter,
         XmlHtml5 $xmlHtml5Converter = null
     ) {
         $this->configResolver = $configResolver;
@@ -69,7 +70,13 @@ class TypeValue
      */
     public function ezxmltext(Field $field)
     {
-        return '<![CDATA[' . $this->xmlHtml5Converter->convert($field->value->xml) . ']]>';
+        try {
+            $xml = $this->xmlHtml5Converter->convert($field->value->xml);
+        } catch (LogicException $e) {
+            $xml = $field->value->xml->saveHTML();
+        }
+
+        return '<![CDATA[' . $xml . ']]>';
     }
 
     /**
@@ -112,9 +119,16 @@ class TypeValue
         }
 
         try {
-            $imageVariation = $this->imageVariationService->getVariation($field, $content->versionInfo, $variation);
+            $uri = $this
+                ->imageVariationService
+                ->getVariation($field, $content->versionInfo, $variation)
+                ->uri;
 
-            return parse_url($imageVariation->uri, PHP_URL_PATH);
+            if (strpos($uri, 'http://:0') !== false) {
+                $uri = str_replace('http://:0', 'http://0', $uri);
+            }
+
+            return parse_url($uri, PHP_URL_PATH);
         } catch (SourceImageNotFoundException $exception) {
             return '';
         }

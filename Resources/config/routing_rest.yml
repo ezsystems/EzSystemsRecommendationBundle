@@ -1,13 +1,13 @@
 recommendationBundle_getContent:
     path: /ez_recommendation/v1/content/{contentIdList}
     defaults:
-        _controller: ez_recommendation.rest.controller.content:getContent
+        _controller: ez_recommendation.rest.controller.content:getContentAction
     methods: [GET]
 
 recommendationBundle_getContentTypes:
     path: /ez_recommendation/v1/contenttypes/{contentTypeIdList}
     defaults:
-        _controller: ez_recommendation.rest.controller.contenttype:getContentType
+        _controller: ez_recommendation.rest.controller.contenttype:getContentTypeAction
     methods: [GET]
 
 recommendationBundle_downloadExportedContent:
@@ -15,4 +15,11 @@ recommendationBundle_downloadExportedContent:
     defaults:
         _controller: ez_recommendation.rest.controller.export:downloadAction
     requirements:
-        filePath: "[0-9/]+"
+        filePath: '[a-zA-Z0-9\_\-\/]+'
+
+recommendationBundle_runExport:
+    path: /ez_recommendation/v1/runExport/{contentTypeIdList}
+    defaults:
+        _controller: ez_recommendation.rest.controller.export:runExportAction
+    methods: [GET]
+    prefix: '%ezpublish_rest.path_prefix%'

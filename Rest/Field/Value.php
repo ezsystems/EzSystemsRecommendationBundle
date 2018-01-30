@@ -12,6 +12,7 @@ use eZ\Publish\API\Repository\Values\Content\Field;
 use eZ\Publish\API\Repository\Values\ContentType\ContentType;
 use EzSystems\RecommendationBundle\Exception\InvalidRelationException;
 use Psr\Log\LoggerInterface;
+use Exception;
 
 class Value
 {
@@ -241,7 +242,7 @@ class Value
      *
      * @return mixed
      */
-    public function getFieldDefinitionList()
+    private function getFieldDefinitionList()
     {
         return $this->fieldDefIdentifiers;
     }
@@ -257,10 +258,27 @@ class Value
      *
      * @return mixed
      */
-    public function getParsedFieldValue(Field $field, Content $content, $language, $imageFieldIdentifier, $options = [])
+    private function getParsedFieldValue(Field $field, Content $content, $language, $imageFieldIdentifier, $options = [])
     {
-        $fieldType = $this->fieldDefIdentifiers[$field->fieldDefIdentifier];
+        try {
+            $this->logger->debug(sprintf(
+                'Fetching field content for contentId %s, fieldId %s, fieldName %s',
+                $content->id,
+                $field->id,
+                $field->fieldDefIdentifier
+            ));
 
-        return $this->typeValue->$fieldType($field, $content, $language, $imageFieldIdentifier, $options);
+            $fieldType = $this->fieldDefIdentifiers[$field->fieldDefIdentifier];
+
+            return $this->typeValue->$fieldType($field, $content, $language, $imageFieldIdentifier, $options);
+        } catch (Exception $e) {
+            $this->logger->warning(sprintf(
+                'Unable to fetch field content for contentId %s, fieldId %s, fieldName %s (original exception: %s)',
+                $content->id,
+                $field->id,
+                $field->fieldDefIdentifier,
+                $e->getMessage()
+            ));
+        }
     }
 }

@@ -129,9 +129,9 @@ class YooChooseNotifier implements RecommendationClient
      */
     public function updateContent($contentId, $versionNo = null)
     {
-        $content = $this->contentService->loadContent($contentId, null, $versionNo);
-
         try {
+            $content = $this->contentService->loadContent($contentId, null, $versionNo);
+
             if ($this->isContentTypeExcluded($content)) {
                 return;
             }
@@ -156,9 +156,9 @@ class YooChooseNotifier implements RecommendationClient
      */
     public function deleteContent($contentId)
     {
-        $content = $this->contentService->loadContent($contentId);
-
         try {
+            $content = $this->contentService->loadContent($contentId);
+
             if ($this->isContentTypeExcluded($content)) {
                 return;
             }

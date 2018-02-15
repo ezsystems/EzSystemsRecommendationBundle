@@ -10,7 +10,7 @@ namespace EzSystems\RecommendationBundle\eZ\Publish\Slot;
 
 use eZ\Publish\Core\SignalSlot\Signal;
 
-class Trash extends Base
+class Trash extends PersistenceAwareBase
 {
     public function receive(Signal $signal)
     {
@@ -19,5 +19,12 @@ class Trash extends Base
         }
 
         $this->client->deleteContent($signal->contentId);
+
+        $relations = $this->persistenceHandler
+            ->contentHandler()
+            ->loadReverseRelations($signal->contentId);
+        foreach ($relations as $relation) {
+            $this->client->updateContent($relation->destinationContentId);
+        }
     }
 }

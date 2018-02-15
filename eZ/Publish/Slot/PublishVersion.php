@@ -10,7 +10,7 @@ namespace EzSystems\RecommendationBundle\eZ\Publish\Slot;
 
 use eZ\Publish\Core\SignalSlot\Signal;
 
-class PublishVersion extends Base
+class PublishVersion extends PersistenceAwareBase
 {
     public function receive(Signal $signal)
     {
@@ -18,6 +18,14 @@ class PublishVersion extends Base
             return;
         }
 
+        $relations = $this->persistenceHandler
+            ->contentHandler()
+            ->loadReverseRelations($signal->contentId);
+
         $this->client->updateContent($signal->contentId, $signal->versionNo);
+
+        foreach ($relations as $relation) {
+            $this->client->updateContent($relation->destinationContentId);
+        }
     }
 }

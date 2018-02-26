@@ -25,7 +25,7 @@ class SessionBackup
     {
         $session = $event->getRequest()->getSession();
 
-        if (!$session->isStarted()) {
+        if ($session === null || !$session->isStarted()) {
             return;
         }
 

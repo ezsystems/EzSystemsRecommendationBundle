@@ -10,7 +10,7 @@ use eZ\Publish\API\Repository\ContentTypeService;
 use eZ\Publish\API\Repository\Values\Content\Content;
 use eZ\Publish\API\Repository\Exceptions\NotFoundException;
 use eZ\Publish\API\Repository\LocationService;
-use eZ\Publish\Core\SignalSlot\Repository;
+use eZ\Publish\API\Repository\Repository;
 use GuzzleHttp\ClientInterface as GuzzleClient;
 use GuzzleHttp\Exception\RequestException;
 use Psr\Log\LoggerInterface;

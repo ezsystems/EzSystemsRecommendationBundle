@@ -47,23 +47,6 @@
             return;
         }
 
-        xmlhttp.onreadystatechange = function () {
-            var jsonResponse;
-
-            if (xmlhttp.readyState === 4) {
-                if (xmlhttp.status === 200) {
-                    jsonResponse = JSON.parse(xmlhttp.response);
-                    responseCallback(jsonResponse.recommendationItems, this);
-                } else if (xmlhttp.status === 401) {
-                    errorCallback(this.unauthorizedMessage);
-                } else if (xmlhttp.status === 500) {
-                    errorCallback(this.internalServerErrorMessage);
-                } else {
-                    errorCallback(this.errorMessage);
-                }
-            }
-        }.bind(this);
-
         for (var i = 0; i < this.fields.length; i++) {
             attributes = attributes + '&attribute=' + this.fields[i];
         }
@@ -82,6 +65,24 @@
         ];
 
         xmlhttp.open('GET', requestQueryString.join(''), true);
+        xmlhttp.onload = function (e) {
+            var jsonResponse;
+
+            if (xmlhttp.readyState === 4) {
+                if (xmlhttp.status === 200) {
+                    jsonResponse = JSON.parse(xmlhttp.response);
+                    responseCallback(jsonResponse.recommendationItems, this);
+                } else if (xmlhttp.status === 401) {
+                    errorCallback(this.unauthorizedMessage);
+                } else if (xmlhttp.status === 500) {
+                    errorCallback(this.internalServerErrorMessage);
+                } else {
+                    errorCallback(this.errorMessage);
+                }
+            }
+        }.bind(this);
+
+
         xmlhttp.send();
     };
 
@@ -99,7 +100,7 @@
             return true;
         }
 
-        xmlhttp.open('GET', url, false);
+        xmlhttp.open('GET', url, true);
         xmlhttp.send();
 
         return true;

@@ -6,7 +6,7 @@
 namespace EzSystems\RecommendationBundle\Rest\Field;
 
 use eZ\Bundle\EzPublishCoreBundle\DependencyInjection\Configuration\ConfigResolver;
-use eZ\Bundle\EzPublishCoreBundle\Imagine\AliasGenerator as ImageVariationService;
+use eZ\Bundle\EzPublishCoreBundle\Imagine\PlaceholderAliasGenerator as ImageVariationService;
 use eZ\Publish\Core\FieldType\RichText\Converter as RichTextConverterInterface;
 use eZ\Publish\Core\MVC\Exception\SourceImageNotFoundException;
 use eZ\Publish\API\Repository\Values\Content\Content;
@@ -30,7 +30,7 @@ class TypeValue
 
     /**
      * @param \eZ\Bundle\EzPublishCoreBundle\DependencyInjection\Configuration\ConfigResolver $configResolver
-     * @param \eZ\Bundle\EzPublishCoreBundle\Imagine\AliasGenerator $imageVariationService
+     * @param \eZ\Bundle\EzPublishCoreBundle\Imagine\PlaceholderAliasGenerator $imageVariationService
      * @param \eZ\Publish\Core\FieldType\RichText\Converter $richHtml5Converter
      * @param \eZ\Publish\Core\FieldType\XmlText\Converter\Html5 $xmlHtml5Converter
      */

@@ -37,7 +37,8 @@ services:
         arguments:
             - { base_url: "%ez_recommendation.api_endpoint%" }
 
-  # The configured eZ Publish Platform legacy search engine - enable lines below only if you're using legacy bridge.
+  # The configured eZ Platform legacy search engine.
+  # Copy lines below to your app/config/services.yml file and uncomment them only when using Legacy Bridge.
 
 #    ez_recommendation.legacy.search_engine:
 #        class: ezpSearchEngine
@@ -46,6 +47,7 @@ services:
 #
 #    ez_recommendation.legacy.recommendation_search_engine:
 #        class: EzSystems\RecommendationBundle\eZ\Publish\LegacySearch\RecommendationLegacySearchEngine
+#        lazy: true
 #        arguments:
 #            - "@ez_recommendation.client.yoochoose_notifier"
 #            - "@ez_recommendation.legacy.search_engine"

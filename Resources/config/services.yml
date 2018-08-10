@@ -47,13 +47,13 @@ services:
 #
 #    ez_recommendation.legacy.recommendation_search_engine:
 #        class: EzSystems\RecommendationBundle\eZ\Publish\LegacySearch\RecommendationLegacySearchEngine
-#        lazy: true
 #        arguments:
 #            - "@ez_recommendation.client.yoochoose_notifier"
 #            - "@ez_recommendation.legacy.search_engine"
 #
 #    ez_recommendation.legacy.search_configuration_mapper:
 #        class: EzSystems\RecommendationBundle\eZ\Publish\LegacySearch\ConfigurationMapper
+#        lazy: true
 #        arguments:
 #            - "@ez_recommendation.legacy.recommendation_search_engine"
 #            - "@ezpublish.siteaccess"

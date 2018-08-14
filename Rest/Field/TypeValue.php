@@ -6,7 +6,7 @@
 namespace EzSystems\RecommendationBundle\Rest\Field;
 
 use eZ\Bundle\EzPublishCoreBundle\DependencyInjection\Configuration\ConfigResolver;
-use eZ\Bundle\EzPublishCoreBundle\Imagine\AliasGenerator as ImageVariationService;
+use eZ\Publish\SPI\Variation\VariationHandler as ImageVariationService;
 use eZ\Publish\Core\MVC\Exception\SourceImageNotFoundException;
 use eZ\Publish\API\Repository\Values\Content\Content;
 use eZ\Publish\API\Repository\Values\Content\Field;

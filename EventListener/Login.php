@@ -83,6 +83,9 @@ class Login
         }
 
         if (!$event->getRequest()->cookies->has('yc-session-id')) {
+            if (!$this->session->isStarted()) {
+                $this->session->start();
+            }
             $event->getRequest()->cookies->set('yc-session-id', $this->session->getId());
         }
 

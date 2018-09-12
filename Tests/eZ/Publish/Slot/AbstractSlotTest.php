@@ -6,9 +6,12 @@
 namespace EzSystems\RecommendationBundle\Tests\eZ\Publish\Slot;
 
 use PHPUnit\Framework\TestCase;
+use eZ\Publish\Core\Base\Tests\PHPUnit5CompatTrait;
 
 abstract class AbstractSlotTest extends TestCase
 {
+    use PHPUnit5CompatTrait;
+
     /** @var \EzSystems\RecommendationBundle\Client\RecommendationClient|\PHPUnit_Framework_MockObject_MockObject */
     protected $client;
 
@@ -17,7 +20,7 @@ abstract class AbstractSlotTest extends TestCase
 
     public function setUp()
     {
-        $this->client = $this->getMock('\EzSystems\RecommendationBundle\Client\RecommendationClient');
+        $this->client = $this->getMockBuilder('\EzSystems\RecommendationBundle\Client\RecommendationClient')->getMock();
         $this->slot = $this->createSlot();
     }
 

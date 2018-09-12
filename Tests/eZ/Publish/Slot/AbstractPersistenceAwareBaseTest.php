@@ -12,7 +12,7 @@ abstract class AbstractPersistenceAwareBaseTest extends AbstractSlotTest
 
     public function setUp()
     {
-        $this->persistenceHandler = $this->getMock('\eZ\Publish\SPI\Persistence\Handler');
+        $this->persistenceHandler = $this->getMockBuilder('\eZ\Publish\SPI\Persistence\Handler')->getMock();
 
         parent::setUp();
     }

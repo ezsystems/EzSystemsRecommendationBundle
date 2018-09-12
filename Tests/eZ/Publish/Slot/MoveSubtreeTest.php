@@ -16,7 +16,7 @@ class MoveSubtreeTest extends AbstractPersistenceAwareBaseTest
     {
         $signal = $this->createSignal();
 
-        $locationHandler = $this->getMock('\eZ\Publish\SPI\Persistence\Content\Location\Handler');
+        $locationHandler = $this->getMockBuilder('\eZ\Publish\SPI\Persistence\Content\Location\Handler')->getMock();
         $locationHandler
             ->expects($this->once())
             ->method('loadSubtreeIds')

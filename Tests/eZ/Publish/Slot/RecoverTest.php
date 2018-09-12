@@ -18,14 +18,14 @@ class RecoverTest extends AbstractPersistenceAwareBaseTest
     {
         $signal = $this->createSignal();
 
-        $locationHandler = $this->getMock('\eZ\Publish\SPI\Persistence\Content\Location\Handler');
+        $locationHandler = $this->getMockBuilder('\eZ\Publish\SPI\Persistence\Content\Location\Handler')->getMock();
         $locationHandler
             ->expects($this->once())
             ->method('loadSubtreeIds')
             ->with($signal->newLocationId)
             ->willReturn($this->getSubtreeIds());
 
-        $contentHandler = $this->getMock('\eZ\Publish\SPI\Persistence\Content\Handler');
+        $contentHandler = $this->getMockBuilder('\eZ\Publish\SPI\Persistence\Content\Handler')->getMock();
         $contentHandler
             ->expects($this->once())
             ->method('loadReverseRelations')

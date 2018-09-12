@@ -14,7 +14,7 @@ class PublishVersionTest extends AbstractPersistenceAwareBaseTest
 
     public function testReceiveSignal()
     {
-        $contentHandler = $this->getMock('\eZ\Publish\SPI\Persistence\Content\Handler');
+        $contentHandler = $this->getMockBuilder('\eZ\Publish\SPI\Persistence\Content\Handler')->getMock();
         $contentHandler
             ->expects($this->once())
             ->method('loadReverseRelations')

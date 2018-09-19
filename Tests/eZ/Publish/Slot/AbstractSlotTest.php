@@ -10,8 +10,6 @@ use eZ\Publish\Core\Base\Tests\PHPUnit5CompatTrait;
 
 abstract class AbstractSlotTest extends TestCase
 {
-    use PHPUnit5CompatTrait;
-
     /** @var \EzSystems\RecommendationBundle\Client\RecommendationClient|\PHPUnit_Framework_MockObject_MockObject */
     protected $client;
 

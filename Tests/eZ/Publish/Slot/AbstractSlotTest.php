@@ -6,7 +6,6 @@
 namespace EzSystems\RecommendationBundle\Tests\eZ\Publish\Slot;
 
 use PHPUnit\Framework\TestCase;
-use eZ\Publish\Core\Base\Tests\PHPUnit5CompatTrait;
 
 abstract class AbstractSlotTest extends TestCase
 {

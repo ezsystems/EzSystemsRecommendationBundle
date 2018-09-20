@@ -10,7 +10,7 @@ use eZ\Publish\API\Repository\ContentTypeService;
 use eZ\Publish\API\Repository\Values\Content\Content;
 use eZ\Publish\API\Repository\Exceptions\NotFoundException;
 use eZ\Publish\API\Repository\LocationService;
-use eZ\Publish\Core\SignalSlot\Repository;
+use eZ\Publish\API\Repository\Repository;
 use GuzzleHttp\ClientInterface as GuzzleClient;
 use GuzzleHttp\Exception\RequestException;
 use Psr\Log\LoggerInterface;
@@ -33,7 +33,7 @@ class YooChooseNotifier implements RecommendationClient
     /** @var \Psr\Log\LoggerInterface */
     private $logger;
 
-    /** @var \eZ\Publish\Core\SignalSlot\Repository */
+    /** @var \eZ\Publish\API\Repository\Repository */
     private $repository;
 
     /** @var \eZ\Publish\API\Repository\ContentService */
@@ -47,7 +47,7 @@ class YooChooseNotifier implements RecommendationClient
 
     /**
      * @param \GuzzleHttp\ClientInterface $guzzle
-     * @param \eZ\Publish\Core\SignalSlot\Repository $repository
+     * @param \eZ\Publish\API\Repository\Repository $repository
      * @param \eZ\Publish\API\Repository\ContentService $contentService
      * @param \eZ\Publish\API\Repository\LocationService $locationService
      * @param \eZ\Publish\API\Repository\ContentTypeService $contentTypeService

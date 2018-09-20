@@ -33,7 +33,7 @@ class YooChooseNotifier implements RecommendationClient
     /** @var \Psr\Log\LoggerInterface */
     private $logger;
 
-    /** @var \eZ\Publish\Core\SignalSlot\Repository */
+    /** @var \eZ\Publish\API\Repository\Repository */
     private $repository;
 
     /** @var \eZ\Publish\API\Repository\ContentService */
@@ -47,7 +47,7 @@ class YooChooseNotifier implements RecommendationClient
 
     /**
      * @param \GuzzleHttp\ClientInterface $guzzle
-     * @param \eZ\Publish\Core\SignalSlot\Repository $repository
+     * @param \eZ\Publish\API\Repository\Repository $repository
      * @param \eZ\Publish\API\Repository\ContentService $contentService
      * @param \eZ\Publish\API\Repository\LocationService $locationService
      * @param \eZ\Publish\API\Repository\ContentTypeService $contentTypeService

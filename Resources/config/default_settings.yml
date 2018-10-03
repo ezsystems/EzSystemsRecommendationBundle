@@ -6,9 +6,9 @@ parameters:
     ez_recommendation.default.author_id: 14
 
     ez_recommendation.api_endpoint: 'https://admin.yoochoose.net'
-    ez_recommendation.recommender.api_endpoint: 'http://reco.yoochoose.net'
+    ez_recommendation.recommender.api_endpoint: 'https://reco.yoochoose.net'
     ez_recommendation.recommender.consume_timeout: 20
-    ez_recommendation.tracking.api_endpoint: 'http://event.yoochoose.net'
+    ez_recommendation.tracking.api_endpoint: 'https://event.yoochoose.net'
     ez_recommendation.tracking.script_url: 'cdn.yoochoose.net/yct.js'
 
     ez_recommendation.relations: []

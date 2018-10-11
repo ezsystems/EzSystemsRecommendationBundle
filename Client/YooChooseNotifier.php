@@ -5,11 +5,9 @@
  */
 namespace EzSystems\RecommendationBundle\Client;
 
-use eZ\Publish\API\Repository\ContentService;
-use eZ\Publish\API\Repository\ContentTypeService;
+use EzSystems\RecommendationBundle\Repository\RepositoryHelper;
 use eZ\Publish\API\Repository\Values\Content\Content;
 use eZ\Publish\API\Repository\Exceptions\NotFoundException;
-use eZ\Publish\API\Repository\LocationService;
 use eZ\Publish\API\Repository\Repository;
 use GuzzleHttp\ClientInterface as GuzzleClient;
 use GuzzleHttp\Exception\RequestException;
@@ -30,27 +28,15 @@ class YooChooseNotifier implements RecommendationClient
     /** @var \GuzzleHttp\ClientInterface */
     private $guzzle;
 
+    /** @var \EzSystems\RecommendationBundle\Repository\RepositoryHelper */
+    private $repositoryHelper;
+
     /** @var \Psr\Log\LoggerInterface */
     private $logger;
 
-    /** @var \eZ\Publish\API\Repository\Repository */
-    private $repository;
-
-    /** @var \eZ\Publish\API\Repository\ContentService */
-    private $contentService;
-
-    /** @var \eZ\Publish\API\Repository\LocationService */
-    private $locationService;
-
-    /** @var \eZ\Publish\API\Repository\ContentTypeService */
-    private $contentTypeService;
-
     /**
      * @param \GuzzleHttp\ClientInterface $guzzle
-     * @param \eZ\Publish\API\Repository\Repository $repository
-     * @param \eZ\Publish\API\Repository\ContentService $contentService
-     * @param \eZ\Publish\API\Repository\LocationService $locationService
-     * @param \eZ\Publish\API\Repository\ContentTypeService $contentTypeService
+     * @param \EzSystems\RecommendationBundle\Repository\RepositoryHelper $repositoryHelper
      * @param array $options
      *     Keys (all required):
      *     - customer-id: the Recommendation Service customer ID, e.g. 12345
@@ -61,22 +47,16 @@ class YooChooseNotifier implements RecommendationClient
      */
     public function __construct(
         GuzzleClient $guzzle,
-        Repository $repository,
-        ContentService $contentService,
-        LocationService $locationService,
-        ContentTypeService $contentTypeService,
+        RepositoryHelper $repositoryHelper,
         array $options,
         LoggerInterface $logger
     ) {
         $resolver = new OptionsResolver();
         $this->configureOptions($resolver);
 
-        $this->options = $resolver->resolve($options);
         $this->guzzle = $guzzle;
-        $this->repository = $repository;
-        $this->contentService = $contentService;
-        $this->locationService = $locationService;
-        $this->contentTypeService = $contentTypeService;
+        $this->repositoryHelper = $repositoryHelper;
+        $this->options = $resolver->resolve($options);
         $this->logger = $logger;
     }
 
@@ -125,12 +105,26 @@ class YooChooseNotifier implements RecommendationClient
     }
 
     /**
+     * Checks if notifier has configuration.
+     *
+     * @return bool
+     */
+    private function hasCredentials()
+    {
+        return !empty($this->options['customer-id']) && !empty($this->options['license-key']);
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function updateContent($contentId, $versionNo = null)
     {
         try {
-            $content = $this->contentService->loadContent($contentId, null, $versionNo);
+            if (!$this->hasCredentials()) {
+                return;
+            }
+
+            $content = $this->repositoryHelper->loadContent($contentId, null, $versionNo);
 
             if ($this->isContentTypeExcluded($content)) {
                 return;
@@ -157,7 +151,11 @@ class YooChooseNotifier implements RecommendationClient
     public function deleteContent($contentId)
     {
         try {
-            $content = $this->contentService->loadContent($contentId);
+            if (!$this->hasCredentials()) {
+                return;
+            }
+
+            $content = $this->repositoryHelper->loadContent($contentId);
 
             if ($this->isContentTypeExcluded($content)) {
                 return;
@@ -183,14 +181,18 @@ class YooChooseNotifier implements RecommendationClient
      */
     public function hideLocation($locationId, $isChild = false)
     {
-        $location = $this->locationService->loadLocation($locationId);
-        $children = $this->locationService->loadLocationChildren($location)->locations;
+        if (!$this->hasCredentials()) {
+            return;
+        }
+
+        $location = $this->repositoryHelper->loadLocation($locationId);
+        $children = $this->repositoryHelper->loadLocationChildren($location)->locations;
 
         foreach ($children as $child) {
             $this->hideLocation($child->id, true);
         }
 
-        $content = $this->contentService->loadContent($location->contentId);
+        $content = $this->repositoryHelper->loadContent($location->contentId);
 
         if ($this->isContentTypeExcluded($content)) {
             return;
@@ -198,7 +200,7 @@ class YooChooseNotifier implements RecommendationClient
 
         if (!$isChild) {
             // do not send the notification if one of the locations is still visible, to prevent deleting content
-            $contentLocations = $this->locationService->loadLocations($content->contentInfo);
+            $contentLocations = $this->repositoryHelper->loadLocations($content->contentInfo);
             foreach ($contentLocations as $contentLocation) {
                 if (!$contentLocation->hidden) {
                     return;
@@ -222,14 +224,18 @@ class YooChooseNotifier implements RecommendationClient
      */
     public function unhideLocation($locationId)
     {
-        $location = $this->locationService->loadLocation($locationId);
-        $children = $this->locationService->loadLocationChildren($location)->locations;
+        if (!$this->hasCredentials()) {
+            return;
+        }
+
+        $location = $this->repositoryHelper->loadLocation($locationId);
+        $children = $this->repositoryHelper->loadLocationChildren($location)->locations;
 
         foreach ($children as $child) {
             $this->unhideLocation($child->id);
         }
 
-        $content = $this->contentService->loadContent($location->contentId);
+        $content = $this->repositoryHelper->loadContent($location->contentId);
 
         if ($this->isContentTypeExcluded($content)) {
             return;
@@ -295,13 +301,9 @@ class YooChooseNotifier implements RecommendationClient
      */
     private function isContentTypeExcluded(Content $content)
     {
-        $contentType = $this->repository->sudo(function () use ($content) {
-            $contentType = $this->contentTypeService->loadContentType($content->contentInfo->contentTypeId);
+        $contentTypeIdentifier = $this->repositoryHelper->loadContentType($content->contentInfo->contentTypeId)->identifier;
 
-            return $contentType;
-        });
-
-        return !in_array($contentType->identifier, $this->options['included-content-types']);
+        return !in_array($contentTypeIdentifier, $this->options['included-content-types']);
     }
 
     /**
@@ -314,9 +316,7 @@ class YooChooseNotifier implements RecommendationClient
      */
     protected function getLanguageCodes(Content $content, $versionNo = null)
     {
-        $version = $this->contentService->loadVersionInfo($content->contentInfo, $versionNo);
-
-        return $version->languageCodes;
+        return $this->repositoryHelper->loadVersionInfo($content->contentInfo, $versionNo)->languageCodes;
     }
 
     /**

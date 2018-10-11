@@ -41,16 +41,40 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
         $guzzleClientMock = $this->getGuzzleClientMock();
         $this->setGuzzleExpectationsFor('UPDATE', $guzzleClientMock);
 
-        list($repositoryServiceMock, $contentServiceMock) = $this
-            ->getServicesWithExpectationsForContentModification();
+        $repositoryHelperMock = $this->getMockBuilder('EzSystems\RecommendationBundle\Repository\RepositoryHelper')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $repositoryHelperMock
+            ->expects($this->at(0))
+            ->method('loadContent')
+            ->with($this->equalTo(self::CONTENT_ID))
+            ->willReturn(new Content([
+                'versionInfo' => new VersionInfo([
+                    'contentInfo' => new ContentInfo([
+                        'id' => self::CONTENT_ID,
+                        'contentTypeId' => self::CONTENT_TYPE_ID,
+                    ]),
+                ]),
+                'internalFields' => [],
+            ]));
+
+        $repositoryHelperMock
+            ->expects($this->at(1))
+            ->method('loadContentType')
+            ->with($this->equalTo(self::CONTENT_TYPE_ID))
+            ->willReturn(new ContentType(['fieldDefinitions' => [], 'identifier' => self::CONTENT_TYPE_ID]));
+
+        $repositoryHelperMock
+            ->expects($this->at(2))
+            ->method('loadVersionInfo')
+            ->with(new ContentInfo(['id' => self::CONTENT_ID, 'contentTypeId' => self::CONTENT_TYPE_ID]))
+            ->will($this->returnValue(new VersionInfo(['languageCodes' => ['eng-GB']])));
 
         /* Use Case */
         $notifier = new YooChooseNotifier(
             $guzzleClientMock,
-            $repositoryServiceMock,
-            $contentServiceMock,
-            $this->getLocationServiceMock(),
-            $this->getContentTypeServiceMock(),
+            $repositoryHelperMock,
             [
                 'customer-id' => self::CUSTOMER_ID,
                 'license-key' => self::LICENSE_KEY,
@@ -71,16 +95,40 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
         $guzzleClientMock = $this->getGuzzleClientMock();
         $this->setGuzzleExpectationsFor('DELETE', $guzzleClientMock);
 
-        list($repositoryServiceMock, $contentServiceMock) = $this
-            ->getServicesWithExpectationsForContentModification();
+        $repositoryHelperMock = $this->getMockBuilder('EzSystems\RecommendationBundle\Repository\RepositoryHelper')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $repositoryHelperMock
+            ->expects($this->at(0))
+            ->method('loadContent')
+            ->with($this->equalTo(self::CONTENT_ID))
+            ->willReturn(new Content([
+                'versionInfo' => new VersionInfo([
+                    'contentInfo' => new ContentInfo([
+                        'id' => self::CONTENT_ID,
+                        'contentTypeId' => self::CONTENT_TYPE_ID,
+                    ]),
+                ]),
+                'internalFields' => [],
+            ]));
+
+        $repositoryHelperMock
+            ->expects($this->at(1))
+            ->method('loadContentType')
+            ->with($this->equalTo(self::CONTENT_TYPE_ID))
+            ->willReturn(new ContentType(['fieldDefinitions' => [], 'identifier' => self::CONTENT_TYPE_ID]));
+
+        $repositoryHelperMock
+            ->expects($this->at(2))
+            ->method('loadVersionInfo')
+            ->with(new ContentInfo(['id' => self::CONTENT_ID, 'contentTypeId' => self::CONTENT_TYPE_ID]))
+            ->will($this->returnValue(new VersionInfo(['languageCodes' => ['eng-GB']])));
 
         /* Use Case */
         $notifier = new YooChooseNotifier(
             $guzzleClientMock,
-            $repositoryServiceMock,
-            $contentServiceMock,
-            $this->getLocationServiceMock(),
-            $this->getContentTypeServiceMock(),
+            $repositoryHelperMock,
             [
                 'customer-id' => self::CUSTOMER_ID,
                 'license-key' => self::LICENSE_KEY,
@@ -101,47 +149,71 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
         $guzzleClientMock = $this->getGuzzleClientMock();
         $this->setGuzzleExpectationsFor('DELETE', $guzzleClientMock);
 
-        list($repositoryServiceMock, $contentServiceMock) = $this
-            ->getServicesWithExpectationsForContentModification();
+        $repositoryHelperMock = $this->getMockBuilder('EzSystems\RecommendationBundle\Repository\RepositoryHelper')
+            ->disableOriginalConstructor()
+            ->getMock();
 
-        $locationServiceMock = $this->getLocationServiceMock();
-        $locationServiceMock
-            ->expects($this->once())
+        $repositoryHelperMock
+            ->expects($this->at(0))
             ->method('loadLocation')
             ->with($this->equalTo(self::LOCATION_ID))
             ->willReturn(new Location([
+                'id' => 5,
                 'path' => ['1', '5'],
                 'contentInfo' => new ContentInfo(['id' => self::CONTENT_ID]),
             ]));
-        $locationServiceMock
-            ->expects($this->once())
+
+        $repositoryHelperMock
+            ->expects($this->at(1))
             ->method('loadLocationChildren')
-            ->withAnyParameters()
-            ->willReturn(new LocationList(['totalCount' => 0, 'locations' => []]));
-        $locationServiceMock
-            ->expects($this->once())
+            ->willReturn(new LocationList([
+                'totalCount' => 0,
+                'locations' => [],
+            ]));
+
+        $repositoryHelperMock
+            ->expects($this->at(2))
+            ->method('loadContent')
+            ->with($this->equalTo(self::CONTENT_ID))
+            ->willReturn(new Content([
+                'versionInfo' => new VersionInfo([
+                    'contentInfo' => new ContentInfo([
+                        'id' => self::CONTENT_ID,
+                        'contentTypeId' => self::CONTENT_TYPE_ID,
+                    ]),
+                ]),
+                'internalFields' => [],
+            ]));
+
+        $repositoryHelperMock
+            ->expects($this->at(3))
+            ->method('loadContentType')
+            ->with($this->equalTo(self::CONTENT_TYPE_ID))
+            ->willReturn(new ContentType(['fieldDefinitions' => [], 'identifier' => self::CONTENT_TYPE_ID]));
+
+        $repositoryHelperMock
+            ->expects($this->at(4))
             ->method('loadLocations')
-            ->with($this->equalTo(new ContentInfo(['id' => self::CONTENT_ID, 'contentTypeId' => self::CONTENT_TYPE_ID])))
+            ->with($this->equalTo(new ContentInfo([
+                'id' => self::CONTENT_ID,
+                'contentTypeId' => self::CONTENT_TYPE_ID,
+            ])))
             ->willReturn([
-                new Location([
-                    'path' => ['1', '5', '10'],
-                    'hidden' => true,
-                    'contentInfo' => new ContentInfo(['id' => self::CONTENT_ID]),
-                ]),
-                new Location([
-                    'path' => ['1', '5', '20'],
-                    'hidden' => true,
-                    'contentInfo' => new ContentInfo(['id' => self::CONTENT_ID]),
-                ]),
+                new Location(['path' => ['1', '5'], 'hidden' => true]),
+                new Location(['path' => ['1', '5', '8'], 'hidden' => true]),
+                new Location(['path' => ['1', '5', '9'], 'hidden' => true]),
             ]);
+
+        $repositoryHelperMock
+            ->expects($this->at(5))
+            ->method('loadVersionInfo')
+            ->with(new ContentInfo(['id' => self::CONTENT_ID, 'contentTypeId' => self::CONTENT_TYPE_ID]))
+            ->will($this->returnValue(new VersionInfo(['languageCodes' => ['eng-GB']])));
 
         /* Use Case */
         $notifier = new YooChooseNotifier(
             $guzzleClientMock,
-            $repositoryServiceMock,
-            $contentServiceMock,
-            $locationServiceMock,
-            $this->getContentTypeServiceMock(),
+            $repositoryHelperMock,
             [
                 'customer-id' => self::CUSTOMER_ID,
                 'license-key' => self::LICENSE_KEY,
@@ -164,8 +236,11 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
         $this->setGuzzleExpectationsFor('DELETE', $guzzleClientMock, self::CONTENT_ID + 2, 1);
         $this->setGuzzleExpectationsFor('DELETE', $guzzleClientMock, self::CONTENT_ID, 2);
 
-        $locationServiceMock = $this->getLocationServiceMock();
-        $locationServiceMock
+        $repositoryHelperMock = $this->getMockBuilder('EzSystems\RecommendationBundle\Repository\RepositoryHelper')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $repositoryHelperMock
             ->expects($this->at(0))
             ->method('loadLocation')
             ->with($this->equalTo(self::LOCATION_ID))
@@ -175,7 +250,7 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
                 'contentInfo' => new ContentInfo(['id' => self::CONTENT_ID]),
             ]));
 
-        $locationServiceMock
+        $repositoryHelperMock
             ->expects($this->at(1))
             ->method('loadLocationChildren')
             ->with($this->equalTo(new Location([
@@ -199,7 +274,7 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
                 ],
             ]));
 
-        $locationServiceMock
+        $repositoryHelperMock
             ->expects($this->at(2))
             ->method('loadLocation')
             ->with($this->equalTo(20))
@@ -208,7 +283,8 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
                 'path' => ['1', '5', '20'],
                 'contentInfo' => new ContentInfo(['id' => self::CONTENT_ID + 1]),
             ]));
-        $locationServiceMock
+
+        $repositoryHelperMock
             ->expects($this->at(3))
             ->method('loadLocationChildren')
             ->with($this->equalTo(new Location([
@@ -218,42 +294,8 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
             ])))
             ->willReturn(new LocationList(['totalCount' => 0, 'locations' => []]));
 
-        $locationServiceMock
+        $repositoryHelperMock
             ->expects($this->at(4))
-            ->method('loadLocation')
-            ->with($this->equalTo(30))
-            ->willReturn(new Location([
-                'id' => 30,
-                'path' => ['1', '5', '30'],
-                'contentInfo' => new ContentInfo(['id' => self::CONTENT_ID + 2]),
-            ]));
-        $locationServiceMock
-            ->expects($this->at(5))
-            ->method('loadLocationChildren')
-            ->with($this->equalTo(new Location([
-                'id' => 30,
-                'path' => ['1', '5', '30'],
-                'contentInfo' => new ContentInfo(['id' => self::CONTENT_ID + 2]),
-            ])))
-            ->willReturn(new LocationList(['totalCount' => 0, 'locations' => []]));
-
-        $locationServiceMock
-            ->expects($this->at(6))
-            ->method('loadLocations')
-            ->with($this->equalTo(new ContentInfo([
-                'id' => self::CONTENT_ID,
-                'contentTypeId' => self::CONTENT_TYPE_ID,
-            ])))
-            ->willReturn([
-                new Location(['path' => ['1', '5'], 'hidden' => true]),
-                new Location(['path' => ['1', '5', '8'], 'hidden' => true]),
-                new Location(['path' => ['1', '5', '9'], 'hidden' => true]),
-            ]);
-
-        $contentServiceMock = $this->getContentServiceMock();
-
-        $contentServiceMock
-            ->expects($this->at(0))
             ->method('loadContent')
             ->with($this->equalTo(self::CONTENT_ID + 1))
             ->willReturn(new Content([
@@ -265,14 +307,41 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
                 ]),
                 'internalFields' => [],
             ]));
-        $contentServiceMock
-            ->expects($this->at(1))
+
+        $repositoryHelperMock
+            ->expects($this->at(5))
+            ->method('loadContentType')
+            ->with($this->equalTo(self::CONTENT_TYPE_ID))
+            ->willReturn(new ContentType(['fieldDefinitions' => [], 'identifier' => self::CONTENT_TYPE_ID]));
+
+        $repositoryHelperMock
+            ->expects($this->at(6))
             ->method('loadVersionInfo')
             ->with(new ContentInfo(['id' => self::CONTENT_ID + 1, 'contentTypeId' => self::CONTENT_TYPE_ID]))
             ->will($this->returnValue(new VersionInfo(['languageCodes' => ['eng-GB']])));
 
-        $contentServiceMock
-            ->expects($this->at(2))
+        $repositoryHelperMock
+            ->expects($this->at(7))
+            ->method('loadLocation')
+            ->with($this->equalTo(30))
+            ->willReturn(new Location([
+                'id' => 30,
+                'path' => ['1', '5', '30'],
+                'contentInfo' => new ContentInfo(['id' => self::CONTENT_ID + 2]),
+            ]));
+
+        $repositoryHelperMock
+            ->expects($this->at(8))
+            ->method('loadLocationChildren')
+            ->with($this->equalTo(new Location([
+                'id' => 30,
+                'path' => ['1', '5', '30'],
+                'contentInfo' => new ContentInfo(['id' => self::CONTENT_ID + 2]),
+            ])))
+            ->willReturn(new LocationList(['totalCount' => 0, 'locations' => []]));
+
+        $repositoryHelperMock
+            ->expects($this->at(9))
             ->method('loadContent')
             ->with($this->equalTo(self::CONTENT_ID + 2))
             ->willReturn(new Content([
@@ -284,14 +353,21 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
                 ]),
                 'internalFields' => [],
             ]));
-        $contentServiceMock
-            ->expects($this->at(3))
+
+        $repositoryHelperMock
+            ->expects($this->at(10))
+            ->method('loadContentType')
+            ->with($this->equalTo(self::CONTENT_TYPE_ID))
+            ->willReturn(new ContentType(['fieldDefinitions' => [], 'identifier' => self::CONTENT_TYPE_ID]));
+
+        $repositoryHelperMock
+            ->expects($this->at(11))
             ->method('loadVersionInfo')
             ->with(new ContentInfo(['id' => self::CONTENT_ID + 2, 'contentTypeId' => self::CONTENT_TYPE_ID]))
             ->will($this->returnValue(new VersionInfo(['languageCodes' => ['eng-GB']])));
 
-        $contentServiceMock
-            ->expects($this->at(4))
+        $repositoryHelperMock
+            ->expects($this->at(12))
             ->method('loadContent')
             ->with($this->equalTo(self::CONTENT_ID))
             ->willReturn(new Content([
@@ -303,25 +379,36 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
                 ]),
                 'internalFields' => [],
             ]));
-        $contentServiceMock
-            ->expects($this->at(5))
+
+        $repositoryHelperMock
+            ->expects($this->at(13))
+            ->method('loadContentType')
+            ->with($this->equalTo(self::CONTENT_TYPE_ID))
+            ->willReturn(new ContentType(['fieldDefinitions' => [], 'identifier' => self::CONTENT_TYPE_ID]));
+
+        $repositoryHelperMock
+            ->expects($this->at(14))
+            ->method('loadLocations')
+            ->with($this->equalTo(new ContentInfo([
+                'id' => self::CONTENT_ID,
+                'contentTypeId' => self::CONTENT_TYPE_ID,
+            ])))
+            ->willReturn([
+                new Location(['path' => ['1', '5'], 'hidden' => true]),
+                new Location(['path' => ['1', '5', '8'], 'hidden' => true]),
+                new Location(['path' => ['1', '5', '9'], 'hidden' => true]),
+            ]);
+
+        $repositoryHelperMock
+            ->expects($this->at(15))
             ->method('loadVersionInfo')
             ->with(new ContentInfo(['id' => self::CONTENT_ID, 'contentTypeId' => self::CONTENT_TYPE_ID]))
             ->will($this->returnValue(new VersionInfo(['languageCodes' => ['eng-GB']])));
 
-        $repositoryServiceMock = $this->getRepositoryServiceMock();
-        $repositoryServiceMock
-            ->expects($this->any())
-            ->method('sudo')
-            ->will($this->returnValue(new ContentType(['fieldDefinitions' => [], 'identifier' => self::CONTENT_TYPE_ID])));
-
         /* Use Case */
         $notifier = new YooChooseNotifier(
             $guzzleClientMock,
-            $repositoryServiceMock,
-            $contentServiceMock,
-            $locationServiceMock,
-            $this->getContentTypeServiceMock(),
+            $repositoryHelperMock,
             [
                 'customer-id' => self::CUSTOMER_ID,
                 'license-key' => self::LICENSE_KEY,
@@ -342,31 +429,57 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
         $guzzleClientMock = $this->getGuzzleClientMock();
         $this->setGuzzleExpectationsFor('UPDATE', $guzzleClientMock);
 
-        list($repositoryServiceMock, $contentServiceMock) = $this
-            ->getServicesWithExpectationsForContentModification();
+        $repositoryHelperMock = $this->getMockBuilder('EzSystems\RecommendationBundle\Repository\RepositoryHelper')
+            ->disableOriginalConstructor()
+            ->getMock();
 
-        $locationServiceMock = $this->getLocationServiceMock();
-        $locationServiceMock
-            ->expects($this->once())
+        $repositoryHelperMock
+            ->expects($this->at(0))
             ->method('loadLocation')
             ->with($this->equalTo(self::LOCATION_ID))
             ->willReturn(new Location([
+                'id' => 5,
                 'path' => ['1', '5'],
+                'hidden' => true,
                 'contentInfo' => new ContentInfo(['id' => self::CONTENT_ID]),
             ]));
-        $locationServiceMock
-            ->expects($this->once())
+
+        $repositoryHelperMock
+            ->expects($this->at(1))
             ->method('loadLocationChildren')
             ->withAnyParameters()
             ->willReturn(new LocationList(['totalCount' => 0, 'locations' => []]));
 
+        $repositoryHelperMock
+            ->expects($this->at(2))
+            ->method('loadContent')
+            ->with($this->equalTo(self::CONTENT_ID))
+            ->willReturn(new Content([
+                'versionInfo' => new VersionInfo([
+                    'contentInfo' => new ContentInfo([
+                        'id' => self::CONTENT_ID,
+                        'contentTypeId' => self::CONTENT_TYPE_ID,
+                    ]),
+                ]),
+                'internalFields' => [],
+            ]));
+
+        $repositoryHelperMock
+            ->expects($this->at(3))
+            ->method('loadContentType')
+            ->with($this->equalTo(self::CONTENT_TYPE_ID))
+            ->willReturn(new ContentType(['fieldDefinitions' => [], 'identifier' => self::CONTENT_TYPE_ID]));
+
+        $repositoryHelperMock
+            ->expects($this->at(4))
+            ->method('loadVersionInfo')
+            ->with(new ContentInfo(['id' => self::CONTENT_ID, 'contentTypeId' => self::CONTENT_TYPE_ID]))
+            ->will($this->returnValue(new VersionInfo(['languageCodes' => ['eng-GB']])));
+
         /* Use Case */
         $notifier = new YooChooseNotifier(
             $guzzleClientMock,
-            $repositoryServiceMock,
-            $contentServiceMock,
-            $locationServiceMock,
-            $this->getContentTypeServiceMock(),
+            $repositoryHelperMock,
             [
                 'customer-id' => self::CUSTOMER_ID,
                 'license-key' => self::LICENSE_KEY,
@@ -389,8 +502,11 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
         $this->setGuzzleExpectationsFor('UPDATE', $guzzleClientMock, self::CONTENT_ID + 2, 1);
         $this->setGuzzleExpectationsFor('UPDATE', $guzzleClientMock, self::CONTENT_ID, 2);
 
-        $locationServiceMock = $this->getLocationServiceMock();
-        $locationServiceMock
+        $repositoryHelperMock = $this->getMockBuilder('EzSystems\RecommendationBundle\Repository\RepositoryHelper')
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $repositoryHelperMock
             ->expects($this->at(0))
             ->method('loadLocation')
             ->with($this->equalTo(self::LOCATION_ID))
@@ -400,7 +516,7 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
                 'contentInfo' => new ContentInfo(['id' => self::CONTENT_ID]),
             ]));
 
-        $locationServiceMock
+        $repositoryHelperMock
             ->expects($this->at(1))
             ->method('loadLocationChildren')
             ->with($this->equalTo(new Location([
@@ -424,7 +540,7 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
                 ],
             ]));
 
-        $locationServiceMock
+        $repositoryHelperMock
             ->expects($this->at(2))
             ->method('loadLocation')
             ->with($this->equalTo(20))
@@ -433,7 +549,8 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
                 'path' => ['1', '5', '20'],
                 'contentInfo' => new ContentInfo(['id' => self::CONTENT_ID + 1]),
             ]));
-        $locationServiceMock
+
+        $repositoryHelperMock
             ->expects($this->at(3))
             ->method('loadLocationChildren')
             ->with($this->equalTo(new Location([
@@ -443,29 +560,8 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
             ])))
             ->willReturn(new LocationList(['totalCount' => 0, 'locations' => []]));
 
-        $locationServiceMock
+        $repositoryHelperMock
             ->expects($this->at(4))
-            ->method('loadLocation')
-            ->with($this->equalTo(30))
-            ->willReturn(new Location([
-                'id' => 30,
-                'path' => ['1', '5', '30'],
-                'contentInfo' => new ContentInfo(['id' => self::CONTENT_ID + 2]),
-            ]));
-        $locationServiceMock
-            ->expects($this->at(5))
-            ->method('loadLocationChildren')
-            ->with($this->equalTo(new Location([
-                'id' => 30,
-                'path' => ['1', '5', '30'],
-                'contentInfo' => new ContentInfo(['id' => self::CONTENT_ID + 2]),
-            ])))
-            ->willReturn(new LocationList(['totalCount' => 0, 'locations' => []]));
-
-        $contentServiceMock = $this->getContentServiceMock();
-
-        $contentServiceMock
-            ->expects($this->at(0))
             ->method('loadContent')
             ->with($this->equalTo(self::CONTENT_ID + 1))
             ->willReturn(new Content([
@@ -477,14 +573,41 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
                 ]),
                 'internalFields' => [],
             ]));
-        $contentServiceMock
-            ->expects($this->at(1))
+
+        $repositoryHelperMock
+            ->expects($this->at(5))
+            ->method('loadContentType')
+            ->with($this->equalTo(self::CONTENT_TYPE_ID))
+            ->willReturn(new ContentType(['fieldDefinitions' => [], 'identifier' => self::CONTENT_TYPE_ID]));
+
+        $repositoryHelperMock
+            ->expects($this->at(6))
             ->method('loadVersionInfo')
             ->with(new ContentInfo(['id' => self::CONTENT_ID + 1, 'contentTypeId' => self::CONTENT_TYPE_ID]))
             ->will($this->returnValue(new VersionInfo(['languageCodes' => ['eng-GB']])));
 
-        $contentServiceMock
-            ->expects($this->at(2))
+        $repositoryHelperMock
+            ->expects($this->at(7))
+            ->method('loadLocation')
+            ->with($this->equalTo(30))
+            ->willReturn(new Location([
+                'id' => 30,
+                'path' => ['1', '5', '30'],
+                'contentInfo' => new ContentInfo(['id' => self::CONTENT_ID + 2]),
+            ]));
+
+        $repositoryHelperMock
+            ->expects($this->at(8))
+            ->method('loadLocationChildren')
+            ->with($this->equalTo(new Location([
+                'id' => 30,
+                'path' => ['1', '5', '30'],
+                'contentInfo' => new ContentInfo(['id' => self::CONTENT_ID + 2]),
+            ])))
+            ->willReturn(new LocationList(['totalCount' => 0, 'locations' => []]));
+
+        $repositoryHelperMock
+            ->expects($this->at(9))
             ->method('loadContent')
             ->with($this->equalTo(self::CONTENT_ID + 2))
             ->willReturn(new Content([
@@ -496,14 +619,21 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
                 ]),
                 'internalFields' => [],
             ]));
-        $contentServiceMock
-            ->expects($this->at(3))
+
+        $repositoryHelperMock
+            ->expects($this->at(10))
+            ->method('loadContentType')
+            ->with($this->equalTo(self::CONTENT_TYPE_ID))
+            ->willReturn(new ContentType(['fieldDefinitions' => [], 'identifier' => self::CONTENT_TYPE_ID]));
+
+        $repositoryHelperMock
+            ->expects($this->at(11))
             ->method('loadVersionInfo')
             ->with(new ContentInfo(['id' => self::CONTENT_ID + 2, 'contentTypeId' => self::CONTENT_TYPE_ID]))
             ->will($this->returnValue(new VersionInfo(['languageCodes' => ['eng-GB']])));
 
-        $contentServiceMock
-            ->expects($this->at(4))
+        $repositoryHelperMock
+            ->expects($this->at(12))
             ->method('loadContent')
             ->with($this->equalTo(self::CONTENT_ID))
             ->willReturn(new Content([
@@ -515,25 +645,23 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
                 ]),
                 'internalFields' => [],
             ]));
-        $contentServiceMock
-            ->expects($this->at(5))
+
+        $repositoryHelperMock
+            ->expects($this->at(13))
+            ->method('loadContentType')
+            ->with($this->equalTo(self::CONTENT_TYPE_ID))
+            ->willReturn(new ContentType(['fieldDefinitions' => [], 'identifier' => self::CONTENT_TYPE_ID]));
+
+        $repositoryHelperMock
+            ->expects($this->at(14))
             ->method('loadVersionInfo')
             ->with(new ContentInfo(['id' => self::CONTENT_ID, 'contentTypeId' => self::CONTENT_TYPE_ID]))
             ->will($this->returnValue(new VersionInfo(['languageCodes' => ['eng-GB']])));
 
-        $repositoryServiceMock = $this->getRepositoryServiceMock();
-        $repositoryServiceMock
-            ->expects($this->any())
-            ->method('sudo')
-            ->will($this->returnValue(new ContentType(['fieldDefinitions' => [], 'identifier' => self::CONTENT_TYPE_ID])));
-
         /* Use Case */
         $notifier = new YooChooseNotifier(
             $guzzleClientMock,
-            $repositoryServiceMock,
-            $contentServiceMock,
-            $locationServiceMock,
-            $this->getContentTypeServiceMock(),
+            $repositoryHelperMock,
             [
                 'customer-id' => self::CUSTOMER_ID,
                 'license-key' => self::LICENSE_KEY,
@@ -556,48 +684,6 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
             ->getMock();
 
         return $guzzleClientMock;
-    }
-
-    /**
-     * Returns services with expectations for content modification.
-     *
-     * @return array
-     */
-    private function getServicesWithExpectationsForContentModification()
-    {
-        $repositoryServiceMock = $this->getRepositoryServiceMock();
-        $repositoryServiceMock
-            ->expects($this->once())
-            ->method('sudo')
-            ->will($this->returnValue(new ContentType([
-                'fieldDefinitions' => [],
-                'identifier' => self::CONTENT_TYPE_ID,
-            ])));
-
-        $contentServiceMock = $this->getContentServiceMock();
-        $contentServiceMock
-            ->expects($this->once())
-            ->method('loadContent')
-            ->with($this->equalTo(self::CONTENT_ID))
-            ->willReturn(new Content([
-                'versionInfo' => new VersionInfo([
-                    'contentInfo' => new ContentInfo([
-                        'id' => self::CONTENT_ID,
-                        'contentTypeId' => self::CONTENT_TYPE_ID,
-                    ]),
-                ]),
-                'internalFields' => [],
-            ]));
-        $contentServiceMock
-            ->expects($this->once())
-            ->method('loadVersionInfo')
-            ->with(new ContentInfo([
-                'id' => self::CONTENT_ID,
-                'contentTypeId' => self::CONTENT_TYPE_ID,
-            ]))
-            ->will($this->returnValue(new VersionInfo(['languageCodes' => ['eng-GB']])));
-
-        return array($repositoryServiceMock, $contentServiceMock);
     }
 
     /**
@@ -721,62 +807,5 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
                 )
                 ->will($this->returnValue(new Response(200)));
         }
-    }
-
-    /**
-     * Returns ContentService mock object.
-     *
-     * @return \eZ\Publish\API\Repository\ContentService|\PHPUnit_Framework_MockObject_MockObject
-     */
-    protected function getContentServiceMock()
-    {
-        $contentServiceMock = $this
-            ->getMockBuilder('eZ\Publish\API\Repository\ContentService')
-            ->getMock();
-
-        return $contentServiceMock;
-    }
-
-    /**
-     * Returns LocationService mock object.
-     *
-     * @return \eZ\Publish\API\Repository\LocationService|\PHPUnit_Framework_MockObject_MockObject
-     */
-    protected function getLocationServiceMock()
-    {
-        $locationServiceMock = $this
-            ->getMockBuilder('eZ\Publish\API\Repository\LocationService')
-            ->getMock();
-
-        return $locationServiceMock;
-    }
-
-    /**
-     * Returns ContentTypeService mock object.
-     *
-     * @return \eZ\Publish\API\Repository\ContentTypeService|\PHPUnit_Framework_MockObject_MockObject
-     */
-    protected function getContentTypeServiceMock()
-    {
-        $contentTypeServiceMock = $this
-            ->getMockBuilder('eZ\Publish\API\Repository\ContentTypeService')
-            ->getMock();
-
-        return $contentTypeServiceMock;
-    }
-
-    /**
-     * Returns Repository mock object.
-     *
-     * @return \eZ\Publish\Core\SignalSlot\Repository|\PHPUnit_Framework_MockObject_MockObject
-     */
-    protected function getRepositoryServiceMock()
-    {
-        $repositoryServiceMock = $this
-            ->getMockBuilder('\eZ\Publish\Core\SignalSlot\Repository')
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        return $repositoryServiceMock;
     }
 }

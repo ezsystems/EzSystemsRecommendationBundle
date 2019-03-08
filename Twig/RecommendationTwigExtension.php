@@ -17,7 +17,6 @@ use eZ\Publish\API\Repository\ContentService;
 use eZ\Publish\API\Repository\LocationService;
 use eZ\Publish\API\Repository\ContentTypeService;
 use eZ\Publish\Core\MVC\Symfony\Locale\LocaleConverter;
-use EzSystems\RecommendationBundle\Exception\InvalidArgumentException;
 
 /**
  * YooChoose recommender Twig extension.
@@ -93,21 +92,6 @@ class RecommendationTwigExtension extends Twig_Extension
     }
 
     /**
-     * @param array $options
-     *
-     * @return array
-     */
-    protected function parseOptions(array $options)
-    {
-        $request = $this->requestStack->getCurrentRequest();
-        if (!empty($request) && $request->isSecure()) {
-            $options['recommenderEndPoint'] = str_replace('http://', 'https://', $options['recommenderEndPoint']);
-        }
-
-        return $options;
-    }
-
-    /**
      * Sets `includedContentTypes` option when service is created which allows to
      * inject parameter value according to siteaccess configuration.
      *
@@ -147,11 +131,6 @@ class RecommendationTwigExtension extends Twig_Extension
     public function getFunctions()
     {
         return array(
-            new Twig_SimpleFunction('yc_show_recommendations', array($this, 'showRecommendations'), array(
-                'is_safe' => array('html'),
-                'needs_environment' => true,
-            )),
-
             new Twig_SimpleFunction('yc_track_user', array($this, 'trackUser'), array(
                 'is_safe' => array('html'),
                 'needs_environment' => true,
@@ -188,22 +167,18 @@ class RecommendationTwigExtension extends Twig_Extension
     }
 
     /**
-     * Returns ContentType identifier based on $contentId.
+     * @param array $options
      *
-     * @param int|mixed $contentId
-     *
-     * @return string
+     * @return array
      */
-    private function getContentIdentifier($contentId)
+    protected function parseOptions(array $options)
     {
-        $contentType = $this->contentTypeService->loadContentType(
-            $this->contentService
-                ->loadContent($contentId)
-                ->contentInfo
-                ->contentTypeId
-        );
+        $request = $this->requestStack->getCurrentRequest();
+        if (!empty($request) && $request->isSecure()) {
+            $options['recommenderEndPoint'] = str_replace('http://', 'https://', $options['recommenderEndPoint']);
+        }
 
-        return $contentType->identifier;
+        return $options;
     }
 
     /**
@@ -219,78 +194,6 @@ class RecommendationTwigExtension extends Twig_Extension
     }
 
     /**
-     * Renders recommendations snippet code.
-     *
-     * @param \Twig_Environment $twigEnvironment
-     * @param int|mixed $contentId
-     * @param string $scenario
-     * @param int $limit
-     * @param string $contentType
-     * @param string $template
-     * @param array $fields
-     * @param array $params
-     *
-     * @return string
-     *
-     * @throws \EzSystems\RecommendationBundle\Exception\InvalidArgumentException when attributes are missing
-     */
-    public function showRecommendations(
-        Twig_Environment $twigEnvironment,
-        $contentId,
-        $scenario,
-        $limit,
-        $contentType,
-        $template,
-        array $fields,
-        array $params = array()
-    ) {
-        if (empty($fields)) {
-            throw new InvalidArgumentException('Missing recommendation fields, at least one field is required');
-        }
-
-        $filters = '';
-        if (isset($params['filters'])) {
-            foreach ($params['filters'] as $key => $filter) {
-                $filter = is_array($filter) ? implode(',', $filter) : $filter;
-                $filters .= sprintf('&%s=%s', $key, $filter);
-            }
-        }
-
-        return $twigEnvironment->render(
-            sprintf('EzSystemsRecommendationBundle::%s.html.twig', $template),
-            array(
-                'contentId' => $contentId,
-                'language' => $this->getCurrentLanguage(),
-                'scenario' => $scenario,
-                'limit' => $limit,
-                'templateId' => uniqid(),
-                'fields' => $fields,
-                'filters' => $filters,
-                'endpointUrl' => $this->getEndPointUrl(),
-                'feedbackUrl' => $this->getFeedbackUrl($this->getContentTypeId($contentType)),
-                'contentType' => $this->getContentTypeId($this->getContentIdentifier($contentId)),
-                'outputTypeId' => $this->getContentTypeId($contentType),
-                'categoryPath' => $this->getLocationPathString($contentId),
-            )
-        );
-    }
-
-    /**
-     * Returns location path string based on $contentId.
-     *
-     * @param int|mixed $contentId
-     *
-     * @return string
-     */
-    protected function getLocationPathString($contentId)
-    {
-        $content = $this->contentService->loadContent($contentId);
-        $location = $this->locationService->loadLocation($content->contentInfo->mainLocationId);
-
-        return $location->pathString;
-    }
-
-    /**
      * Returns current language.
      *
      * @return string
@@ -303,35 +206,26 @@ class RecommendationTwigExtension extends Twig_Extension
     }
 
     /**
-     * Returns YooChoose recommender end-point address.
+     * Returns ContentType identifier based on $contentId.
+     *
+     * @param int|mixed $contentId
      *
      * @return string
      */
-    protected function getEndPointUrl()
+    private function getContentIdentifier($contentId)
     {
-        return sprintf('%s/api/v2/%d/%s/',
-            $this->options['recommenderEndPoint'],
-            $this->options['customerId'],
-            $this->getCurrentUserId()
-        );
-    }
+        if (!$contentId) {
+            return null;
+        }
 
-    /**
-     * Returns YooChoose feedback end-point address used to report
-     * that recommendations were successfully fetched and displayed.
-     *
-     * @param int $outputContentTypeId ContentType ID for which recommendations should be delivered
-     *
-     * @return string
-     */
-    protected function getFeedbackUrl($outputContentTypeId)
-    {
-        return sprintf('%s/api/%d/rendered/%s/%d/',
-            $this->options['trackingEndPoint'],
-            $this->options['customerId'],
-            $this->getCurrentUserId(),
-            $outputContentTypeId
+        $contentType = $this->contentTypeService->loadContentType(
+            $this->contentService
+                ->loadContent($contentId)
+                ->contentInfo
+                ->contentTypeId
         );
+
+        return $contentType->identifier;
     }
 
     /**

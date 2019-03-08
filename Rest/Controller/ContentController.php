@@ -14,7 +14,7 @@ use eZ\Publish\API\Repository\Values\Content\Query\Criterion;
 use eZ\Publish\Core\REST\Server\Controller as BaseController;
 use eZ\Publish\Core\REST\Server\Exceptions\AuthenticationFailedException;
 use eZ\Publish\Core\REST\Server\Exceptions\BadRequestException;
-use EzSystems\RecommendationBundle\Authentication\Authenticator;
+use EzSystems\RecommendationBundle\Authentication\AuthenticatorInterface;
 use EzSystems\RecommendationBundle\Helper\Text;
 use EzSystems\RecommendationBundle\Helper\SiteAccess;
 use EzSystems\RecommendationBundle\Rest\Content\Content;
@@ -38,7 +38,7 @@ class ContentController extends BaseController
     /** @var \eZ\Publish\Core\MVC\ConfigResolverInterface */
     protected $configResolver;
 
-    /** @var \EzSystems\RecommendationBundle\Authentication\Authenticator */
+    /** @var \EzSystems\RecommendationBundle\Authentication\AuthenticatorInterface */
     protected $authenticator;
 
     /** @var \EzSystems\RecommendationBundle\Rest\Content\Content */
@@ -51,7 +51,7 @@ class ContentController extends BaseController
      * @param \eZ\Publish\API\Repository\LocationService $locationService
      * @param \eZ\Publish\API\Repository\SearchService $searchService
      * @param \eZ\Publish\Core\MVC\ConfigResolverInterface $configResolver
-     * @param \EzSystems\RecommendationBundle\Authentication\Authenticator $authenticator
+     * @param \EzSystems\RecommendationBundle\Authentication\AuthenticatorInterface $authenticator
      * @param \EzSystems\RecommendationBundle\Rest\Content\Content $content
      * @param \EzSystems\RecommendationBundle\Helper\SiteAccess $siteAccessHelper
      */
@@ -59,7 +59,7 @@ class ContentController extends BaseController
         LocationService $locationService,
         SearchService $searchService,
         ConfigResolverInterface $configResolver,
-        Authenticator $authenticator,
+        AuthenticatorInterface $authenticator,
         Content $content,
         SiteAccess $siteAccessHelper
     ) {

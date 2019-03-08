@@ -1,5 +1,5 @@
 parameters:
-    ez_recommendation.client.yoochoose_notifier.class: EzSystems\RecommendationBundle\Client\YooChooseNotifier
+    ez_recommendation.client.yoochoose_notifier.class: EzSystems\RecommendationBundle\Rest\Api\YooChooseNotifier
     ez_recommendation.twig.extension.class: EzSystems\RecommendationBundle\Twig\RecommendationTwigExtension
     ez_recommendation.event_listener.login.class: EzSystems\RecommendationBundle\EventListener\Login
     ez_recommendation.event_listener.session_backup.class: EzSystems\RecommendationBundle\EventListener\SessionBackup
@@ -12,11 +12,72 @@ parameters:
     ez_recommendation.rest.response.http.class: EzSystems\RecommendationBundle\Rest\Response\HttpResponse
     ez_recommendation.rest.visitor.generator.class: EzSystems\RecommendationBundle\Rest\ValueObjectVisitor\ContentListElementGenerator
 
+    ez_recommendation.rest.controller.recommendation.class: EzSystems\RecommendationBundle\Rest\Controller\RecommendationController
+    ez_recommendation.service.recommendation.service.class: EzSystems\RecommendationBundle\Service\RecommendationService
+    ez_recommendation.yoochoose.client.class: EzSystems\RecommendationBundle\Client\YooChooseClient
+    ez_recommendation.api.factory.class: EzSystems\RecommendationBundle\Factory\YooChooseApiFactory
+    ez_recommendation.allowed.api.class: EzSystems\RecommendationBundle\Rest\Api\AllowedApi
+    ez_recommendation.content_helper.class: EzSystems\RecommendationBundle\Helper\ContentHelper
+    ez_recommendation.user_helper.class: EzSystems\RecommendationBundle\Helper\UserHelper
+    ez_recommendation.session_helper.class: EzSystems\RecommendationBundle\Helper\SessionHelper
+
 services:
+    ez_recommendation.allowed.api:
+        class: '%ez_recommendation.allowed.api.class%'
+
+    ez_recommendation.api.factory:
+        class: '%ez_recommendation.api.factory.class%'
+        arguments:
+            - '@ez_recommendation.allowed.api'
+
+    ez_recommendation.yoochoose.client:
+        class: "%ez_recommendation.yoochoose.client.class%"
+        arguments:
+            - "@ez_recommendation.client.yoochoose_notifier.guzzle_client"
+            - '@ez_recommendation.api.factory'
+            - '@logger'
+
+    ez_recommendation.rest.controller.recommendation:
+        class: "%ez_recommendation.rest.controller.recommendation.class%"
+        arguments:
+            - '@ez_recommendation.service.recommendation.service'
+            - '@templating'
+            - '@logger'
+
+    ez_recommendation.service.recommendation.service:
+        class: "%ez_recommendation.service.recommendation.service.class%"
+        arguments:
+            - '@ez_recommendation.yoochoose.client'
+            - '@ez_recommendation.content_helper'
+            - '@ez_recommendation.user_helper'
+            - '@ez_recommendation.session_helper'
+            - "@ezpublish.locale.converter"
+            - '%env(RECOMMENDATIONS_CUSTOMER_ID)%'
+            - '%env(RECOMMENDATIONS_LICENSE_KEY)%'
+
+    ez_recommendation.content_helper:
+        class: '%ez_recommendation.content_helper.class%'
+        arguments:
+            - '@ezpublish.api.service.content_type'
+            - '@ezpublish.api.service.content'
+            - '@ezpublish.api.service.location'
+
+    ez_recommendation.user_helper:
+        class: '%ez_recommendation.user_helper.class%'
+        arguments:
+            - '@security.authorization_checker'
+            - '@security.token_storage'
+
+    ez_recommendation.session_helper:
+        class: '%ez_recommendation.session_helper.class%'
+        arguments:
+            - '@request_stack'
+            - '@session'
+
     ez_recommendation.client.yoochoose_notifier:
         class: "%ez_recommendation.client.yoochoose_notifier.class%"
         arguments:
-            - '@ez_recommendation.client.yoochoose_notifier.guzzle_client'
+            - '@ez_recommendation.yoochoose.client'
             - '@ezpublish.api.repository'
             - '@ezpublish.api.service.content'
             - '@ezpublish.api.service.location'
@@ -82,6 +143,7 @@ services:
         tags:
             - { name: twig.extension }
 
+
     ez_recommendation.event_listener.login:
         class: "%ez_recommendation.event_listener.login.class%"
         arguments:
@@ -118,6 +180,7 @@ services:
             - '@ez_recommendation.rest.content'
             - '@ez_recommendation.siteaccess_helper'
         parent: ezpublish_rest.controller.base
+
 
     ez_recommendation.rest.controller.export:
         class: "%ez_recommendation.rest.controller.export.class%"
@@ -196,8 +259,9 @@ services:
             - { name: monolog.logger, channel: ez_recommendation }
 
     ez_recommendation.export_notifier:
-        class: 'EzSystems\RecommendationBundle\Client\ExportNotifier'
+        class: 'EzSystems\RecommendationBundle\Rest\Api\ExportNotifier'
         arguments:
+            - '@ez_recommendation.yoochoose.client'
             - '@logger'
             - '%kernel.root_dir%'
         tags:
@@ -249,3 +313,5 @@ services:
         tags:
             - { name: console.command }
             - { name: monolog.logger, channel: ez_recommendation }
+
+

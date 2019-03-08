@@ -9,17 +9,17 @@
 namespace EzSystems\RecommendationBundle\eZ\Publish\Slot;
 
 use eZ\Publish\Core\SignalSlot\Slot as BaseSlot;
-use EzSystems\RecommendationBundle\Client\RecommendationClient;
+use EzSystems\RecommendationBundle\Rest\Api\YooChooseNotifier;
 
 abstract class Base extends BaseSlot
 {
-    /** @var \EzSystems\RecommendationBundle\Client\RecommendationClient */
+    /** @var \EzSystems\RecommendationBundle\Rest\Api\YooChooseNotifier */
     protected $client;
 
     /**
-     * @param \EzSystems\RecommendationBundle\Client\RecommendationClient $client
+     * @param \EzSystems\RecommendationBundle\Rest\Api\YooChooseNotifier $client
      */
-    public function __construct(RecommendationClient $client)
+    public function __construct(YooChooseNotifier $client)
     {
         $this->client = $client;
     }

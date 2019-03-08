@@ -6,7 +6,7 @@
 namespace EzSystems\RecommendationBundle\eZ\Publish\LegacySearch;
 
 use ezpSearchEngine;
-use EzSystems\RecommendationBundle\Client\RecommendationClient;
+use EzSystems\RecommendationBundle\Rest\Api\YooChooseNotifier;
 
 /**
  * Recommendation legacy search plugin proxy.
@@ -18,10 +18,10 @@ class RecommendationLegacySearchEngine implements ezpSearchEngine
     /** @var \ezpSearchEngine */
     protected $legacySearchEngine;
 
-    /** @var \EzSystems\RecommendationBundle\Client\RecommendationClient */
+    /** @var \EzSystems\RecommendationBundle\Rest\Api\YooChooseNotifier */
     protected $recommendationClient;
 
-    public function __construct(RecommendationClient $recommendationClient, ezpSearchEngine $legacySearchEngine)
+    public function __construct(YooChooseNotifier $recommendationClient, ezpSearchEngine $legacySearchEngine)
     {
         $this->recommendationClient = $recommendationClient;
         $this->legacySearchEngine = $legacySearchEngine;

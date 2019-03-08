@@ -10,7 +10,7 @@ namespace EzSystems\RecommendationBundle\Authentication;
  * This interface is to be implemented by authenticator classes.
  * Authenticators are meant to be used to run authentication programmatically.
  */
-interface Authenticator
+interface AuthenticatorInterface
 {
     /**
      * @return bool

@@ -7,9 +7,9 @@
 namespace EzSystems\RecommendationBundle\Tests\Helper;
 
 use EzSystems\RecommendationBundle\Helper\FileSystem;
-use PHPUnit_Framework_TestCase;
+use PHPUnit\Framework\TestCase;
 
-class FileSystemTest extends PHPUnit_Framework_TestCase
+class FileSystemTest extends TestCase
 {
     /** @var \PHPUnit_Framework_MockObject_MockObject|\Symfony\Component\Filesystem\Filesystem */
     private $baseFileSystem;

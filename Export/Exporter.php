@@ -8,14 +8,14 @@ namespace EzSystems\RecommendationBundle\Export;
 
 use Exception;
 use eZ\Publish\API\Repository\LocationService;
-use EzSystems\RecommendationBundle\Authentication\Authenticator;
+use EzSystems\RecommendationBundle\Authentication\AuthenticatorInterface;
+use EzSystems\RecommendationBundle\Rest\Api\ExportNotifier;
 use EzSystems\RecommendationBundle\Rest\Content\Content;
 use eZ\Publish\Core\REST\Common\Output\Generator;
 use eZ\Publish\API\Repository\ContentTypeService;
 use eZ\Publish\API\Repository\SearchService;
 use eZ\Publish\API\Repository\Values\Content\Query;
 use eZ\Publish\API\Repository\Values\Content\Query\Criterion;
-use EzSystems\RecommendationBundle\Client\ExportNotifier;
 use EzSystems\RecommendationBundle\Helper\FileSystem;
 use EzSystems\RecommendationBundle\Helper\Text;
 use EzSystems\RecommendationBundle\Helper\SiteAccess;
@@ -40,7 +40,7 @@ class Exporter
     /** @var \eZ\Publish\Api\Repository\LocationService */
     private $locationService;
 
-    /** @var \EzSystems\RecommendationBundle\Authentication\Authenticator */
+    /** @var \EzSystems\RecommendationBundle\Authentication\AuthenticatorInterface */
     private $authenticator;
 
     /** @var \EzSystems\RecommendationBundle\Helper\FileSystem */
@@ -49,7 +49,7 @@ class Exporter
     /** @var \EzSystems\RecommendationBundle\Helper\SiteAccess */
     private $siteAccessHelper;
 
-    /** @var \EzSystems\RecommendationBundle\Client\ExportNotifier */
+    /** @var \EzSystems\RecommendationBundle\Rest\Api\ExportNotifier */
     private $exportNotifier;
 
     /** @var \EzSystems\RecommendationBundle\Rest\Content\Content */
@@ -68,10 +68,10 @@ class Exporter
      * @param \eZ\Publish\Api\Repository\SearchService $searchService
      * @param \eZ\Publish\Api\Repository\ContentTypeService $contentTypeService
      * @param \eZ\Publish\Api\Repository\LocationService $locationService
-     * @param \EzSystems\RecommendationBundle\Authentication\Authenticator $authenticator
+     * @param \EzSystems\RecommendationBundle\Authentication\AuthenticatorInterface $authenticator
      * @param \EzSystems\RecommendationBundle\Helper\FileSystem $fileSystemHelper
      * @param \EzSystems\RecommendationBundle\Helper\SiteAccess $siteAccessHelper
-     * @param \EzSystems\RecommendationBundle\Client\ExportNotifier $exportNotifier
+     * @param \EzSystems\RecommendationBundle\Rest\Api\ExportNotifier $exportNotifier
      * @param \EzSystems\RecommendationBundle\Rest\Content\Content $content
      * @param \EzSystems\RecommendationBundle\Rest\ValueObjectVisitor\ContentListElementGenerator $contentListElementGenerator
      * @param \eZ\Publish\Core\REST\Common\Output\Generator $outputGenerator
@@ -81,7 +81,7 @@ class Exporter
         SearchService $searchService,
         ContentTypeService $contentTypeService,
         LocationService $locationService,
-        Authenticator $authenticator,
+        AuthenticatorInterface $authenticator,
         FileSystem $fileSystemHelper,
         SiteAccess $siteAccessHelper,
         ExportNotifier $exportNotifier,

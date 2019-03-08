@@ -6,7 +6,9 @@
  */
 namespace EzSystems\RecommendationBundle\Tests\Client;
 
-use PHPUnit_Framework_TestCase;
+use EzSystems\RecommendationBundle\Client\YooChooseClientInterface;
+use EzSystems\RecommendationBundle\Rest\Api\YooChooseNotifier;
+use PHPUnit\Framework\TestCase;
 use GuzzleHttp\Psr7\Response;
 use eZ\Publish\Core\Repository\Values\ContentType\ContentType;
 use eZ\Publish\API\Repository\Values\Content\ContentInfo;
@@ -14,10 +16,9 @@ use eZ\Publish\API\Repository\Values\Content\LocationList;
 use eZ\Publish\Core\Repository\Values\Content\Content;
 use eZ\Publish\Core\Repository\Values\Content\Location;
 use eZ\Publish\Core\Repository\Values\Content\VersionInfo;
-use EzSystems\RecommendationBundle\Client\YooChooseNotifier;
 use Psr\Log\NullLogger;
 
-class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
+class YooChooseNotifierTest extends TestCase
 {
     const CUSTOMER_ID = '12345';
 
@@ -33,20 +34,27 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
 
     const LOCATION_ID = 5;
 
+    /** @var YooChooseClientInterface| \PHPUnit_Framework_MockObject_MockObject */
+    private $clientMock;
+
+    protected function setUp()
+    {
+        $this->clientMock = $this->getMockBuilder(YooChooseClientInterface::class)->getMock();
+    }
+
     /**
      * Test for the updateContent() method.
      */
     public function testUpdateContent()
     {
-        $guzzleClientMock = $this->getGuzzleClientMock();
-        $this->setGuzzleExpectationsFor('UPDATE', $guzzleClientMock);
+        $this->setGuzzleExpectationsFor('UPDATE');
 
         list($repositoryServiceMock, $contentServiceMock) = $this
             ->getServicesWithExpectationsForContentModification();
 
         /* Use Case */
         $notifier = new YooChooseNotifier(
-            $guzzleClientMock,
+            $this->clientMock,
             $repositoryServiceMock,
             $contentServiceMock,
             $this->getLocationServiceMock(),
@@ -68,15 +76,14 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
      */
     public function testDeleteContent()
     {
-        $guzzleClientMock = $this->getGuzzleClientMock();
-        $this->setGuzzleExpectationsFor('DELETE', $guzzleClientMock);
+        $this->setGuzzleExpectationsFor('DELETE');
 
         list($repositoryServiceMock, $contentServiceMock) = $this
             ->getServicesWithExpectationsForContentModification();
 
         /* Use Case */
         $notifier = new YooChooseNotifier(
-            $guzzleClientMock,
+            $this->clientMock,
             $repositoryServiceMock,
             $contentServiceMock,
             $this->getLocationServiceMock(),
@@ -98,8 +105,7 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
      */
     public function testHideLocation()
     {
-        $guzzleClientMock = $this->getGuzzleClientMock();
-        $this->setGuzzleExpectationsFor('DELETE', $guzzleClientMock);
+        $this->setGuzzleExpectationsFor('DELETE');
 
         list($repositoryServiceMock, $contentServiceMock) = $this
             ->getServicesWithExpectationsForContentModification();
@@ -137,7 +143,7 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
 
         /* Use Case */
         $notifier = new YooChooseNotifier(
-            $guzzleClientMock,
+            $this->clientMock,
             $repositoryServiceMock,
             $contentServiceMock,
             $locationServiceMock,
@@ -159,10 +165,9 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
      */
     public function testHideLocationWithChildren()
     {
-        $guzzleClientMock = $this->getGuzzleClientMock();
-        $this->setGuzzleExpectationsFor('DELETE', $guzzleClientMock, self::CONTENT_ID + 1, 0);
-        $this->setGuzzleExpectationsFor('DELETE', $guzzleClientMock, self::CONTENT_ID + 2, 1);
-        $this->setGuzzleExpectationsFor('DELETE', $guzzleClientMock, self::CONTENT_ID, 2);
+        $this->setGuzzleExpectationsFor('DELETE', self::CONTENT_ID + 1, 0 * 3);
+        $this->setGuzzleExpectationsFor('DELETE', self::CONTENT_ID + 2, 1 * 3);
+        $this->setGuzzleExpectationsFor('DELETE', self::CONTENT_ID, 2 * 3);
 
         $locationServiceMock = $this->getLocationServiceMock();
         $locationServiceMock
@@ -317,7 +322,7 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
 
         /* Use Case */
         $notifier = new YooChooseNotifier(
-            $guzzleClientMock,
+            $this->clientMock,
             $repositoryServiceMock,
             $contentServiceMock,
             $locationServiceMock,
@@ -339,8 +344,7 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
      */
     public function testUnhideLocation()
     {
-        $guzzleClientMock = $this->getGuzzleClientMock();
-        $this->setGuzzleExpectationsFor('UPDATE', $guzzleClientMock);
+        $this->setGuzzleExpectationsFor('UPDATE');
 
         list($repositoryServiceMock, $contentServiceMock) = $this
             ->getServicesWithExpectationsForContentModification();
@@ -362,7 +366,7 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
 
         /* Use Case */
         $notifier = new YooChooseNotifier(
-            $guzzleClientMock,
+            $this->clientMock,
             $repositoryServiceMock,
             $contentServiceMock,
             $locationServiceMock,
@@ -384,10 +388,9 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
      */
     public function testUnhideLocationWithChildren()
     {
-        $guzzleClientMock = $this->getGuzzleClientMock();
-        $this->setGuzzleExpectationsFor('UPDATE', $guzzleClientMock, self::CONTENT_ID + 1, 0);
-        $this->setGuzzleExpectationsFor('UPDATE', $guzzleClientMock, self::CONTENT_ID + 2, 1);
-        $this->setGuzzleExpectationsFor('UPDATE', $guzzleClientMock, self::CONTENT_ID, 2);
+        $this->setGuzzleExpectationsFor('UPDATE', self::CONTENT_ID + 1, 0 * 3);
+        $this->setGuzzleExpectationsFor('UPDATE', self::CONTENT_ID + 2, 1 * 3);
+        $this->setGuzzleExpectationsFor('UPDATE', self::CONTENT_ID, 2 * 3);
 
         $locationServiceMock = $this->getLocationServiceMock();
         $locationServiceMock
@@ -529,7 +532,7 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
 
         /* Use Case */
         $notifier = new YooChooseNotifier(
-            $guzzleClientMock,
+            $this->clientMock,
             $repositoryServiceMock,
             $contentServiceMock,
             $locationServiceMock,
@@ -544,18 +547,6 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
         );
         $notifier->setIncludedContentTypes([self::CONTENT_TYPE_ID]);
         $notifier->unhideLocation(self::LOCATION_ID);
-    }
-
-    /**
-     * @return \GuzzleHttp\ClientInterface|\PHPUnit_Framework_MockObject_MockObject
-     */
-    private function getGuzzleClientMock()
-    {
-        $guzzleClientMock = $this
-            ->getMockBuilder('GuzzleHttp\ClientInterface')
-            ->getMock();
-
-        return $guzzleClientMock;
     }
 
     /**
@@ -650,18 +641,15 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
 
     /**
      * @param string $operationType Operation type: UPDATE / DELETE
-     * @param \GuzzleHttp\ClientInterface|\PHPUnit_Framework_MockObject_MockObject $guzzleClientMock
      * @param int $contentId
      * @param int $expectAtIndex
      */
     protected function setGuzzleExpectationsFor(
         $operationType,
-        $guzzleClientMock,
         $contentId = self::CONTENT_ID,
         $expectAtIndex = 0
     ) {
         return $this->setGuzzleExpectations(
-            $guzzleClientMock,
             strtoupper($operationType),
             $contentId,
             self::CONTENT_TYPE_ID,
@@ -676,7 +664,6 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
     /**
      * Sets Guzzle expectations.
      *
-     * @param \GuzzleHttp\ClientInterface|\PHPUnit_Framework_MockObject_MockObject $guzzleClientMock
      * @param string $action
      * @param mixed $contentId
      * @param int $contentTypeId
@@ -687,7 +674,6 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
      * @param int $expectAtIndex
      */
     protected function setGuzzleExpectations(
-        $guzzleClientMock,
         $action,
         $contentId,
         $contentTypeId,
@@ -697,8 +683,8 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
         $apiEndpoint,
         $expectAtIndex = 0
     ) {
-        if (method_exists($guzzleClientMock, 'post')) {
-            $guzzleClientMock
+        if (method_exists($this->clientMock, 'post')) {
+            $this->clientMock
                 ->expects($this->at($expectAtIndex))
                 ->method('post')
                 ->with(
@@ -709,9 +695,19 @@ class YooChooseNotifierTest extends PHPUnit_Framework_TestCase
                 )
                 ->will($this->returnValue(new \GuzzleHttp\Message\Response(202)));
         } else {
-            $guzzleClientMock
+            $this->clientMock
                 ->expects($this->at($expectAtIndex))
-                ->method('request')
+                ->method('getCustomerId')
+                ->willReturn(self::CUSTOMER_ID);
+
+            $this->clientMock
+                ->expects($this->at($expectAtIndex + 1))
+                ->method('getLicenseKey')
+                ->willReturn(self::LICENSE_KEY);
+
+            $this->clientMock
+                ->expects($this->at($expectAtIndex + 2))
+                ->method('sendRequest')
                 ->with(
                     'POST',
                     $this->equalTo($this->getExpectedEndpoint($apiEndpoint, $customerId)),

@@ -8,8 +8,8 @@
  */
 namespace EzSystems\RecommendationBundle\eZ\Publish\Slot;
 
-use EzSystems\RecommendationBundle\Client\RecommendationClient;
 use eZ\Publish\SPI\Persistence\Handler as PersistenceHandler;
+use EzSystems\RecommendationBundle\Rest\Api\YooChooseNotifier;
 
 /*
  * A persistence aware base slot
@@ -19,7 +19,7 @@ abstract class PersistenceAwareBase extends Base
     /** @var \eZ\Publish\SPI\Persistence\Handler */
     protected $persistenceHandler;
 
-    public function __construct(RecommendationClient $client, PersistenceHandler $persistenceHandler)
+    public function __construct(YooChooseNotifier $client, PersistenceHandler $persistenceHandler)
     {
         parent::__construct($client);
         $this->persistenceHandler = $persistenceHandler;

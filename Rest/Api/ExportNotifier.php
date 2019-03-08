@@ -4,8 +4,9 @@
  * @copyright Copyright (C) eZ Systems AS. All rights reserved.
  * @license For full copyright and license information view LICENSE file distributed with this source code.
  */
-namespace EzSystems\RecommendationBundle\Client;
+namespace EzSystems\RecommendationBundle\Rest\Api;
 
+use EzSystems\RecommendationBundle\Client\YooChooseClientInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
 use Psr\Log\LoggerInterface;
@@ -15,6 +16,10 @@ use Psr\Log\LoggerInterface;
  */
 class ExportNotifier
 {
+    const API_NAME = 'exporter';
+    /** @var \EzSystems\RecommendationBundle\Client\YooChooseClientInterface */
+    private $client;
+
     /** @var LoggerInterface */
     private $logger;
 
@@ -22,13 +27,17 @@ class ExportNotifier
     private $debug;
 
     /**
-     * @param \Psr\Log\LoggerInterface $logger
-     * @param bool $debug
+     * ExportNotifier constructor.
+     *
+     * @param \Psr\Log\LoggerInterface $logger $logger
+     * @param $debug
      */
     public function __construct(
+        YooChooseClientInterface $client,
         LoggerInterface $logger,
         $debug
     ) {
+        $this->client = $client;
         $this->logger = $logger;
         $this->debug = $debug;
     }
@@ -85,8 +94,7 @@ class ExportNotifier
                 ))
             );
 
-            $response = $guzzle->send(
-                $req, [
+            $response = $this->client->getHttpClient()->send($req, [
                     'debug' => $this->debug,
                 ]
             )->getBody();

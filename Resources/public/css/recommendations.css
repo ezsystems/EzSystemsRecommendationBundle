@@ -1,0 +1,42 @@
+.recommendation-items {
+    display: flex;
+    flex-flow: row;
+}
+
+.recommendation {
+    width: 33.3%;
+    flex: 0 0 33.333333%;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.recommendation a {
+    color: #000000;
+}
+
+.recommendation a:hover {
+    color: #000000;
+    text-decoration: none;
+}
+
+.recommendation__image {
+    height: 200px;
+}
+
+.recommendation__image img {
+    object-fit: cover;
+    height: 100%;
+}
+
+.recommendation__header h2 {
+    font-size: 1.25rem;
+}
+
+.recommendation__header {
+    margin-top: 15px;
+}
+
+.recommendation__intro {
+    margin-top: 15px;
+    font-size: 15px;
+}

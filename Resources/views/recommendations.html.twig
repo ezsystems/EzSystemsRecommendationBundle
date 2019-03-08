@@ -1,0 +1,27 @@
+<div id="recommendations-template-{{ templateId }}">
+    {% if recommendations is defined and recommendations|length > 0 %}
+        <div class="recommendation-items">
+            {% for recommendation in recommendations %}
+                <div class="recommendation">
+                    <article class="recommendation__article">
+                        <a  data-yoochoose-ping-api="{{ recommendation.clickRecommended }}">
+                            <div class="recommendation__image">
+                                <img class="img-fluid" src="{{ recommendation.image }}" alt="{{ recommendation.title }}" title="{{ recommendation.title }}"/>
+                            </div>
+                            <div class="recommendation__header">
+                                <h2>{{ recommendation.title }}</h2>
+                            </div>
+                            <div class="recommendation__intro">
+                                <p>{{ recommendation.intro }}</p>
+                            </div>
+                        </a>
+                    </article>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No recommendations found</p>
+    {% endif %}
+</div>
+
+{% include 'EzSystemsRecommendationBundle::event_tracking.html.twig' %}

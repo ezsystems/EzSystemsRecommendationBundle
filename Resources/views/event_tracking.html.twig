@@ -1,0 +1,19 @@
+<script>
+    {% autoescape 'js' %}
+
+    (function () {
+        const recommendationItemsPing = document.querySelectorAll('a[data-yoochoose-ping-api]');
+        const restClient = new eZ.YooChooseRestClient();
+
+        recommendationItemsPing.forEach(element => {
+            element.addEventListener('click', event => {
+                const url = event.currentTarget.dataset.yoochoosePingApi;
+
+                if (url) {
+                    restClient.ping(url);
+                }
+            });
+        });
+    })();
+    {% endautoescape %}
+</script>

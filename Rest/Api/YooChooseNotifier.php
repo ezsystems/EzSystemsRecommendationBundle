@@ -3,7 +3,7 @@
  * @copyright Copyright (C) eZ Systems AS. All rights reserved.
  * @license For full copyright and license information view LICENSE file distributed with this source code.
  */
-namespace EzSystems\RecommendationBundle\Client;
+namespace EzSystems\RecommendationBundle\Rest\Api;
 
 use eZ\Publish\API\Repository\ContentService;
 use eZ\Publish\API\Repository\ContentTypeService;
@@ -11,24 +11,23 @@ use eZ\Publish\API\Repository\Values\Content\Content;
 use eZ\Publish\API\Repository\Exceptions\NotFoundException;
 use eZ\Publish\API\Repository\LocationService;
 use eZ\Publish\API\Repository\Repository;
-use GuzzleHttp\ClientInterface as GuzzleClient;
+use EzSystems\RecommendationBundle\Client\YooChooseClientInterface;
 use GuzzleHttp\Exception\RequestException;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
  * A recommendation client that sends notifications to a recommendation service.
  */
-class YooChooseNotifier implements RecommendationClient
+class YooChooseNotifier extends AbstractApi
 {
+    const API_NAME = 'notifier';
     const ACTION_UPDATE = 'UPDATE';
     const ACTION_DELETE = 'DELETE';
 
     /** @var array */
     protected $options;
-
-    /** @var \GuzzleHttp\ClientInterface */
-    private $guzzle;
 
     /** @var \Psr\Log\LoggerInterface */
     private $logger;
@@ -46,7 +45,7 @@ class YooChooseNotifier implements RecommendationClient
     private $contentTypeService;
 
     /**
-     * @param \GuzzleHttp\ClientInterface $guzzle
+     * @param \EzSystems\RecommendationBundle\Client\YooChooseClientInterface
      * @param \eZ\Publish\API\Repository\Repository $repository
      * @param \eZ\Publish\API\Repository\ContentService $contentService
      * @param \eZ\Publish\API\Repository\LocationService $locationService
@@ -60,7 +59,7 @@ class YooChooseNotifier implements RecommendationClient
      * @param \Psr\Log\LoggerInterface $logger
      */
     public function __construct(
-        GuzzleClient $guzzle,
+        YooChooseClientInterface $client,
         Repository $repository,
         ContentService $contentService,
         LocationService $locationService,
@@ -72,12 +71,19 @@ class YooChooseNotifier implements RecommendationClient
         $this->configureOptions($resolver);
 
         $this->options = $resolver->resolve($options);
-        $this->guzzle = $guzzle;
         $this->repository = $repository;
         $this->contentService = $contentService;
         $this->locationService = $locationService;
         $this->contentTypeService = $contentTypeService;
         $this->logger = $logger;
+
+        parent::__construct($client);
+    }
+
+    /** @return string */
+    public function getRawEndPointUrl(): string
+    {
+        return '%s/api/%s/items';
     }
 
     /**
@@ -88,7 +94,7 @@ class YooChooseNotifier implements RecommendationClient
      */
     public function setCustomerId($value)
     {
-        $this->options['customer-id'] = $value;
+        $this->client->setCustomerId($value);
     }
 
     /**
@@ -99,7 +105,7 @@ class YooChooseNotifier implements RecommendationClient
      */
     public function setLicenseKey($value)
     {
-        $this->options['license-key'] = $value;
+        $this->client->setLicenseKey($value);
     }
 
     /**
@@ -140,14 +146,14 @@ class YooChooseNotifier implements RecommendationClient
             return;
         }
 
-        $this->logger->info(sprintf('Notifying Recommendation Service: updateContent(%s)', $content->id));
+        $this->logger->debug(sprintf('YooChooseNotifier: Generating notification for updateContent(%s)', $content->id));
 
         $notifications = $this->generateNotifications(self::ACTION_UPDATE, $content, $versionNo);
 
         try {
             $this->notify($notifications);
         } catch (RequestException $e) {
-            $this->logger->error(sprintf('Recommendation Service Post notification error for updateContent: %s', $e->getMessage()));
+            $this->logger->error(sprintf('YooChooseNotifier: notification error for updateContent: %s', $e->getMessage()));
         }
     }
 
@@ -167,14 +173,14 @@ class YooChooseNotifier implements RecommendationClient
             return;
         }
 
-        $this->logger->info(sprintf('Notifying Recommendation Service: deleteContent(%s)', $content->id));
+        $this->logger->debug(sprintf('YooChooseNotifier: Generating notification for deleteContent(%s)', $content->id));
 
         $notifications = $this->generateNotifications(self::ACTION_DELETE, $content);
 
         try {
             $this->notify($notifications);
         } catch (RequestException $e) {
-            $this->logger->error(sprintf('Recommendation Service Post notification error for deleteContent: %s', $e->getMessage()));
+            $this->logger->error(sprintf('YooChooseNotifier: notification error for deleteContent: %s', $e->getMessage()));
         }
     }
 
@@ -206,14 +212,14 @@ class YooChooseNotifier implements RecommendationClient
             }
         }
 
-        $this->logger->info(sprintf('Notifying Recommendation Service: hide(%s)', $content->id));
+        $this->logger->debug(sprintf('YooChooseNotifier: Generating notification for hide(%s)', $content->id));
 
         $notifications = $this->generateNotifications(self::ACTION_DELETE, $content);
 
         try {
             $this->notify($notifications);
         } catch (RequestException $e) {
-            $this->logger->error(sprintf('Recommendation Service Post notification error for hideLocation: %s', $e->getMessage()));
+            $this->logger->error(sprintf('YooChooseNotifier: notification error for hideLocation: %s', $e->getMessage()));
         }
     }
 
@@ -235,14 +241,14 @@ class YooChooseNotifier implements RecommendationClient
             return;
         }
 
-        $this->logger->info(sprintf('Notifying Recommendation Service: unhide(%s)', $content->id));
+        $this->logger->debug(sprintf('YooChooseNotifier: Generating notification for unhide(%s)', $content->id));
 
         $notifications = $this->generateNotifications(self::ACTION_UPDATE, $content);
 
         try {
             $this->notify($notifications);
         } catch (RequestException $e) {
-            $this->logger->error(sprintf('Recommendation Service Post notification error for unhideLocation: %s', $e->getMessage()));
+            $this->logger->error(sprintf('YooChooseNotifier: notification error for unhideLocation: %s', $e->getMessage()));
         }
     }
 
@@ -254,7 +260,7 @@ class YooChooseNotifier implements RecommendationClient
      */
     private function generateNotifications($action, Content $content, $versionNo = null)
     {
-        $notification = array();
+        $notification = [];
         foreach ($this->getLanguageCodes($content, $versionNo) as $lang) {
             $notification[] = $this->getNotificationContent($action, $content, $lang);
         }
@@ -271,13 +277,13 @@ class YooChooseNotifier implements RecommendationClient
      */
     protected function getNotificationContent($action, Content $content, $lang = null)
     {
-        $return = array(
+        $return = [
             'action' => $action,
             'format' => 'EZ',
             'uri' => $this->getContentUri($content, $lang),
             'itemId' => $content->id,
             'contentTypeId' => $content->contentInfo->contentTypeId,
-        );
+        ];
 
         if (null !== $lang) {
             $return['lang'] = $lang;
@@ -296,9 +302,7 @@ class YooChooseNotifier implements RecommendationClient
     private function isContentTypeExcluded(Content $content)
     {
         $contentType = $this->repository->sudo(function () use ($content) {
-            $contentType = $this->contentTypeService->loadContentType($content->contentInfo->contentTypeId);
-
-            return $contentType;
+            return $this->contentTypeService->loadContentType($content->contentInfo->contentTypeId);
         });
 
         return !in_array($contentType->identifier, $this->options['included-content-types']);
@@ -339,20 +343,6 @@ class YooChooseNotifier implements RecommendationClient
     }
 
     /**
-     * Returns the Recommendation Service notification endpoint.
-     *
-     * @return string
-     */
-    private function getNotificationEndpoint()
-    {
-        return sprintf(
-            '%s/api/%s/items',
-            rtrim($this->options['api-endpoint'], '/'),
-            $this->options['customer-id']
-        );
-    }
-
-    /**
      * Notifies the Recommendation Service API of one or more repository events.
      *
      * A repository event is defined as an array with three keys:
@@ -367,48 +357,25 @@ class YooChooseNotifier implements RecommendationClient
      */
     protected function notify(array $events)
     {
-        $this->logger->debug(sprintf('POST notification to Recommendation Service: %s', json_encode($events, true)));
+        $customerId = $this->client->getCustomerId();
 
-        $data = array(
-            'json' => array(
+        $data = [
+            'json' => [
                 'transaction' => null,
                 'events' => $events,
-            ),
-            'auth' => array(
-                $this->options['customer-id'],
-                $this->options['license-key'],
-            ),
-        );
+            ],
+            'auth' => [
+                $customerId,
+                $this->client->getLicenseKey(),
+            ],
+        ];
 
-        if (method_exists($this->guzzle, 'post')) {
-            $this->notifyGuzzle5($data);
-        } else {
-            $this->notifyGuzzle6($data);
-        }
-    }
+        $endPoint = $this->buildEndPointUrl([
+            rtrim($this->options['api-endpoint'], '/'),
+            $customerId,
+        ]);
 
-    /**
-     * Notifies the Recommendation Service API using Guzzle 5 (for PHP 5.4 support).
-     *
-     * @param array $data
-     */
-    private function notifyGuzzle5(array $data)
-    {
-        $response = $this->guzzle->post($this->getNotificationEndpoint(), $data);
-
-        $this->logger->debug(sprintf('Got %s from Recommendation Service notification POST (guzzle v5)', $response->getStatusCode()));
-    }
-
-    /**
-     * Notifies the Recommendation Service API using Guzzle 6 synchronously.
-     *
-     * @param array $data
-     */
-    private function notifyGuzzle6(array $data)
-    {
-        $response = $this->guzzle->request('POST', $this->getNotificationEndpoint(), $data);
-
-        $this->logger->debug(sprintf('Got %s from Recommendation Service notification POST (guzzle v6)', $response->getStatusCode()));
+        $this->client->sendRequest(Request::METHOD_POST, $endPoint, $data);
     }
 
     /**
@@ -416,15 +383,13 @@ class YooChooseNotifier implements RecommendationClient
      */
     protected function configureOptions(OptionsResolver $resolver)
     {
-        $options = array('customer-id', 'license-key', 'api-endpoint', 'server-uri');
+        $options = ['customer-id', 'license-key', 'api-endpoint', 'server-uri'];
         $resolver->setDefined($options);
-        $resolver->setDefaults(
-            array(
-                'customer-id' => null,
-                'license-key' => null,
-                'server-uri' => null,
-                'api-endpoint' => null,
-            )
-        );
+        $resolver->setDefaults([
+            'customer-id' => null,
+            'license-key' => null,
+            'server-uri' => null,
+            'api-endpoint' => null,
+        ]);
     }
 }

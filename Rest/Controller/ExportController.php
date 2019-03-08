@@ -6,7 +6,7 @@
  */
 namespace EzSystems\RecommendationBundle\Rest\Controller;
 
-use EzSystems\RecommendationBundle\Authentication\Authenticator;
+use EzSystems\RecommendationBundle\Authentication\AuthenticatorInterface;
 use EzSystems\RecommendationBundle\Helper\ExportProcessRunner;
 use EzSystems\RecommendationBundle\Helper\FileSystem;
 use EzSystems\RecommendationBundle\Rest\Exception\ExportInProgressException;
@@ -21,7 +21,7 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class ExportController extends Controller
 {
-    /** @var \EzSystems\RecommendationBundle\Authentication\Authenticator */
+    /** @var \EzSystems\RecommendationBundle\Authentication\AuthenticatorInterface */
     private $authenticator;
 
     /** @var \EzSystems\RecommendationBundle\Helper\FileSystem */
@@ -34,13 +34,13 @@ class ExportController extends Controller
     private $logger;
 
     /**
-     * @param \EzSystems\RecommendationBundle\Authentication\Authenticator $authenticator
+     * @param \EzSystems\RecommendationBundle\Authentication\AuthenticatorInterface $authenticator
      * @param \EzSystems\RecommendationBundle\Helper\FileSystem $fileSystem
      * @param \EzSystems\RecommendationBundle\Helper\ExportProcessRunner $exportProcessRunner
      * @param \Psr\Log\LoggerInterface $logger
      */
     public function __construct(
-        Authenticator $authenticator,
+        AuthenticatorInterface $authenticator,
         FileSystem $fileSystem,
         ExportProcessRunner $exportProcessRunner,
         LoggerInterface $logger

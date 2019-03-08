@@ -5,11 +5,12 @@
  */
 namespace EzSystems\RecommendationBundle\Tests\eZ\Publish\Slot;
 
+use EzSystems\RecommendationBundle\Rest\Api\YooChooseNotifier;
 use PHPUnit\Framework\TestCase;
 
 abstract class AbstractSlotTest extends TestCase
 {
-    /** @var \EzSystems\RecommendationBundle\Client\RecommendationClient|\PHPUnit_Framework_MockObject_MockObject */
+    /** @var \EzSystems\RecommendationBundle\Client\YooChooseClientInterface|\PHPUnit_Framework_MockObject_MockObject */
     protected $client;
 
     /** @var \EzSystems\RecommendationBundle\eZ\Publish\Slot\Base */
@@ -17,7 +18,7 @@ abstract class AbstractSlotTest extends TestCase
 
     public function setUp()
     {
-        $this->client = $this->getMockBuilder('\EzSystems\RecommendationBundle\Client\RecommendationClient')->getMock();
+        $this->client = $this->getMockBuilder(YooChooseNotifier::class)->disableOriginalConstructor()->getMock();
         $this->slot = $this->createSlot();
     }
 

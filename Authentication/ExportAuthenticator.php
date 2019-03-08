@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 /**
  * Authenticator for export feature, mainly used for basic auth based authentication.
  */
-class ExportAuthenticator implements Authenticator
+class ExportAuthenticator implements AuthenticatorInterface
 {
     /** @var \Symfony\Component\HttpFoundation\RequestStack */
     private $requestStack;

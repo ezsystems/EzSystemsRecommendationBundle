@@ -8,11 +8,11 @@ namespace EzSystems\RecommendationBundle\Tests\Authentication;
 
 use EzSystems\RecommendationBundle\Authentication\ExportAuthenticator;
 use EzSystems\RecommendationBundle\Helper\FileSystem;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem as BaseFileSystem;
 use Symfony\Component\HttpFoundation\ParameterBag;
-use PHPUnit_Framework_TestCase;
 
-class ExportAuthenticatorTest extends PHPUnit_Framework_TestCase
+class ExportAuthenticatorTest extends TestCase
 {
     /** @var \PHPUnit_Framework_MockObject_MockObject|\Symfony\Component\HttpFoundation\RequestStack */
     private $requestStack;

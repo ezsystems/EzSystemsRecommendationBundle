@@ -8,9 +8,9 @@ namespace EzSystems\RecommendationBundle\Tests\Helper;
 
 use eZ\Publish\Core\MVC\Symfony\SiteAccess as CurrentSiteAccess;
 use EzSystems\RecommendationBundle\Helper\SiteAccess;
-use PHPUnit_Framework_TestCase;
+use PHPUnit\Framework\TestCase;
 
-class SiteAccessTest extends PHPUnit_Framework_TestCase
+class SiteAccessTest extends TestCase
 {
     /** @var \PHPUnit_Framework_MockObject_MockObject|\eZ\Publish\Core\MVC\ConfigResolverInterface */
     private $configResolver;
